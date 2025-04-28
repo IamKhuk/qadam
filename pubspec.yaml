@@ -1,0 +1,56 @@
+name: qadam
+description: "Mobile Transportation Application"
+
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.4 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+
+  cupertino_icons: ^1.0.6
+  flutter_svg: ^2.0.16
+  pinput: ^5.0.0
+  image_picker: ^1.1.2
+  shared_preferences: ^2.3.4
+  rxdart: ^0.28.0
+  cached_network_image: ^3.4.1
+  permission_handler: ^11.3.1
+  firebase_messaging: ^15.1.6
+  dio: ^5.7.0
+  localization: ^2.1.1
+  flutter_translate: ^4.1.0
+  http: ^1.2.2
+  google_maps_flutter: ^2.10.0
+  geolocator: ^13.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^3.0.0
+
+flutter:
+
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/i18n/
+    - assets/fonts/
+
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Poppins-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Poppins-Medium.ttf
+          weight: 500

@@ -1,0 +1,72 @@
+{
+  "hours": "soat",
+  "ago": "oldin",
+  "onBoarding_title_01": "Sizning Yo'lboshlovchingiz",
+  "onBoarding_title_02": "Sayohat Qiling",
+  "onBoarding_title_03": "Yangi Yo'llarni Toping",
+  "onBoarding_text_01": "O'zbekistonning hikoyalarga boy\nmaskanlarini kasht eting",
+  "onBoarding_text_02": "Yeng, iching va baxtiyor bo'ling.\nSayohat qiling",
+  "onBoarding_text_03": "Hozir harakatlanish vaqti\nSarguzashtlarga boy sahohatga olg'a",
+  "privacy_policy": "Privacy&Policy",
+  "privacy_accept": "Men o'qidim",
+  "privacy_error_msg": "Ushbu ilovadan foydalanish uchun Privacy$Policy ni oʻqib chiqishingiz va qabul qilishingiz kerak",
+  "next": "Keyingisi",
+  "get_started": "Boshlash",
+  "view_all": "Hammasi",
+  "ok": "Ha",
+  "cancel": "Bekor qilish",
+  "home": {
+    "home": "Home",
+    "title": "Surxon Turizm",
+    "discover": "Kashf et",
+    "travel_destinations": "Sayohat Manzillari",
+    "all": "Hammasi",
+    "change_lang": "Change Language",
+    "english": "Ingliz",
+    "uzbek": "O'zbek",
+    "russian": "Rus",
+    "save": "Saqlash",
+    "map": "Xarita",
+    "about_app": "Ilova Haqida",
+    "contact_us": "Biz Bilan Bog'laning",
+    "back": "Ortga",
+    "language": "Til",
+    "about_author": "Muallif Haqida"
+  },
+  "location": {
+    "location_details": "Manzil Haqida",
+    "overview": "Umumiy ma`lumot",
+    "review": "Fikrlar",
+    "read_more": "Ko'proq o'qish",
+    "less": "Kamroq",
+    "no_review": "Afsuski, hech qanday fikrlar qoldirilmagan",
+    "rate": "Baho",
+    "see_on_map": "Xarita",
+    "post_review": "Fikr qoldirish",
+    "first_name": "Ismingiz",
+    "last_name": "Familiyangiz",
+    "your_first_name": "Sizning ismingiz",
+    "your_last_name": "Sizning familiyangiz",
+    "write_your_review": "O'z fikringizni qoldiring...",
+    "post": "Chop Etish",
+    "error": "Xato",
+    "error_msg": "Xatolik mavjud, Iltimos keyinroq urinib ko'ring",
+    "fill_alert": "Iltimos barcha formani to'ldiring",
+    "open_time": "Ochiq Vaqti"
+  },
+  "map": {
+    "Something_went_wrong": "Nimadirda nosozlik bor",
+    "permission_error": "Iltimos geolokatsiyadan foydalanishga ruxsat bering",
+    "build_route": "Yo'l yaratish",
+    "nothing_found": "Hech nima topilmadi"
+  },
+  "explore": {
+    "explore": "Sayohat manzillari",
+    "popular_destinations": "Mashhur Maskanlar",
+    "search": "Joylarni qidirish",
+    "nothing_found": "Hech narsa topilmadi"
+  },
+  "like": {
+    "top_destinations": "Eng Yaxshi Manzillar"
+  }
+}
