@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:qadam/src/lan_localization/app_localization.dart';
 import 'package:qadam/src/ui/splash/splash_screen.dart';
@@ -22,6 +23,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     var localizationDelegate = LocalizedApp.of(context).delegate;
     localizationDelegate.changeLocale(Locale(language));
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarBrightness: Brightness.dark,
+        statusBarIconBrightness: Brightness.light,
+      ),
+    );
     return LocalizationProvider(
       state: LocalizationProvider.of(context).state,
       child: MaterialApp(

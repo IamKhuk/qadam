@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_translate/flutter_translate.dart';
+import 'package:qadam/src/ui/auth/login_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../theme/app_theme.dart';
 import '../menu/main_screen.dart';
@@ -15,8 +16,8 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-  AnimationController? controller;
-  Animation<Offset>? offset;
+  late AnimationController controller;
+  late Animation<Offset> offset;
 
   @override
   void initState() {
@@ -31,11 +32,16 @@ class _SplashScreenState extends State<SplashScreen>
       end: const Offset(0.0, 0.0),
     ).animate(
       CurvedAnimation(
-        parent: controller!,
+        parent: controller,
         curve: Curves.easeInOut,
       ),
     );
     super.initState();
+  }
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -86,7 +92,7 @@ class _SplashScreenState extends State<SplashScreen>
           ),
           Center(
             child: SlideTransition(
-              position: offset!,
+              position: offset,
               child: const SizedBox(
                 height: 60,
                 child: Text(
@@ -125,7 +131,7 @@ class _SplashScreenState extends State<SplashScreen>
           context,
           MaterialPageRoute(
             builder: (context) {
-              return const MainScreen();
+              return const LoginScreen();
             },
           ),
         );

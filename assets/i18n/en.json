@@ -29,7 +29,12 @@
     "please_enter": "Please enter your email and password details to access to your account.",
     "sign_up": "Sign Up",
     "password": "Password",
-    "confirm_password": "Confirm password"
+    "confirm_password": "Confirm password",
+    "register": "Register",
+    "pin_incorrect": "Pin is incorrect",
+    "no_code": "Did not get the code? ",
+    "send_again": "Send Again",
+    "send_code": "Send Code"
   },
   "home": {
     "home": "Home",
