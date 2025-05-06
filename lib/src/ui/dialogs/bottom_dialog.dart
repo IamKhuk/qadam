@@ -13,13 +13,20 @@ import '../widgets/picker/custom_date_picker.dart';
 class BottomDialog {
   static void showSelectLocation(
     BuildContext context,
-    LocationModel initLocation,
-    int regionId,
-    int cityId,
-    Function(LocationModel location) onChanged,
+    LocationModel region,
+    LocationModel city,
+    LocationModel neighbourhood,
+    Function(
+      LocationModel region,
+      LocationModel city,
+      LocationModel neighbourhood,
+    ) onChanged,
   ) {
     bool onCh = false;
     LocationModel selectedLocation = LocationModel(id: 0, text: "");
+    LocationModel selectedRegion = LocationModel(id: 0, text: "");
+    LocationModel selectedCity = LocationModel(id: 0, text: "");
+    LocationModel selectedNeighbourhood = LocationModel(id: 0, text: "");
 
     showModalBottomSheet(
       barrierColor: AppTheme.black.withOpacity(0.45),
@@ -27,13 +34,13 @@ class BottomDialog {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        if (initLocation.id != 0) {
-          selectedLocation = initLocation;
+        if (region.id != 0) {
+          selectedLocation = region;
         }
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             return Container(
-              height: 524,
+              height: selectedLocation.text == "" ? 524 : 256,
               decoration: const BoxDecoration(
                 borderRadius: BorderRadius.only(
                   topRight: Radius.circular(24),
@@ -44,6 +51,7 @@ class BottomDialog {
               padding: const EdgeInsets.only(top: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -63,9 +71,9 @@ class BottomDialog {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text18h500w(
-                        title: regionId == 0
+                        title: selectedRegion.id == 0
                             ? translate("home.select_region")
-                            : cityId == 0
+                            : selectedCity.id == 0
                                 ? translate("home.select_city")
                                 : translate("home.select_neighborhood"),
                       ),
@@ -78,33 +86,26 @@ class BottomDialog {
                     child: selectedLocation.text == ""
                         ? Expanded(
                             child: ListView.builder(
-                              itemCount: regionId == 0
+                              itemCount: selectedRegion.id == 0
                                   ? Defaults().regions.length
-                                  : cityId == 0
+                                  : selectedCity.id == 0
                                       ? Defaults().cities.length
                                       : Defaults().neighborhoods.length,
-                              padding: const EdgeInsets.only(top: 4, bottom: 0),
+                              padding: const EdgeInsets.only(
+                                  top: 4, bottom: 0, left: 16, right: 16),
                               itemBuilder: (context, index) {
+                                LocationModel location = selectedRegion.id == 0
+                                    ? Defaults().regions[index]
+                                    : selectedCity.id == 0
+                                        ? Defaults().cities[index]
+                                        : Defaults().neighborhoods[index];
                                 return Column(
                                   children: [
                                     GestureDetector(
                                       onTap: () {
-                                        if (regionId == 0) {
-                                          setState(() {
-                                            selectedLocation =
-                                                Defaults().regions[index];
-                                          });
-                                        }else if (cityId == 0) {
-                                          setState(() {
-                                            selectedLocation =
-                                                Defaults().cities[index];
-                                          });
-                                        }else {
-                                          setState(() {
-                                            selectedLocation =
-                                                Defaults().neighborhoods[index];
-                                          });
-                                        }
+                                        setState(() {
+                                          selectedLocation = location;
+                                        });
                                       },
                                       child: Container(
                                         padding: const EdgeInsets.all(16),
@@ -113,17 +114,7 @@ class BottomDialog {
                                           children: [
                                             Expanded(
                                               child: Text14h500w(
-                                                title: regionId == 0
-                                                    ? Defaults()
-                                                        .regions[index]
-                                                        .text
-                                                    : cityId == 0
-                                                        ? Defaults()
-                                                            .cities[index]
-                                                            .text
-                                                        : Defaults()
-                                                            .neighborhoods[index]
-                                                            .text,
+                                                title: location.text,
                                               ),
                                             ),
                                           ],
@@ -131,10 +122,7 @@ class BottomDialog {
                                       ),
                                     ),
                                     Container(
-                                      height:
-                                          index == Defaults().regions.length - 1
-                                              ? 0
-                                              : 1,
+                                      height: 1,
                                       color: AppTheme.blue,
                                       margin: const EdgeInsets.only(
                                           left: 8, right: 8),
@@ -144,20 +132,35 @@ class BottomDialog {
                               },
                             ),
                           )
-                        : Container(
-                            decoration: BoxDecoration(
-                              color: AppTheme.light,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  offset: const Offset(0, 4),
-                                  blurRadius: 100,
-                                  spreadRadius: 0,
-                                  color: AppTheme.black.withOpacity(0.05),
+                        : Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  selectedLocation.text = '';
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(16),
+                                margin: const EdgeInsets.only(
+                                  top: 4,
+                                  bottom: 12,
+                                  left: 16,
+                                  right: 16,
                                 ),
-                              ],
+                                decoration: BoxDecoration(
+                                    color: AppTheme.light,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: AppTheme.purple)),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text16h500w(
+                                          title: selectedLocation.text),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
-                            child: Text16h500w(title: selectedLocation.text),
                           ),
                   ),
                   Container(
@@ -165,33 +168,42 @@ class BottomDialog {
                       top: 12,
                       left: 16,
                       right: 16,
-                      bottom: 24,
+                      bottom: 32,
                     ),
                     child: Row(
                       children: [
                         GestureDetector(
                           onTap: () {
-                            if (selectedLocation.text != '') {
-                              setState(() {
-                                selectedLocation.text = '';
-                              });
+                            setState(() {
+                              // Step 1: Clear neighborhood if selected (not confirmed by Apply)
+                              if (selectedLocation.text.isNotEmpty) {
+                                selectedLocation = LocationModel(id: 0, text: '');
+                                return; // Stay in neighborhood selection
+                              }
+
+                              // Step 2: Clear city and go back to region selection
+                              if (selectedCity.id != 0) {
+                                selectedCity = LocationModel(id: 0, text: '');
+                                return; // Stay in city selection
+                              }
+
+                              // Step 3: Clear region and close dialog
+                              if (selectedRegion.id != 0) {
+                                selectedRegion = LocationModel(id: 0, text: '');
+                              }
+                            });
+
+                            // Close dialog if no region is selected
+                            if (selectedRegion.id == 0) {
+                              Navigator.pop(context);
                             }
-                            Navigator.pop(context);
                           },
                           child: Container(
-                            height: 48,
-                            width: 48,
+                            height: 56,
+                            width: 72,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(16),
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  offset: const Offset(0, 4),
-                                  blurRadius: 100,
-                                  spreadRadius: 0,
-                                  color: AppTheme.black.withOpacity(0.05),
-                                ),
-                              ],
+                              color: AppTheme.purple.withOpacity(0.1),
                             ),
                             child: Center(
                               child: SvgPicture.asset(
@@ -199,7 +211,7 @@ class BottomDialog {
                                 width: 24,
                                 'assets/icons/left.svg',
                                 colorFilter: const ColorFilter.mode(
-                                  AppTheme.black,
+                                  AppTheme.purple,
                                   BlendMode.srcIn,
                                 ),
                               ),
@@ -211,18 +223,48 @@ class BottomDialog {
                           child: GestureDetector(
                             onTap: () {
                               if (selectedLocation.text != '') {
-                                onChanged(selectedLocation);
-                                Navigator.pop(context);
+                                if (selectedRegion.id == 0) {
+                                  setState(() {
+                                    selectedRegion = selectedLocation;
+                                    selectedLocation = LocationModel(id: 0, text: "");
+                                  });
+                                  print("Region Selected: ${selectedRegion.text}");
+                                } else if (selectedCity.id == 0) {
+                                  setState(() {
+                                    selectedCity = selectedLocation;
+                                    selectedLocation = LocationModel(id: 0, text: "");
+                                  });
+                                  print("City Selected: ${selectedCity.text}");
+                                } else {
+                                  setState(() {
+                                    selectedNeighbourhood = selectedLocation;
+                                    selectedLocation = LocationModel(id: 0, text: "");
+                                  });
+                                  print(
+                                      "Neighbourhood Selected: ${selectedNeighbourhood.text}");
+
+                                  onChanged(
+                                    selectedRegion,
+                                    selectedCity,
+                                    selectedNeighbourhood,
+                                  );
+                                  Navigator.pop(context);
+                                }
                               }
                             },
                             child: Container(
-                              height: 48,
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              height: 56,
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
                               decoration: BoxDecoration(
-                                color: AppTheme.light,
+                                color: AppTheme.purple,
                                 borderRadius: BorderRadius.circular(16),
                               ),
-                              child: Text16h500w(title: translate("home.apply")),
+                              child: Center(
+                                  child: Text16h500w(
+                                title: translate("home.apply"),
+                                color: Colors.white,
+                              )),
                             ),
                           ),
                         ),

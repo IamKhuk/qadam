@@ -141,195 +141,232 @@ class _HomeScreenState extends State<HomeScreen> {
                             children: [
                               // From and To fields with swap icon
                               SizedBox(
-                                height: 66,
+                                height: 144,
                                 child: Stack(
+                                  alignment: Alignment.centerLeft,
                                   children: [
-                                    SizedBox(
-                                      height: 66,
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            child: GestureDetector(
-                                              onTap: () {
-                                                BottomDialog.showSelectLocation(
-                                                  context,
-                                                  fromRegion,
-                                                  0,
-                                                  0,
-                                                  (data) {
-
-                                                  },
-                                                );
-                                              },
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      offset:
-                                                          const Offset(0, 4),
-                                                      blurRadius: 100,
-                                                      spreadRadius: 0,
-                                                      color: AppTheme.black
-                                                          .withOpacity(0.05),
-                                                    ),
-                                                  ],
-                                                ),
-                                                child: Column(
-                                                  children: [
-                                                    TextField(
-                                                      readOnly: true,
-                                                      controller:
-                                                          fromController,
-                                                      cursorColor:
-                                                          AppTheme.purple,
-                                                      style: const TextStyle(
-                                                        color: AppTheme.black,
-                                                        fontFamily:
-                                                            AppTheme.fontFamily,
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        letterSpacing: 1,
-                                                        height: 1.5,
-                                                      ),
-                                                      decoration:
-                                                          InputDecoration(
-                                                        labelText: translate(
-                                                            "home.from"),
-                                                        labelStyle:
-                                                            const TextStyle(
-                                                          color: AppTheme.text,
-                                                          fontFamily: AppTheme
-                                                              .fontFamily,
-                                                        ),
-                                                        filled: true,
-                                                        contentPadding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                          vertical: 20,
-                                                          horizontal: 16,
-                                                        ),
-                                                        border:
-                                                            const OutlineInputBorder(),
-                                                        enabledBorder:
-                                                            OutlineInputBorder(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(16),
-                                                          borderSide:
-                                                              const BorderSide(
-                                                                  color: AppTheme
-                                                                      .border),
-                                                        ),
-                                                        focusedBorder:
-                                                            OutlineInputBorder(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(16),
-                                                          borderSide:
-                                                              const BorderSide(
-                                                            color:
-                                                                AppTheme.purple,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
+                                    Column(
+                                      children: [
+                                        Container(
+                                          height: 66,
+                                          decoration: BoxDecoration(
+                                            color: Colors.transparent,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                offset: const Offset(0, 4),
+                                                blurRadius: 100,
+                                                spreadRadius: 0,
+                                                color: AppTheme.black
+                                                    .withOpacity(0.05),
+                                              ),
+                                            ],
+                                          ),
+                                          child: TextField(
+                                            onTap: () {
+                                              BottomDialog
+                                                  .showSelectLocation(
+                                                context,
+                                                fromRegion,
+                                                fromCity,
+                                                fromNeighborhood,
+                                                (r, c, n) {
+                                                  setState(() {
+                                                    fromRegion = r;
+                                                    fromCity = c;
+                                                    fromNeighborhood =
+                                                        n;
+                                                    fromController
+                                                            .text =
+                                                        "${fromNeighborhood.text}, ${fromCity.text}, ${fromRegion.text}";
+                                                  });
+                                                },
+                                              );
+                                            },
+                                            readOnly: true,
+                                            controller: fromController,
+                                            cursorColor:
+                                                AppTheme.purple,
+                                            style: const TextStyle(
+                                              color: AppTheme.black,
+                                              fontFamily:
+                                                  AppTheme.fontFamily,
+                                              fontSize: 16,
+                                              fontWeight:
+                                                  FontWeight.w500,
+                                              letterSpacing: 1,
+                                              height: 1.5,
+                                            ),
+                                            decoration: InputDecoration(
+                                              labelText: translate(
+                                                  "home.from"),
+                                              labelStyle:
+                                                  const TextStyle(
+                                                color: AppTheme.text,
+                                                fontFamily:
+                                                    AppTheme.fontFamily,
+                                              ),
+                                              filled: true,
+                                              contentPadding:
+                                                  const EdgeInsets
+                                                      .symmetric(
+                                                vertical: 20,
+                                                horizontal: 16,
+                                              ),
+                                              border:
+                                                  const OutlineInputBorder(),
+                                              enabledBorder:
+                                                  OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius
+                                                        .circular(16),
+                                                borderSide:
+                                                    const BorderSide(
+                                                        color: AppTheme
+                                                            .border),
+                                              ),
+                                              focusedBorder:
+                                                  OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius
+                                                        .circular(16),
+                                                borderSide:
+                                                    const BorderSide(
+                                                  color:
+                                                      AppTheme.purple,
                                                 ),
                                               ),
                                             ),
                                           ),
-                                          const SizedBox(width: 16),
-                                          Expanded(
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    offset: const Offset(0, 4),
-                                                    blurRadius: 100,
-                                                    spreadRadius: 0,
-                                                    color: AppTheme.black
-                                                        .withOpacity(0.05),
-                                                  ),
-                                                ],
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Container(
+                                          height: 66,
+                                          decoration: BoxDecoration(
+                                            boxShadow: [
+                                              BoxShadow(
+                                                offset: const Offset(0, 4),
+                                                blurRadius: 100,
+                                                spreadRadius: 0,
+                                                color: AppTheme.black
+                                                    .withOpacity(0.05),
                                               ),
-                                              child: TextField(
-                                                controller: toController,
-                                                cursorColor: AppTheme.purple,
-                                                style: const TextStyle(
-                                                  color: AppTheme.black,
-                                                  fontFamily:
-                                                      AppTheme.fontFamily,
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w500,
-                                                  letterSpacing: 1,
-                                                  height: 1.5,
-                                                ),
-                                                decoration: InputDecoration(
-                                                  labelText:
-                                                      translate("home.to"),
-                                                  labelStyle: const TextStyle(
-                                                    color: AppTheme.text,
-                                                    fontFamily:
-                                                        AppTheme.fontFamily,
-                                                  ),
-                                                  contentPadding:
-                                                      const EdgeInsets
-                                                          .symmetric(
-                                                    vertical: 20,
-                                                    horizontal: 16,
-                                                  ),
-                                                  filled: true,
-                                                  border:
-                                                      const OutlineInputBorder(),
-                                                  enabledBorder:
-                                                      OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            16),
-                                                    borderSide:
-                                                        const BorderSide(
-                                                            color: AppTheme
-                                                                .border),
-                                                  ),
-                                                  focusedBorder:
-                                                      OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            16),
-                                                    borderSide:
-                                                        const BorderSide(
-                                                      color: AppTheme.purple,
-                                                    ),
-                                                  ),
+                                            ],
+                                          ),
+                                          child: TextField(
+                                            onTap: (){
+                                              BottomDialog
+                                                  .showSelectLocation(
+                                                context,
+                                                toRegion,
+                                                toCity,toNeighborhood, (r, c, n) {
+                                                  setState(() {
+                                                    toRegion = r;
+                                                    toCity = c;
+                                                    toNeighborhood = n;
+                                                    toController.text =
+                                                        "${toNeighborhood.text}, ${toCity.text}, ${toRegion.text}";
+                                                  });
+                                              });
+                                            },
+                                            readOnly: true,
+                                            controller: toController,
+                                            cursorColor: AppTheme.purple,
+                                            style: const TextStyle(
+                                              color: AppTheme.black,
+                                              fontFamily:
+                                                  AppTheme.fontFamily,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500,
+                                              letterSpacing: 1,
+                                              height: 1.5,
+                                            ),
+                                            decoration: InputDecoration(
+                                              labelText:
+                                                  translate("home.to"),
+                                              labelStyle: const TextStyle(
+                                                color: AppTheme.text,
+                                                fontFamily:
+                                                    AppTheme.fontFamily,
+                                              ),
+                                              contentPadding:
+                                                  const EdgeInsets
+                                                      .symmetric(
+                                                vertical: 20,
+                                                horizontal: 16,
+                                              ),
+                                              filled: true,
+                                              border:
+                                                  const OutlineInputBorder(),
+                                              enabledBorder:
+                                                  OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        16),
+                                                borderSide:
+                                                    const BorderSide(
+                                                        color: AppTheme
+                                                            .border),
+                                              ),
+                                              focusedBorder:
+                                                  OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        16),
+                                                borderSide:
+                                                    const BorderSide(
+                                                  color: AppTheme.purple,
                                                 ),
                                               ),
                                             ),
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
                                     SizedBox(
                                       height: 66,
                                       child: Row(
                                         children: [
                                           const Spacer(),
-                                          Container(
-                                            padding: const EdgeInsets.all(8),
-                                            decoration: const BoxDecoration(
-                                              color: AppTheme.purple,
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: SvgPicture.asset(
-                                              height: 16,
-                                              'assets/icons/swap_horizontal.svg',
-                                              colorFilter:
-                                                  const ColorFilter.mode(
-                                                Colors.white,
-                                                BlendMode.srcIn,
+                                          GestureDetector(
+                                            onTap: (){
+                                              setState(() {
+                                                /// Swap from and to fields
+                                                TextEditingController temp = fromController;
+                                                fromController = toController;
+                                                toController = temp;
+                                                /// Swap from and to regions
+                                                LocationModel tempRegion = fromRegion;
+                                                fromRegion = toRegion;
+                                                toRegion = tempRegion;
+                                                /// Swap from and to cities
+                                                LocationModel tempCity = fromCity;
+                                                fromCity = toCity;
+                                                toCity = tempCity;
+                                                /// Swap from and to neighborhoods
+                                                LocationModel tempNeighbourhood = fromNeighborhood;
+                                                fromNeighborhood = toNeighborhood;
+                                                toNeighborhood = tempNeighbourhood;
+                                              });
+                                            },
+                                            child: Container(
+                                              padding: const EdgeInsets.all(8),
+                                              decoration: const BoxDecoration(
+                                                color: AppTheme.purple,
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: SvgPicture.asset(
+                                                height: 20,
+                                                'assets/icons/swap_horizontal.svg',
+                                                colorFilter:
+                                                    const ColorFilter.mode(
+                                                  Colors.white,
+                                                  BlendMode.srcIn,
+                                                ),
                                               ),
                                             ),
                                           ),
+                                          const Spacer(),
+                                          const Spacer(),
                                           const Spacer(),
                                         ],
                                       ),
@@ -337,7 +374,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ],
                                 ),
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 12),
                               // Departure and Return fields
                               SizedBox(
                                 height: 66,
@@ -399,7 +436,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(width: 16),
+                                    const SizedBox(width: 12),
                                     SizedBox(
                                       height: 66,
                                       child: Column(
@@ -471,7 +508,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ],
                                 ),
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 12),
                               // Return date field
                               _isReturnToggled
                                   ? Column(
