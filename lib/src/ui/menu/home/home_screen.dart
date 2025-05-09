@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:qadam/src/model/location_model.dart';
 import 'package:qadam/src/ui/dialogs/bottom_dialog.dart';
+import 'package:qadam/src/utils/utils.dart';
 
 import '../../../defaults/defaults.dart';
 import '../../../theme/app_theme.dart';
@@ -36,9 +37,18 @@ class _HomeScreenState extends State<HomeScreen> {
   LocationModel toCity = LocationModel(id: 0, text: "");
   LocationModel toNeighborhood = LocationModel(id: 0, text: "");
 
+  DateTime departureDate = DateTime.now();
+  DateTime returnDateTime = DateTime.now();
+
   int notificationNumber = 3;
 
   bool _isReturnToggled = true;
+
+  @override
+  void initState() {
+    // departureController.text = Utils.tripDateFormat(departureDate);
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -163,8 +173,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ),
                                           child: TextField(
                                             onTap: () {
-                                              BottomDialog
-                                                  .showSelectLocation(
+                                              BottomDialog.showSelectLocation(
                                                 context,
                                                 fromRegion,
                                                 fromCity,
@@ -173,10 +182,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   setState(() {
                                                     fromRegion = r;
                                                     fromCity = c;
-                                                    fromNeighborhood =
-                                                        n;
-                                                    fromController
-                                                            .text =
+                                                    fromNeighborhood = n;
+                                                    fromController.text =
                                                         "${fromNeighborhood.text}, ${fromCity.text}, ${fromRegion.text}";
                                                   });
                                                 },
@@ -184,55 +191,40 @@ class _HomeScreenState extends State<HomeScreen> {
                                             },
                                             readOnly: true,
                                             controller: fromController,
-                                            cursorColor:
-                                                AppTheme.purple,
+                                            cursorColor: AppTheme.purple,
                                             style: const TextStyle(
                                               color: AppTheme.black,
-                                              fontFamily:
-                                                  AppTheme.fontFamily,
+                                              fontFamily: AppTheme.fontFamily,
                                               fontSize: 16,
-                                              fontWeight:
-                                                  FontWeight.w500,
+                                              fontWeight: FontWeight.w500,
                                               letterSpacing: 1,
                                               height: 1.5,
                                             ),
                                             decoration: InputDecoration(
-                                              labelText: translate(
-                                                  "home.from"),
-                                              labelStyle:
-                                                  const TextStyle(
+                                              labelText: translate("home.from"),
+                                              labelStyle: const TextStyle(
                                                 color: AppTheme.text,
-                                                fontFamily:
-                                                    AppTheme.fontFamily,
+                                                fontFamily: AppTheme.fontFamily,
                                               ),
                                               filled: true,
                                               contentPadding:
-                                                  const EdgeInsets
-                                                      .symmetric(
+                                                  const EdgeInsets.symmetric(
                                                 vertical: 20,
                                                 horizontal: 16,
                                               ),
                                               border:
                                                   const OutlineInputBorder(),
-                                              enabledBorder:
-                                                  OutlineInputBorder(
+                                              enabledBorder: OutlineInputBorder(
                                                 borderRadius:
-                                                    BorderRadius
-                                                        .circular(16),
-                                                borderSide:
-                                                    const BorderSide(
-                                                        color: AppTheme
-                                                            .border),
+                                                    BorderRadius.circular(16),
+                                                borderSide: const BorderSide(
+                                                    color: AppTheme.border),
                                               ),
-                                              focusedBorder:
-                                                  OutlineInputBorder(
+                                              focusedBorder: OutlineInputBorder(
                                                 borderRadius:
-                                                    BorderRadius
-                                                        .circular(16),
-                                                borderSide:
-                                                    const BorderSide(
-                                                  color:
-                                                      AppTheme.purple,
+                                                    BorderRadius.circular(16),
+                                                borderSide: const BorderSide(
+                                                  color: AppTheme.purple,
                                                 ),
                                               ),
                                             ),
@@ -253,19 +245,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                             ],
                                           ),
                                           child: TextField(
-                                            onTap: (){
-                                              BottomDialog
-                                                  .showSelectLocation(
-                                                context,
-                                                toRegion,
-                                                toCity,toNeighborhood, (r, c, n) {
-                                                  setState(() {
-                                                    toRegion = r;
-                                                    toCity = c;
-                                                    toNeighborhood = n;
-                                                    toController.text =
-                                                        "${toNeighborhood.text}, ${toCity.text}, ${toRegion.text}";
-                                                  });
+                                            onTap: () {
+                                              BottomDialog.showSelectLocation(
+                                                  context,
+                                                  toRegion,
+                                                  toCity,
+                                                  toNeighborhood, (r, c, n) {
+                                                setState(() {
+                                                  toRegion = r;
+                                                  toCity = c;
+                                                  toNeighborhood = n;
+                                                  toController.text =
+                                                      "${toNeighborhood.text}, ${toCity.text}, ${toRegion.text}";
+                                                });
                                               });
                                             },
                                             readOnly: true,
@@ -273,47 +265,36 @@ class _HomeScreenState extends State<HomeScreen> {
                                             cursorColor: AppTheme.purple,
                                             style: const TextStyle(
                                               color: AppTheme.black,
-                                              fontFamily:
-                                                  AppTheme.fontFamily,
+                                              fontFamily: AppTheme.fontFamily,
                                               fontSize: 16,
                                               fontWeight: FontWeight.w500,
                                               letterSpacing: 1,
                                               height: 1.5,
                                             ),
                                             decoration: InputDecoration(
-                                              labelText:
-                                                  translate("home.to"),
+                                              labelText: translate("home.to"),
                                               labelStyle: const TextStyle(
                                                 color: AppTheme.text,
-                                                fontFamily:
-                                                    AppTheme.fontFamily,
+                                                fontFamily: AppTheme.fontFamily,
                                               ),
                                               contentPadding:
-                                                  const EdgeInsets
-                                                      .symmetric(
+                                                  const EdgeInsets.symmetric(
                                                 vertical: 20,
                                                 horizontal: 16,
                                               ),
                                               filled: true,
                                               border:
                                                   const OutlineInputBorder(),
-                                              enabledBorder:
-                                                  OutlineInputBorder(
+                                              enabledBorder: OutlineInputBorder(
                                                 borderRadius:
-                                                    BorderRadius.circular(
-                                                        16),
-                                                borderSide:
-                                                    const BorderSide(
-                                                        color: AppTheme
-                                                            .border),
+                                                    BorderRadius.circular(16),
+                                                borderSide: const BorderSide(
+                                                    color: AppTheme.border),
                                               ),
-                                              focusedBorder:
-                                                  OutlineInputBorder(
+                                              focusedBorder: OutlineInputBorder(
                                                 borderRadius:
-                                                    BorderRadius.circular(
-                                                        16),
-                                                borderSide:
-                                                    const BorderSide(
+                                                    BorderRadius.circular(16),
+                                                borderSide: const BorderSide(
                                                   color: AppTheme.purple,
                                                 ),
                                               ),
@@ -328,24 +309,34 @@ class _HomeScreenState extends State<HomeScreen> {
                                         children: [
                                           const Spacer(),
                                           GestureDetector(
-                                            onTap: (){
+                                            onTap: () {
                                               setState(() {
                                                 /// Swap from and to fields
-                                                TextEditingController temp = fromController;
+                                                TextEditingController temp =
+                                                    fromController;
                                                 fromController = toController;
                                                 toController = temp;
+
                                                 /// Swap from and to regions
-                                                LocationModel tempRegion = fromRegion;
+                                                LocationModel tempRegion =
+                                                    fromRegion;
                                                 fromRegion = toRegion;
                                                 toRegion = tempRegion;
+
                                                 /// Swap from and to cities
-                                                LocationModel tempCity = fromCity;
+                                                LocationModel tempCity =
+                                                    fromCity;
                                                 fromCity = toCity;
                                                 toCity = tempCity;
+
                                                 /// Swap from and to neighborhoods
-                                                LocationModel tempNeighbourhood = fromNeighborhood;
-                                                fromNeighborhood = toNeighborhood;
-                                                toNeighborhood = tempNeighbourhood;
+                                                LocationModel
+                                                    tempNeighbourhood =
+                                                    fromNeighborhood;
+                                                fromNeighborhood =
+                                                    toNeighborhood;
+                                                toNeighborhood =
+                                                    tempNeighbourhood;
                                               });
                                             },
                                             child: Container(
@@ -396,6 +387,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ),
                                         child: TextField(
                                           controller: departureController,
+                                          readOnly: true,
                                           cursorColor: AppTheme.purple,
                                           style: const TextStyle(
                                             color: AppTheme.black,
@@ -405,6 +397,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                             letterSpacing: 1,
                                             height: 1.5,
                                           ),
+                                          onTap: () {
+                                            BottomDialog.showTripDateTime(
+                                              context,
+                                              (date) {
+                                                setState(() {
+                                                  departureDate = date;
+                                                  departureController.text =
+                                                      Utils.tripDateFormat(
+                                                          departureDate);
+                                                });
+                                              },
+                                              departureDate,
+                                            );
+                                          },
                                           decoration: InputDecoration(
                                             labelText: translate(
                                                 "home.departure_date"),
@@ -537,6 +543,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                               letterSpacing: 1,
                                               height: 1.5,
                                             ),
+                                            onTap: (){
+                                              BottomDialog.showTripDateTime(
+                                                context,
+                                                    (date) {
+                                                  setState(() {
+                                                    returnDateTime = date;
+                                                    returnController.text =
+                                                        Utils.tripDateFormat(
+                                                            returnDateTime);
+                                                  });
+                                                },
+                                                returnDateTime,
+                                              );
+                                            },
                                             decoration: InputDecoration(
                                               labelText:
                                                   translate("home.return_date"),

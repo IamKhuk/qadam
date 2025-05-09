@@ -1,23 +1,6 @@
 class Utils{
   static String tripDateFormat(DateTime time) {
-    String weekDay = '';
     String month = '';
-    String t1 = '';
-    String h1 = '';
-    time.weekday == 1
-        ? weekDay = 'Monday'
-        : time.weekday == 2
-        ? weekDay = 'Tuesday'
-        : time.weekday == 3
-        ? weekDay = 'Wednesday'
-        : time.weekday == 4
-        ? weekDay = 'Thursday'
-        : time.weekday == 5
-        ? weekDay = 'Friday'
-        : time.weekday == 6
-        ? weekDay = 'Saturday'
-        : weekDay = 'Sunday';
-
     time.month == 1
         ? month = 'January'
         : time.month == 2
@@ -42,9 +25,14 @@ class Utils{
         ? month = 'November'
         : month = 'December';
 
-    time.hour < 13 ? t1 = 'AM' : t1 = 'PM';
-    h1 = time.hour < 13 ? time.hour.toString() : (time.hour - 12).toString();
+    String hourFormat = '';
+    time.hour > 12 || time.hour == 0 ? hourFormat = 'pm' : 'am';
 
-    return '$weekDay, $month ${time.day}, ${time.year}, $h1 $t1';
+    String hour = '';
+    time.hour > 12
+        ? hour = (time.hour - 12).toString()
+        : hour = time.hour.toString();
+
+    return "$month ${time.day.toString()} at $hour:${time.minute} $hourFormat";
   }
 }

@@ -280,7 +280,7 @@ class BottomDialog {
     );
   }
 
-  static void showDateTime(
+  static void showTripDateTime(
     BuildContext context,
     Function(DateTime data) onChoose,
     DateTime initDate,
@@ -312,7 +312,7 @@ class BottomDialog {
               ),
               const SizedBox(height: 12),
               Text(
-                translate("profile.birth_date"),
+                translate("home.select_trip_date"),
                 style: const TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 18,
@@ -356,10 +356,10 @@ class BottomDialog {
                       ),
                     ],
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Text(
-                      'Choose',
-                      style: TextStyle(
+                      translate("home.apply"),
+                      style: const TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
                         fontFamily: AppTheme.fontFamily,
