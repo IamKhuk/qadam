@@ -68,7 +68,9 @@
     "back": "Back",
     "language": "Language",
     "about_author": "About Author",
-    "select_trip_date": "Select Trip Date"
+    "select_trip_date": "Select Trip Date",
+    "trip_details": "Trip Details",
+    "search_result": "Search Result"
   },
   "news": {
     "news": "News",
@@ -88,6 +90,7 @@
     "nothing_found": "Nothing found"
   },
   "profile": {
+    "my_profile": "My Profile",
     "my_posts": "My Posts",
     "privacy_security": "Privacy & Security",
     "donate": "Donate",

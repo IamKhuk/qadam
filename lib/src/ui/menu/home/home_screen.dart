@@ -3,9 +3,11 @@ import 'package:flutter_svg/svg.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:qadam/src/model/location_model.dart';
 import 'package:qadam/src/ui/dialogs/bottom_dialog.dart';
+import 'package:qadam/src/ui/menu/home/search_result_screen.dart';
 import 'package:qadam/src/utils/utils.dart';
 
 import '../../../defaults/defaults.dart';
+import '../../../model/trip_model.dart';
 import '../../../theme/app_theme.dart';
 import '../../widgets/containers/destinations_container.dart';
 
@@ -347,7 +349,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               ),
                                               child: SvgPicture.asset(
                                                 height: 20,
-                                                'assets/icons/swap_horizontal.svg',
+                                                'assets/icons/swap_vertical.svg',
                                                 colorFilter:
                                                     const ColorFilter.mode(
                                                   Colors.white,
@@ -543,10 +545,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                               letterSpacing: 1,
                                               height: 1.5,
                                             ),
-                                            onTap: (){
+                                            onTap: () {
                                               BottomDialog.showTripDateTime(
                                                 context,
-                                                    (date) {
+                                                (date) {
                                                   setState(() {
                                                     returnDateTime = date;
                                                     returnController.text =
@@ -596,7 +598,33 @@ class _HomeScreenState extends State<HomeScreen> {
                               SizedBox(
                                 height: 56,
                                 child: ElevatedButton(
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            SearchResultScreen(
+                                          trip: TripModel(
+                                            vehicleId: 0,
+                                            startTime: departureDate,
+                                            endTime: DateTime.now(),
+                                            pricePerSeat: '15',
+                                            availableSeats: 0,
+                                            startLocation: [
+                                              toRegion.id,
+                                              toCity.id,
+                                              toNeighborhood.id
+                                            ],
+                                            endLocation: [
+                                              fromRegion.id,
+                                              fromCity.id,
+                                              fromNeighborhood.id
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppTheme.purple,
                                     minimumSize: const Size.fromHeight(56),
