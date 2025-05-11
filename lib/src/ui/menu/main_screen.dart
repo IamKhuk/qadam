@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:qadam/src/ui/menu/history/history.dart';
 import 'package:qadam/src/ui/menu/new_qadam/new_qadam.dart';
-import 'package:qadam/src/ui/menu/profile/Profile.dart';
+import 'package:qadam/src/ui/menu/profile/profile_screen.dart';
 import 'package:flutter/cupertino.dart';
 import '../../theme/app_theme.dart';
 import 'home/home_screen.dart';
@@ -21,7 +21,7 @@ class _MainScreenState extends State<MainScreen> {
     const HomeScreen(),
     const NewQadam(),
     const History(),
-    const Profile()
+    const ProfileScreen()
   ];
 
   @override

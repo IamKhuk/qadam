@@ -543,10 +543,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                               letterSpacing: 1,
                                               height: 1.5,
                                             ),
-                                            onTap: (){
+                                            onTap: () {
                                               BottomDialog.showTripDateTime(
                                                 context,
-                                                    (date) {
+                                                (date) {
                                                   setState(() {
                                                     returnDateTime = date;
                                                     returnController.text =
