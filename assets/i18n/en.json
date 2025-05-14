@@ -117,5 +117,11 @@
     "region": "Region",
     "district": "District",
     "village": "Village"
+  },
+  "history": {
+    "history": "History",
+    "in_progress": "In Progress",
+    "completed": "Completed",
+    "canceled": "Canceled"
   }
 }
