@@ -68,9 +68,7 @@
     "back": "Back",
     "language": "Language",
     "about_author": "About Author",
-    "select_trip_date": "Select Trip Date",
-    "trip_details": "Trip Details",
-    "search_result": "Search Result"
+    "select_trip_date": "Select Trip Date"
   },
   "news": {
     "news": "News",
@@ -90,8 +88,19 @@
     "nothing_found": "Nothing found"
   },
   "profile": {
-    "my_profile": "My Profile",
     "my_posts": "My Posts",
+    "my_profile": "My Profile",
+    "edit_profile": "Edit Profile",
+    "settings": "Settings",
+    "change_password": "Change Password",
+    "language": "Language",
+    "notifications": "Notifications",
+    "about_us": "About Us",
+    "contact_us": "Contact Us",
+    "share_app": "Share App",
+    "info": "Info",
+    "other": "Others",
+    "share": "Share",
     "privacy_security": "Privacy & Security",
     "donate": "Donate",
     "about_apps": "About Apps",
