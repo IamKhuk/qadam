@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:qadam/src/model/location_model.dart';
 import 'package:qadam/src/ui/dialogs/bottom_dialog.dart';
+import 'package:qadam/src/ui/dialogs/center_dialog.dart';
 import 'package:qadam/src/ui/menu/home/search_result_screen.dart';
 import 'package:qadam/src/utils/utils.dart';
 
@@ -599,31 +600,44 @@ class _HomeScreenState extends State<HomeScreen> {
                                 height: 56,
                                 child: ElevatedButton(
                                   onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            SearchResultScreen(
-                                          trip: TripModel(
-                                            vehicleId: 0,
-                                            startTime: departureDate,
-                                            endTime: DateTime.now(),
-                                            pricePerSeat: '15',
-                                            availableSeats: 0,
-                                            startLocation: [
-                                              toRegion.id,
-                                              toCity.id,
-                                              toNeighborhood.id
-                                            ],
-                                            endLocation: [
-                                              fromRegion.id,
-                                              fromCity.id,
-                                              fromNeighborhood.id
-                                            ],
+                                    if (toRegion.id != 0 &&
+                                        fromRegion.id != 0 &&
+                                        toCity.id != 0 &&
+                                        fromCity.id != 0 &&
+                                        toNeighborhood.id != 0 &&
+                                        fromNeighborhood.id != 0) {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              SearchResultScreen(
+                                            trip: TripModel(
+                                              vehicleId: 0,
+                                              startTime: departureDate,
+                                              endTime: DateTime.now(),
+                                              pricePerSeat: '15',
+                                              availableSeats: 0,
+                                              startLocation: [
+                                                toRegion.id,
+                                                toCity.id,
+                                                toNeighborhood.id
+                                              ],
+                                              endLocation: [
+                                                fromRegion.id,
+                                                fromCity.id,
+                                                fromNeighborhood.id
+                                              ],
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    );
+                                      );
+                                    } else {
+                                      CenterDialog.showActionFailed(
+                                        context,
+                                        translate("home.missing_form"),
+                                        translate("home.trip_search_error"),
+                                      );
+                                    }
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppTheme.purple,

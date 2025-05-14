@@ -68,7 +68,9 @@
     "back": "Back",
     "language": "Language",
     "about_author": "About Author",
-    "select_trip_date": "Select Trip Date"
+    "select_trip_date": "Select Trip Date",
+    "missing_form": "Missing Form",
+    "trip_search_error": "Please fill all fields to continue"
   },
   "news": {
     "news": "News",
