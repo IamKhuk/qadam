@@ -90,44 +90,46 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                           const SizedBox(width: 40),
                         ],
                       ),
-                      const SizedBox(height: 30),
+                      const SizedBox(height: 22),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text12h400w(
-                                title: Defaults()
-                                    .regions[widget.trip.startLocation[0] - 1]
-                                    .text,
-                                color: AppTheme.light,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                safeSubstring(
-                                    Defaults()
-                                        .neighborhoods[
-                                            widget.trip.startLocation[2] - 1]
-                                        .text,
-                                    3),
-                                style: const TextStyle(
-                                  fontFamily: AppTheme.fontFamily,
-                                  fontSize: 36,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  letterSpacing: 1.5,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text12h400w(
+                                  title: Defaults()
+                                      .regions[widget.trip.startLocation[0] - 1]
+                                      .text,
+                                  color: AppTheme.light,
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text12h400w(
-                                title: Defaults()
-                                    .cities[widget.trip.startLocation[1] - 1]
-                                    .text,
-                                color: AppTheme.light,
-                              ),
-                            ],
+                                const SizedBox(height: 4),
+                                Text(
+                                  safeSubstring(
+                                      Defaults()
+                                          .neighborhoods[
+                                              widget.trip.startLocation[2] - 1]
+                                          .text,
+                                      3),
+                                  style: const TextStyle(
+                                    fontFamily: AppTheme.fontFamily,
+                                    fontSize: 36,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    letterSpacing: 1.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text12h400w(
+                                  title: Defaults()
+                                      .cities[widget.trip.startLocation[1] - 1]
+                                      .text,
+                                  color: AppTheme.light,
+                                ),
+                              ],
+                            ),
                           ),
                           const SizedBox(width: 16),
                           Column(
@@ -212,39 +214,41 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                             ],
                           ),
                           const SizedBox(width: 16),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text12h400w(
-                                title: Defaults()
-                                    .regions[widget.trip.endLocation[0] - 1]
-                                    .text,
-                                color: AppTheme.light,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                safeSubstring(
-                                    Defaults()
-                                        .neighborhoods[
-                                            widget.trip.endLocation[2] - 1]
-                                        .text,
-                                    3),
-                                style: const TextStyle(
-                                  fontFamily: AppTheme.fontFamily,
-                                  fontSize: 36,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  letterSpacing: 1.5,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text12h400w(
+                                  title: Defaults()
+                                      .regions[widget.trip.endLocation[0] - 1]
+                                      .text,
+                                  color: AppTheme.light,
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text12h400w(
-                                title: Defaults()
-                                    .cities[widget.trip.endLocation[1] - 1]
-                                    .text,
-                                color: AppTheme.light,
-                              ),
-                            ],
+                                const SizedBox(height: 4),
+                                Text(
+                                  safeSubstring(
+                                      Defaults()
+                                          .neighborhoods[
+                                              widget.trip.endLocation[2] - 1]
+                                          .text,
+                                      3),
+                                  style: const TextStyle(
+                                    fontFamily: AppTheme.fontFamily,
+                                    fontSize: 36,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    letterSpacing: 1.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text12h400w(
+                                  title: Defaults()
+                                      .cities[widget.trip.endLocation[1] - 1]
+                                      .text,
+                                  color: AppTheme.light,
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
