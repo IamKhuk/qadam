@@ -5,6 +5,7 @@ import 'package:qadam/src/model/location_model.dart';
 import 'package:qadam/src/ui/dialogs/bottom_dialog.dart';
 import 'package:qadam/src/ui/dialogs/center_dialog.dart';
 import 'package:qadam/src/ui/menu/home/search_result_screen.dart';
+import 'package:qadam/src/ui/menu/home/trip_details_screen.dart';
 import 'package:qadam/src/utils/utils.dart';
 
 import '../../../defaults/defaults.dart';
@@ -712,8 +713,21 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         SizedBox(
                           width: MediaQuery.of(context).size.width - 48,
-                          child: DestinationsContainer(
-                              trip: Defaults().trips[index]),
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    return TripDetailsScreen(
+                                        trip: Defaults().trips[index]);
+                                  },
+                                ),
+                              );
+                            },
+                            child: DestinationsContainer(
+                                trip: Defaults().trips[index]),
+                          ),
                         ),
                         index == Defaults().trips.length - 1
                             ? Container()

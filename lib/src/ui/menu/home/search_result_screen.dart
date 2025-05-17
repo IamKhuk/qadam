@@ -1,7 +1,9 @@
+import 'package:dotted_line/dotted_line.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:qadam/src/model/trip_model.dart';
+import 'package:qadam/src/ui/menu/home/trip_details_screen.dart';
 import 'package:qadam/src/ui/widgets/containers/destinations_container.dart';
 import 'package:qadam/src/ui/widgets/texts/text_12h_400w.dart';
 import 'package:qadam/src/utils/utils.dart';
@@ -35,7 +37,20 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
             itemBuilder: (context, index) {
               return Column(
                 children: [
-                  DestinationsContainer(trip: Defaults().trips[index]),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return TripDetailsScreen(
+                                trip: Defaults().trips[index]);
+                          },
+                        ),
+                      );
+                    },
+                    child: DestinationsContainer(trip: Defaults().trips[index]),
+                  ),
                   index != Defaults().trips.length - 1
                       ? const SizedBox(height: 16)
                       : const SizedBox(),
@@ -146,26 +161,20 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                       shape: BoxShape.circle,
                                     ),
                                   ),
-                                  const SizedBox(height: 2),
-                                  // 3 Vertical Lines (Stacked)
-                                  Row(
-                                    children: List.generate(
-                                      6,
-                                      (index) => Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 2),
-                                        child: Container(
-                                          width: 5,
-                                          height: 2,
-                                          color: AppTheme.gray,
-                                        ),
-                                      ),
-                                    ),
+                                  DottedLine(
+                                    direction: Axis.horizontal,
+                                    lineThickness: 2,
+                                    lineLength:
+                                    ((MediaQuery.of(context).size.width -
+                                        96) /
+                                        3 -
+                                        40) /
+                                        2,
+                                    dashLength: 2,
+                                    dashColor: AppTheme.gray,
                                   ),
                                   Container(
                                     padding: const EdgeInsets.all(8),
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal: 2),
                                     decoration: BoxDecoration(
                                       color: AppTheme.light,
                                       borderRadius: BorderRadius.circular(24),
@@ -180,21 +189,18 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                       ),
                                     ),
                                   ),
-                                  Row(
-                                    children: List.generate(
-                                      6,
-                                      (index) => Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 2),
-                                        child: Container(
-                                          width: 5,
-                                          height: 2,
-                                          color: AppTheme.gray,
-                                        ),
-                                      ),
-                                    ),
+                                  DottedLine(
+                                    direction: Axis.horizontal,
+                                    lineThickness: 2,
+                                    lineLength:
+                                    ((MediaQuery.of(context).size.width -
+                                        96) /
+                                        3 -
+                                        40) /
+                                        2,
+                                    dashLength: 2,
+                                    dashColor: AppTheme.gray,
                                   ),
-                                  const SizedBox(height: 2),
                                   Container(
                                     width: 8,
                                     height: 8,
