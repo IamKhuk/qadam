@@ -124,6 +124,7 @@
     "history": "History",
     "in_progress": "In Progress",
     "completed": "Completed",
-    "canceled": "Canceled"
+    "canceled": "Canceled",
+    "price": "Price"
   }
 }
