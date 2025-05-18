@@ -1,4 +1,7 @@
+import 'package:flutter/material.dart';
+import 'package:qadam/src/model/color_model.dart';
 import 'package:qadam/src/model/vehicle_model.dart';
+import 'package:qadam/src/theme/app_theme.dart';
 
 import '../model/location_model.dart';
 import '../model/trip_model.dart';
@@ -15,6 +18,18 @@ class Defaults {
     VehicleModel(id: 8, vehicleName: "Corolla"),
     VehicleModel(id: 9, vehicleName: "Camry"),
     VehicleModel(id: 10, vehicleName: "Rav4"),
+  ];
+
+  List<ColorModel> colors = [
+    ColorModel(name: "Red", colorCode: AppTheme.red),
+    ColorModel(name: "Green", colorCode: AppTheme.green),
+    ColorModel(name: "Blue", colorCode: AppTheme.blue),
+    ColorModel(name: "Yellow", colorCode: AppTheme.yellow),
+    ColorModel(name: "Purple", colorCode: AppTheme.purple),
+    ColorModel(name: "Orange", colorCode: AppTheme.orange),
+    ColorModel(name: "Black", colorCode: AppTheme.black),
+    ColorModel(name: "White", colorCode: Colors.white),
+    ColorModel(name: "Gray", colorCode: AppTheme.gray),
   ];
 
   List<LocationModel> locations = [
@@ -58,7 +73,8 @@ class Defaults {
     TripModel(
       vehicleId: 7,
       startTime: DateTime.now().add(const Duration(days: 1)),
-      endTime: DateTime.now().add(const Duration(days: 1, hours: 4, minutes: 30)),
+      endTime:
+          DateTime.now().add(const Duration(days: 1, hours: 4, minutes: 30)),
       pricePerSeat: "14",
       availableSeats: 2,
     ),
@@ -71,7 +87,7 @@ class Defaults {
     ),
   ];
 
-  List<LocationModel> regions =[
+  List<LocationModel> regions = [
     LocationModel(id: 1, text: "Tashkent"),
     LocationModel(id: 2, text: "Samarkand"),
     LocationModel(id: 3, text: "Andijon"),
@@ -86,7 +102,7 @@ class Defaults {
     LocationModel(id: 12, text: "Navoiy"),
   ];
 
-  List<LocationModel> cities =[
+  List<LocationModel> cities = [
     LocationModel(id: 1, text: "Tashkent"),
     LocationModel(id: 2, text: "Samarkand"),
     LocationModel(id: 3, text: "Andijon"),
@@ -106,7 +122,7 @@ class Defaults {
     LocationModel(id: 17, text: "Termiz"),
   ];
 
-  List<LocationModel> neighborhoods =[
+  List<LocationModel> neighborhoods = [
     LocationModel(id: 1, text: "Magnitobod"),
     LocationModel(id: 2, text: "Yunusobod"),
     LocationModel(id: 3, text: "Shayxontohur"),

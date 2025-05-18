@@ -118,7 +118,15 @@
     "birth_date": "Birth Date",
     "region": "Region",
     "district": "District",
-    "village": "Village"
+    "village": "Village",
+    "account_details": "Account Details",
+    "driver_details": "Driver Details",
+    "car_model": "Car Model",
+    "car_number": "Car Number",
+    "car_color": "Car Color",
+    "car_images": "Car Images",
+    "select_car_model": "Select Car Model",
+    "select_car_color": "Select Car Color"
   },
   "history": {
     "history": "History",

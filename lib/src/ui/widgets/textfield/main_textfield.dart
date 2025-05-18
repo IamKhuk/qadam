@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../theme/app_theme.dart';
 
+void _emptyFunction() {}
+
 class MainTextField extends StatefulWidget {
   const MainTextField({
     super.key,
@@ -9,12 +11,16 @@ class MainTextField extends StatefulWidget {
     required this.icon,
     required this.controller,
     this.pass = false,
+    this.readOnly = false,
+    this.onTap = _emptyFunction,
   });
 
   final String hintText;
   final IconData icon;
   final TextEditingController controller;
   final bool pass;
+  final bool readOnly;
+  final Function() onTap;
 
   @override
   State<MainTextField> createState() => _MainTextFieldState();
@@ -40,12 +46,10 @@ class _MainTextFieldState extends State<MainTextField> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            offset:
-            const Offset(0, 4),
+            offset: const Offset(0, 4),
             blurRadius: 100,
             spreadRadius: 0,
-            color: AppTheme.black
-                .withOpacity(0.05),
+            color: AppTheme.black.withOpacity(0.05),
           ),
         ],
       ),
@@ -63,33 +67,20 @@ class _MainTextFieldState extends State<MainTextField> {
           color: AppTheme.black,
         ),
         autofocus: false,
+        readOnly: widget.readOnly,
         decoration: InputDecoration(
-          border:
-          const OutlineInputBorder(),
-          enabledBorder:
-          OutlineInputBorder(
-            borderRadius:
-            BorderRadius
-                .circular(16),
-            borderSide:
-            const BorderSide(
-                color: AppTheme
-                    .border),
+          border: const OutlineInputBorder(),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: AppTheme.border),
           ),
-          focusedBorder:
-          OutlineInputBorder(
-            borderRadius:
-            BorderRadius
-                .circular(16),
-            borderSide:
-            const BorderSide(
-              color:
-              AppTheme.purple,
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(
+              color: AppTheme.purple,
             ),
           ),
-          contentPadding:
-          const EdgeInsets
-              .symmetric(
+          contentPadding: const EdgeInsets.symmetric(
             vertical: 20,
             horizontal: 16,
           ),
@@ -110,25 +101,27 @@ class _MainTextFieldState extends State<MainTextField> {
           ),
           prefixIcon: Icon(widget.icon),
           prefixIconColor: MaterialStateColor.resolveWith(
-                (Set<MaterialState> states) {
+            (Set<MaterialState> states) {
               if (states.contains(MaterialState.focused)) {
                 return AppTheme.black;
               }
               return AppTheme.dark;
             },
           ),
-          suffixIcon: widget.pass == true? GestureDetector(
-            onTap: () {
-              setState(() {
-                obscure = !obscure;
-              });
-            },
-            child: Icon(obscure == false
-                ? Icons.visibility_outlined
-                : Icons.visibility_off_outlined),
-          ): const SizedBox(),
+          suffixIcon: widget.pass == true
+              ? GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      obscure = !obscure;
+                    });
+                  },
+                  child: Icon(obscure == false
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined),
+                )
+              : const SizedBox(),
           suffixIconColor: WidgetStateColor.resolveWith(
-                (Set<WidgetState> states) {
+            (Set<WidgetState> states) {
               if (states.contains(MaterialState.focused)) {
                 return AppTheme.black;
               }
