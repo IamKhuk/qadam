@@ -3,6 +3,7 @@ import 'package:flutter_translate/flutter_translate.dart';
 import 'package:qadam/src/defaults/defaults.dart';
 import 'package:qadam/src/theme/app_theme.dart';
 import 'package:qadam/src/ui/widgets/containers/destinations_container.dart';
+import 'package:qadam/src/ui/widgets/containers/history_container.dart';
 import 'package:qadam/src/ui/widgets/texts/text_12h_400w.dart';
 import 'package:qadam/src/ui/widgets/texts/text_14h_400w.dart';
 import 'package:qadam/src/ui/widgets/texts/text_14h_500w.dart';
@@ -35,7 +36,7 @@ class _HistoryState extends State<History> {
             itemBuilder: (context, index) {
               return Column(
                 children: [
-                  DestinationsContainer(trip: Defaults().trips[index]),
+                  HistoryContainer(trip: Defaults().trips[index]),
                   index == Defaults().trips.length - 1
                       ? const SizedBox()
                       : const SizedBox(height: 16),

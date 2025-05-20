@@ -56,9 +56,6 @@ class _MainTextFieldState extends State<MainTextField> {
         textAlignVertical: TextAlignVertical.center,
         cursorColor: AppTheme.purple,
         enableInteractiveSelection: true,
-        keyboardType: widget.phone == true
-            ? TextInputType.phone
-            : TextInputType.text,
         obscureText: obscure,
         style: const TextStyle(
           fontFamily: AppTheme.fontFamily,
@@ -67,6 +64,9 @@ class _MainTextFieldState extends State<MainTextField> {
           height: 1.5,
           color: AppTheme.black,
         ),
+        keyboardType: widget.phone == true
+            ? TextInputType.phone
+            : TextInputType.text,
         autofocus: false,
         decoration: InputDecoration(
           border:

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_translate/flutter_translate.dart';
+import 'package:qadam/src/ui/menu/profile/edit_profile_screen.dart';
 import 'package:qadam/src/ui/widgets/texts/text_12h_400w.dart';
 import 'package:qadam/src/ui/widgets/texts/text_16h_500w.dart';
 
@@ -15,7 +16,6 @@ class ProfileScreen extends StatefulWidget {
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
-
 
 class _ProfileScreenState extends State<ProfileScreen> {
   @override
@@ -72,14 +72,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Container(
-                  padding:
-                  const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: AppTheme.light,
-                    borderRadius: BorderRadius.circular(12),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const EditProfileScreen(),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: AppTheme.light,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child:
+                        Text14h400w(title: translate("profile.edit_profile")),
                   ),
-                  child: Text14h400w(title: translate("profile.edit_profile")),
                 )
               ],
             ),
@@ -90,47 +101,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           SettingsContainer(
               settingsModel: SettingsModel(
-                icon: Icons.lock_clock,
-                title: translate("profile.change_password"),
-              )),
+            icon: Icons.lock_clock,
+            title: translate("profile.change_password"),
+          )),
           SettingsContainer(
               settingsModel: SettingsModel(
-                icon: Icons.language,
-                title: translate("profile.language"),
-              )),
+            icon: Icons.language,
+            title: translate("profile.language"),
+          )),
           SettingsContainer(
               settingsModel: SettingsModel(
-                icon: Icons.notifications,
-                title: translate("profile.notifications"),
-              )),
+            icon: Icons.notifications,
+            title: translate("profile.notifications"),
+          )),
           const SizedBox(height: 16),
           Text16h500w(
             title: translate("profile.about_us"),
           ),
           SettingsContainer(
               settingsModel: SettingsModel(
-                icon: Icons.info,
-                title: translate("profile.info"),
-              )),
+            icon: Icons.info,
+            title: translate("profile.info"),
+          )),
           SettingsContainer(
               settingsModel: SettingsModel(
-                icon: Icons.privacy_tip,
-                title: translate("profile.privacy_security"),
-              )),
+            icon: Icons.privacy_tip,
+            title: translate("profile.privacy_security"),
+          )),
           SettingsContainer(
               settingsModel: SettingsModel(
-                icon: Icons.contact_support,
-                title: translate("profile.contact_us"),
-              )),
+            icon: Icons.contact_support,
+            title: translate("profile.contact_us"),
+          )),
           const SizedBox(height: 16),
           Text16h500w(
             title: translate("profile.other"),
           ),
           SettingsContainer(
               settingsModel: SettingsModel(
-                icon: Icons.share,
-                title: translate("profile.share"),
-              )),
+            icon: Icons.share,
+            title: translate("profile.share"),
+          )),
         ],
       ),
     );

@@ -3,16 +3,17 @@ import 'package:flutter_svg/svg.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:qadam/src/defaults/defaults.dart';
 import 'package:qadam/src/model/location_model.dart';
-import 'package:qadam/src/model/passenger_model.dart';
-import 'package:qadam/src/ui/widgets/textfield/main_textfield.dart';
 import 'package:qadam/src/ui/widgets/texts/text_14h_500w.dart';
 import 'package:qadam/src/ui/widgets/texts/text_16h_500w.dart';
 import 'package:qadam/src/ui/widgets/texts/text_18h_500w.dart';
-import 'package:qadam/src/utils/utils.dart';
-import 'package:qadam/src/utils/validators.dart';
 
+import '../../model/color_model.dart';
+import '../../model/passenger_model.dart';
+import '../../model/vehicle_model.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/validators.dart';
 import '../widgets/picker/custom_date_picker.dart';
+import '../widgets/textfield/main_textfield.dart';
 
 enum PassengerStep { fullName, email, phoneNumber }
 
@@ -183,8 +184,7 @@ class BottomDialog {
                             setState(() {
                               // Step 1: Clear neighborhood if selected (not confirmed by Apply)
                               if (selectedLocation.text.isNotEmpty) {
-                                selectedLocation =
-                                    LocationModel(id: 0, text: '');
+                                selectedLocation = LocationModel(id: 0, text: '');
                                 return; // Stay in neighborhood selection
                               }
 
@@ -233,23 +233,19 @@ class BottomDialog {
                                 if (selectedRegion.id == 0) {
                                   setState(() {
                                     selectedRegion = selectedLocation;
-                                    selectedLocation =
-                                        LocationModel(id: 0, text: "");
+                                    selectedLocation = LocationModel(id: 0, text: "");
                                   });
-                                  print(
-                                      "Region Selected: ${selectedRegion.text}");
+                                  print("Region Selected: ${selectedRegion.text}");
                                 } else if (selectedCity.id == 0) {
                                   setState(() {
                                     selectedCity = selectedLocation;
-                                    selectedLocation =
-                                        LocationModel(id: 0, text: "");
+                                    selectedLocation = LocationModel(id: 0, text: "");
                                   });
                                   print("City Selected: ${selectedCity.text}");
                                 } else {
                                   setState(() {
                                     selectedNeighbourhood = selectedLocation;
-                                    selectedLocation =
-                                        LocationModel(id: 0, text: "");
+                                    selectedLocation = LocationModel(id: 0, text: "");
                                   });
                                   print(
                                       "Neighbourhood Selected: ${selectedNeighbourhood.text}");
@@ -389,10 +385,10 @@ class BottomDialog {
   }
 
   static void showAddPassenger(
-    BuildContext context,
-    PassengerModel passenger,
-    Function(PassengerModel data) onAdd,
-  ) {
+      BuildContext context,
+      PassengerModel passenger,
+      Function(PassengerModel data) onAdd,
+      ) {
     TextEditingController fullNameController = TextEditingController();
     TextEditingController emailController = TextEditingController();
     TextEditingController phoneController = TextEditingController();
@@ -582,10 +578,10 @@ class BottomDialog {
                                       currentStep = PassengerStep.email;
                                     });
                                   } else if (currentStep ==
-                                          PassengerStep.email &&
+                                      PassengerStep.email &&
                                       emailController.text.isNotEmpty &&
                                       Validators.emailValidator(
-                                              emailController.text) ==
+                                          emailController.text) ==
                                           true) {
                                     setState(() {
                                       selectedPassenger.email =
@@ -593,7 +589,7 @@ class BottomDialog {
                                       currentStep = PassengerStep.phoneNumber;
                                     });
                                   } else if (currentStep ==
-                                          PassengerStep.phoneNumber &&
+                                      PassengerStep.phoneNumber &&
                                       phoneController.text.isNotEmpty) {
                                     setState(() {
                                       selectedPassenger.phoneNumber =
@@ -627,6 +623,527 @@ class BottomDialog {
                   ),
                 ),
               ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  static void createUploadImageChat(
+      BuildContext context,
+      Function onGallery,
+      Function onCamera,
+      ) async {
+    showModalBottomSheet(
+      barrierColor: AppTheme.black.withOpacity(0.45),
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return Container(
+              height: 212,
+              margin: const EdgeInsets.only(
+                bottom: 32,
+                left: 16,
+                right: 16,
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    height: 150,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.white,
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          height: 48,
+                          decoration: const BoxDecoration(
+                            borderRadius: BorderRadius.only(
+                              topRight: Radius.circular(8),
+                              topLeft: Radius.circular(8),
+                            ),
+                            color: Colors.white,
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'Uploading Image',
+                              style: TextStyle(
+                                fontFamily: AppTheme.fontFamily,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 14,
+                                height: 1.2,
+                                color: AppTheme.gray,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          height: 1,
+                          color: AppTheme.gray.withOpacity(0.1),
+                        ),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () async {
+                              onGallery();
+                              Navigator.pop(context);
+                            },
+                            child: Container(
+                              height: 50,
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                              ),
+                              child: const Center(
+                                child: Text(
+                                  'Upload from Gallery',
+                                  style: TextStyle(
+                                    fontFamily: AppTheme.fontFamily,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 16,
+                                    height: 1.2,
+                                    color: AppTheme.purple,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          height: 1,
+                          color: AppTheme.gray.withOpacity(0.1),
+                        ),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              onCamera();
+                              Navigator.pop(context);
+                            },
+                            child: Container(
+                              height: 50,
+                              decoration: const BoxDecoration(
+                                borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(8),
+                                  bottomRight: Radius.circular(8),
+                                ),
+                                color: Colors.white,
+                              ),
+                              child: const Center(
+                                child: Text(
+                                  'Upload from Camera',
+                                  style: TextStyle(
+                                    fontFamily: AppTheme.fontFamily,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 16,
+                                    height: 1.2,
+                                    color: AppTheme.black,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(child: Container()),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      height: 48,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        color: Colors.white,
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(
+                            fontFamily: AppTheme.fontFamily,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            height: 1.2,
+                            color: AppTheme.black,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  static void showSelectCar(
+      BuildContext context,
+      Function(
+          VehicleModel data,
+          ) onChanged,
+      VehicleModel car,
+      ) {
+    VehicleModel selectedCar = VehicleModel(id: 0, vehicleName: "");
+
+    showModalBottomSheet(
+      barrierColor: AppTheme.black.withOpacity(0.45),
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        if (car.id != 0) {
+          selectedCar = car;
+        }
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return Container(
+              height: selectedCar.id == 0 ? 524 : 256,
+              decoration: const BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(24),
+                  topLeft: Radius.circular(24),
+                ),
+                color: Colors.white,
+              ),
+              padding: const EdgeInsets.only(top: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        height: 5,
+                        width: 80,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5),
+                          color: AppTheme.gray,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text18h500w(
+                        title: translate("profile.select_car_model"),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 270),
+                    curve: Curves.easeInOut,
+                    child: selectedCar.id == 0
+                        ? Expanded(
+                      child: ListView.builder(
+                        itemCount: Defaults().vehicles.length,
+                        padding: const EdgeInsets.only(
+                            top: 4, bottom: 0, left: 16, right: 16),
+                        itemBuilder: (context, index) {
+                          VehicleModel vehicle =
+                          Defaults().vehicles[index];
+                          return Column(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    selectedCar = vehicle;
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(16),
+                                  color: AppTheme.light,
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text14h500w(
+                                          title: vehicle.vehicleName,
+                                          color:
+                                          vehicle.id == selectedCar.id
+                                              ? AppTheme.purple
+                                              : AppTheme.black,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                height: 1,
+                                color: AppTheme.blue,
+                                margin: const EdgeInsets.only(
+                                    left: 8, right: 8),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    )
+                        : Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            selectedCar =
+                                VehicleModel(id: 0, vehicleName: "");
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          margin: const EdgeInsets.only(
+                            top: 4,
+                            bottom: 12,
+                            left: 16,
+                            right: 16,
+                          ),
+                          decoration: BoxDecoration(
+                              color: AppTheme.light,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: AppTheme.purple)),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text16h500w(
+                                    title: selectedCar.vehicleName),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.only(
+                      top: 12,
+                      left: 16,
+                      right: 16,
+                      bottom: 32,
+                    ),
+                    child: GestureDetector(
+                      onTap: () {
+                        if (selectedCar.id != 0) {
+                          onChanged(selectedCar);
+                          Navigator.pop(context);
+                        }
+                      },
+                      child: Container(
+                        height: 56,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: AppTheme.purple,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Center(
+                            child: Text16h500w(
+                              title: translate("home.apply"),
+                              color: Colors.white,
+                            )),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  static void showSelectColor(
+      BuildContext context,
+      Function(
+          ColorModel data,
+          ) onChanged,
+      ColorModel color,
+      ) {
+    ColorModel selectedColor =
+    ColorModel(name: "", colorCode: Colors.transparent);
+
+    showModalBottomSheet(
+      barrierColor: AppTheme.black.withOpacity(0.45),
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        if (color.name != "") {
+          selectedColor = color;
+        }
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return Container(
+              height: selectedColor.name.isEmpty ? 524 : 256,
+              decoration: const BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(24),
+                  topLeft: Radius.circular(24),
+                ),
+                color: Colors.white,
+              ),
+              padding: const EdgeInsets.only(top: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        height: 5,
+                        width: 80,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5),
+                          color: AppTheme.gray,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text18h500w(
+                        title: translate("profile.select_car_color"),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 270),
+                    curve: Curves.easeInOut,
+                    child: selectedColor.name.isEmpty
+                        ? Expanded(
+                      child: ListView.builder(
+                        itemCount: Defaults().colors.length,
+                        padding: const EdgeInsets.only(
+                            top: 4, bottom: 0, left: 16, right: 16),
+                        itemBuilder: (context, index) {
+                          ColorModel color = Defaults().colors[index];
+
+                          return Column(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    selectedColor = color;
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(16),
+                                  color: AppTheme.light,
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text14h500w(
+                                          title: color.name,
+                                          color: color.name ==
+                                              selectedColor.name
+                                              ? AppTheme.purple
+                                              : AppTheme.black,
+                                        ),
+                                      ),
+                                      Container(
+                                        width: 32,
+                                        height: 32,
+                                        decoration: BoxDecoration(
+                                          color: color.colorCode,
+                                          borderRadius:
+                                          BorderRadius.circular(8),
+                                          border: Border.all(
+                                            color: AppTheme.purple,
+                                            width: 1.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                height: 1,
+                                color: AppTheme.blue,
+                                margin: const EdgeInsets.only(
+                                    left: 8, right: 8),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    )
+                        : Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            selectedColor = ColorModel(
+                              name: "",
+                              colorCode: Colors.transparent,
+                            );
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          margin: const EdgeInsets.only(
+                            top: 4,
+                            bottom: 12,
+                            left: 16,
+                            right: 16,
+                          ),
+                          decoration: BoxDecoration(
+                              color: AppTheme.light,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: AppTheme.purple)),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text16h500w(
+                                    title: selectedColor.name),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.only(
+                      top: 12,
+                      left: 16,
+                      right: 16,
+                      bottom: 32,
+                    ),
+                    child: GestureDetector(
+                      onTap: () {
+                        if (selectedColor.name.isNotEmpty) {
+                          onChanged(selectedColor);
+                          Navigator.pop(context);
+                        }
+                      },
+                      child: Container(
+                        height: 56,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: AppTheme.purple,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Center(
+                            child: Text16h500w(
+                              title: translate("home.apply"),
+                              color: Colors.white,
+                            )),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             );
           },
         );
