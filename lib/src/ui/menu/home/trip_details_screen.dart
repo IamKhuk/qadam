@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:qadam/src/ui/dialogs/bottom_dialog.dart';
 import 'package:qadam/src/ui/dialogs/center_dialog.dart';
+import 'package:qadam/src/ui/menu/home/payment_screen.dart';
 import 'package:qadam/src/ui/widgets/buttons/secondary_button.dart';
 import 'package:qadam/src/ui/widgets/containers/leading_back.dart';
 import 'package:qadam/src/ui/widgets/containers/passengers_container.dart';
@@ -605,7 +606,14 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                 const SizedBox(height: 16),
                 SecondaryButton(
                   title: translate("home.book_now"),
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PaymentScreen(trip: widget.trip),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),

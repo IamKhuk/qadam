@@ -90,7 +90,17 @@
     "email": "Email",
     "add_passenger": "Add Passenger",
     "passenger_exist": "Passenger Exist",
-    "passenger_exist_error": "This passenger already exist\nPlease add another passenger"
+    "passenger_exist_error": "This passenger already exist\nPlease add another passenger",
+    "payment_details": "Payment Details",
+    "card_details": "Card Details",
+    "card_number": "Card Number",
+    "card_name": "Card Name",
+    "expiry_date": "Expiry Date",
+    "cvv": "CVV",
+    "payment": "Payment",
+    "payment_method": "Payment Method",
+    "card_holder_name": "Card Holder Name",
+    "complete_payment_within": "Complete Payment Within"
   },
   "news": {
     "news": "News",
