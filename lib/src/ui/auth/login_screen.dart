@@ -400,6 +400,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         SharedPreferences prefs =
                             await SharedPreferences.getInstance();
                         prefs.setString("token", "token");
+                        prefs.setBool("isFirst", false);
 
                         Navigator.of(context).popUntil(
                           (route) => route.isFirst,
