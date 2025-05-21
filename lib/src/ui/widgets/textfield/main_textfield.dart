@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../theme/app_theme.dart';
 
@@ -10,6 +11,7 @@ class MainTextField extends StatefulWidget {
     required this.controller,
     this.pass = false,
     this.phone = false,
+    this.inputFormatters = const [],
   });
 
   final String hintText;
@@ -17,6 +19,7 @@ class MainTextField extends StatefulWidget {
   final TextEditingController controller;
   final bool pass;
   final bool phone;
+  final List<TextInputFormatter> inputFormatters;
 
   @override
   State<MainTextField> createState() => _MainTextFieldState();
@@ -68,6 +71,7 @@ class _MainTextFieldState extends State<MainTextField> {
             ? TextInputType.phone
             : TextInputType.text,
         autofocus: false,
+        inputFormatters: widget.inputFormatters,
         decoration: InputDecoration(
           border:
           const OutlineInputBorder(),

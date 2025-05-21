@@ -3,7 +3,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_translate/flutter_translate.dart';
+import 'package:qadam/src/model/credit_card_model.dart';
 import 'package:qadam/src/model/trip_model.dart';
+import 'package:qadam/src/ui/menu/home/add_credit_card_screen.dart';
+import 'package:qadam/src/ui/widgets/containers/card_container.dart';
 import 'package:qadam/src/ui/widgets/texts/text_14h_400w.dart';
 import 'package:qadam/src/ui/widgets/texts/text_14h_500w.dart';
 
@@ -29,7 +32,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
   String m1 = '';
   String h1 = '';
   String seconds = "00";
-  int _timer = 300;
+  int _timer = 720;
+
+  CreditCardModel? selectedCard;
+
+  bool isCardSelectOpen = false;
+
+  List<CreditCardModel> cards = [];
 
   @override
   void initState() {
@@ -50,16 +59,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
         // Timer finished
         if (kDebugMode) {
           print("Timer finished!");
-          Navigator.pop(context);
+          // Navigator.pop(context);
         }
       }
     });
   }
 
   void updateTimerDisplay() {
-    int minutes = _timer ~/ 60;
     int remainingSeconds = _timer % 60;
-    // m1 = minutes.toString().padLeft(1, '0'); // Commented out as per instruction
     seconds = remainingSeconds.toString().padLeft(2, '0');
   }
 
@@ -372,6 +379,166 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     const SizedBox(height: 24),
                     Text16h500w(title: translate("home.payment")),
                     const SizedBox(height: 16),
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 270),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.dark.withOpacity(0.1),
+                              spreadRadius: 15,
+                              blurRadius: 25,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        child: cards.isEmpty
+                            ? Row(
+                                children: [
+                                  Expanded(
+                                    child: Text14h400w(
+                                        title:
+                                            translate("home.no_cards_added")),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) {
+                                            return AddCreditCardScreen(
+                                              onAdded: (data) {
+                                                setState(() {
+                                                  data.isDefault = true;
+                                                  selectedCard = data;
+                                                  cards.add(data);
+                                                });
+                                              },
+                                            );
+                                          },
+                                        ),
+                                      );
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 8,
+                                        horizontal: 12,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.purple,
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Text14h400w(
+                                            title: translate("home.add_card"),
+                                            color: Colors.white,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          const Icon(
+                                            Icons.add,
+                                            color: Colors.white,
+                                            size: 16,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.light,
+                                          borderRadius:
+                                              BorderRadius.circular(24),
+                                        ),
+                                        child: const Icon(
+                                          Icons.credit_card,
+                                          color: AppTheme.black,
+                                          size: 24,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text14h500w(
+                                            title: formatCardNumber(
+                                                cards[0].cardNumber)),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            isCardSelectOpen =
+                                                !isCardSelectOpen;
+                                          });
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.light,
+                                            borderRadius:
+                                                BorderRadius.circular(24),
+                                          ),
+                                          child: Icon(
+                                            isCardSelectOpen == false
+                                                ? Icons
+                                                    .keyboard_arrow_down_outlined
+                                                : Icons
+                                                    .keyboard_arrow_up_outlined,
+                                            color: AppTheme.black,
+                                            size: 24,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  isCardSelectOpen == true
+                                      ? Column(
+                                          children: [
+                                            const SizedBox(height: 16),
+                                            ListView.builder(
+                                              itemCount: cards.length,
+                                              padding: EdgeInsets.zero,
+                                              shrinkWrap: true,
+                                              itemBuilder: (context, index) {
+                                                return Column(
+                                                  children: [
+                                                    GestureDetector(
+                                                      onTap: () {
+                                                        setState(() {
+                                                          selectedCard = cards[index];
+                                                        });
+                                                      },
+                                                      child: CardContainer(
+                                                          card: cards[index]),
+                                                    ),
+                                                    index != cards.length - 1
+                                                        ? Container(
+                                                            height: 1,
+                                                            color:
+                                                                AppTheme.border,
+                                                          )
+                                                        : const SizedBox(),
+                                                  ],
+                                                );
+                                              },
+                                            ),
+                                          ],
+                                        )
+                                      : const SizedBox(),
+                                ],
+                              ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -430,5 +597,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
     return text.length >= length
         ? text.substring(0, length).toUpperCase()
         : text.toUpperCase();
+  }
+
+  String formatCardNumber(String cardNumber) {
+    if (cardNumber.length <= 4) {
+      return cardNumber; // or handle as an error, card number too short
+    }
+    String lastFourDigits = cardNumber.substring(cardNumber.length - 4);
+    return "**** **** **** $lastFourDigits";
   }
 }

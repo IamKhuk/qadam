@@ -100,7 +100,21 @@
     "payment": "Payment",
     "payment_method": "Payment Method",
     "card_holder_name": "Card Holder Name",
-    "complete_payment_within": "Complete Payment Within"
+    "complete_payment_within": "Complete Payment Within",
+    "add_credit_card_title": "Add Credit Card",
+    "card_number_placeholder": "**** **** **** ****",
+    "card_holder_label": "Card Holder",
+    "card_holder_placeholder": "FULL NAME",
+    "expires_label": "Expires",
+    "expiry_date_placeholder": "MM/YY",
+    "card_added_success": "Card added successfully!",
+    "fill_all_fields": "Please fill all fields",
+    "add_card_button": "Add Card",
+    "card_number_hint": "Card Number",
+    "cardholder_name_hint": "Cardholder Name",
+    "cvv_hint": "CVV",
+    "no_cards_added": "No Cards Added",
+    "add_card": "Add Card"
   },
   "news": {
     "news": "News",
