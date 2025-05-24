@@ -5,7 +5,11 @@ import 'package:flutter_svg/svg.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:qadam/src/model/credit_card_model.dart';
 import 'package:qadam/src/model/trip_model.dart';
+import 'package:qadam/src/ui/dialogs/center_dialog.dart';
 import 'package:qadam/src/ui/menu/home/add_credit_card_screen.dart';
+import 'package:qadam/src/ui/menu/home/payment_success_screen.dart';
+import 'package:qadam/src/ui/widgets/buttons/primary_button.dart';
+import 'package:qadam/src/ui/widgets/buttons/secondary_button.dart';
 import 'package:qadam/src/ui/widgets/containers/card_container.dart';
 import 'package:qadam/src/ui/widgets/texts/text_14h_400w.dart';
 import 'package:qadam/src/ui/widgets/texts/text_14h_500w.dart';
@@ -17,9 +21,10 @@ import '../../widgets/texts/text_12h_400w.dart';
 import '../../widgets/texts/text_16h_500w.dart';
 
 class PaymentScreen extends StatefulWidget {
-  const PaymentScreen({super.key, required this.trip});
+  const PaymentScreen({super.key, required this.trip, this.passengersNum = 1});
 
   final TripModel trip;
+  final int passengersNum;
 
   @override
   State<PaymentScreen> createState() => _PaymentScreenState();
@@ -36,6 +41,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   CreditCardModel? selectedCard;
 
+  String selectedCardNumber = '';
+
   bool isCardSelectOpen = false;
 
   List<CreditCardModel> cards = [];
@@ -45,6 +52,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
     super.initState();
     startTimer();
     initTimeState(widget.trip.startTime);
+    if (cards.isNotEmpty) {
+      for (int i = 0; i < cards.length; i++) {
+        if (cards[i].isDefault == true) {
+          selectedCard = cards[i];
+          selectedCardNumber = cards[i].cardNumber;
+          break;
+        }
+      }
+    }
   }
 
   void startTimer() {
@@ -90,7 +106,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     top: 22,
                     left: 16,
                     right: 16,
-                    bottom: 24,
+                    bottom: 100,
                   ),
                   children: [
                     Container(
@@ -376,9 +392,114 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         ],
                       ),
                     ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppTheme.blue.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppTheme.blue, width: 1),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            Icons.info_outlined,
+                            color: AppTheme.blue,
+                            size: 24,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text14h400w(
+                              title: translate("home.payment_info"),
+                              color: AppTheme.blue,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     const SizedBox(height: 24),
                     Text16h500w(title: translate("home.payment")),
                     const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.dark.withOpacity(0.1),
+                            spreadRadius: 15,
+                            blurRadius: 25,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text14h400w(
+                                    title: translate("home.number_passenger"),
+                                    color: AppTheme.gray,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text16h500w(
+                                      title: "${widget.passengersNum}x"),
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text14h400w(
+                                    title: translate("home.price_per_seat"),
+                                    color: AppTheme.gray,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text16h500w(
+                                      title:
+                                          "\$${int.parse(widget.trip.pricePerSeat) * widget.passengersNum}"),
+                                ],
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+                          const DottedLine(
+                            dashColor: AppTheme.gray,
+                            direction: Axis.horizontal,
+                            lineLength: double.infinity,
+                            lineThickness: 1,
+                            dashLength: 4,
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text16h500w(
+                                title: "${translate("home.total_price")}:",
+                                color: AppTheme.gray,
+                              ),
+                              Text(
+                                "\$${(int.parse(widget.trip.pricePerSeat) * widget.passengersNum).toString()}",
+                                style: const TextStyle(
+                                  color: AppTheme.black,
+                                  fontSize: 20,
+                                  fontFamily: AppTheme.fontFamily,
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 270),
                       child: Container(
@@ -415,6 +536,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                                 setState(() {
                                                   data.isDefault = true;
                                                   selectedCard = data;
+                                                  selectedCardNumber = data.cardNumber;
                                                   cards.add(data);
                                                 });
                                               },
@@ -471,7 +593,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                       Expanded(
                                         child: Text14h500w(
                                             title: formatCardNumber(
-                                                cards[0].cardNumber)),
+                                                selectedCard!.cardNumber)),
                                       ),
                                       const SizedBox(width: 12),
                                       GestureDetector(
@@ -512,14 +634,38 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                               itemBuilder: (context, index) {
                                                 return Column(
                                                   children: [
-                                                    GestureDetector(
-                                                      onTap: () {
+                                                    CardContainer(
+                                                      card: cards[index],
+                                                      onTapped: () {
                                                         setState(() {
-                                                          selectedCard = cards[index];
+                                                          isCardSelectOpen =
+                                                              false;
                                                         });
+                                                        if (cards[index]
+                                                                .isDefault ==
+                                                            false) {
+                                                          for (int i = 0;
+                                                              i < cards.length;
+                                                              i++) {
+                                                            if (cards[i]
+                                                                    .isDefault ==
+                                                                true) {
+                                                              setState(() {
+                                                                cards[i].isDefault =
+                                                                    false;
+                                                              });
+                                                            }
+                                                          }
+                                                          setState(() {
+                                                            selectedCard =
+                                                                cards[index];
+                                                            cards[index]
+                                                                    .isDefault =
+                                                                true;
+                                                            selectedCardNumber = cards[index].cardNumber;
+                                                          });
+                                                        }
                                                       },
-                                                      child: CardContainer(
-                                                          card: cards[index]),
                                                     ),
                                                     index != cards.length - 1
                                                         ? Container(
@@ -532,6 +678,34 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                                 );
                                               },
                                             ),
+                                            const SizedBox(height: 12),
+                                            SecondaryButton(
+                                                title: translate(
+                                                    "home.add_new_card"),
+                                                onTap: () {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) {
+                                                        return AddCreditCardScreen(
+                                                          onAdded: (data) {
+                                                            setState(() {
+                                                              if (cards
+                                                                  .isEmpty) {
+                                                                data.isDefault =
+                                                                    true;
+                                                                selectedCard =
+                                                                    data;
+                                                                selectedCardNumber = data.cardNumber;
+                                                              }
+                                                              cards.add(data);
+                                                            });
+                                                          },
+                                                        );
+                                                      },
+                                                    ),
+                                                  );
+                                                })
                                           ],
                                         )
                                       : const SizedBox(),
@@ -540,6 +714,39 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       ),
                     ),
                   ],
+                ),
+              ),
+            ],
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(
+                  left: 16,
+                  right: 16,
+                  bottom: 32,
+                ),
+                child: GestureDetector(
+                  onTap: () {
+                    if (selectedCardNumber.isEmpty) {
+                      CenterDialog.showActionFailed(
+                        context,
+                        translate("home.payment_method_error"),
+                        translate("home.payment_method_error_msg"),
+                      );
+                    } else if (selectedCard!.cardNumber.isNotEmpty) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => PaymentSuccessScreen(
+                                trip: widget.trip, card: selectedCard!)),
+                      );
+                    }
+                  },
+                  child: PrimaryButton(
+                    title: translate("home.confirm_payment"),
+                  ),
                 ),
               ),
             ],

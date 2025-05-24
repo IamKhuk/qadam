@@ -92,6 +92,8 @@
     "passenger_exist": "Passenger Exist",
     "passenger_exist_error": "This passenger already exist\nPlease add another passenger",
     "payment_details": "Payment Details",
+    "payment_info": "This trip is not refundable and cannot be rescheduled. Click here for more info.",
+    "confirm_payment": "Confirm Payment",
     "card_details": "Card Details",
     "card_number": "Card Number",
     "card_name": "Card Name",
@@ -114,7 +116,17 @@
     "cardholder_name_hint": "Cardholder Name",
     "cvv_hint": "CVV",
     "no_cards_added": "No Cards Added",
-    "add_card": "Add Card"
+    "add_card": "Add Card",
+    "add_new_card": "Add New Card",
+    "payment_success": "Payment Success",
+    "transaction_details": "Transaction Details",
+    "order_id": "Order ID",
+    "payment_date": "Payment Date",
+    "time_of_payment": "Time of Payment",
+    "done": "Done",
+    "get_a_receipt": "Get a Receipt",
+    "payment_method_error": "Payment Method Error",
+    "payment_method_error_msg": "Please add a credit card to continue"
   },
   "news": {
     "news": "News",

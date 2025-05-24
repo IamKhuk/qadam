@@ -5,9 +5,10 @@ import '../../../model/credit_card_model.dart';
 import '../../../theme/app_theme.dart';
 
 class CardContainer extends StatefulWidget {
-  const CardContainer({super.key, required this.card});
+  const CardContainer({super.key, required this.card, required this.onTapped});
 
   final CreditCardModel card;
+  final Function() onTapped;
 
   @override
   State<CardContainer> createState() => _CardContainerState();
@@ -16,30 +17,33 @@ class CardContainer extends StatefulWidget {
 class _CardContainerState extends State<CardContainer> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      color: AppTheme.light,
-      child: Row(
-        children: [
-          Expanded(
-            child: Text14h500w(
-              title: formatCardNumber(widget.card.cardNumber),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Container(
-            height: 24,
-            width: 24,
-            decoration: BoxDecoration(
-              color: widget.card.isDefault == true ? AppTheme.purple : AppTheme.light,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: AppTheme.black,
-                width: 1,
+    return GestureDetector(
+      onTap: widget.onTapped,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        color: AppTheme.light,
+        child: Row(
+          children: [
+            Expanded(
+              child: Text14h500w(
+                title: formatCardNumber(widget.card.cardNumber), color: AppTheme.dark,
               ),
             ),
-          )
-        ],
+            const SizedBox(width: 12),
+            Container(
+              height: 24,
+              width: 24,
+              decoration: BoxDecoration(
+                color: widget.card.isDefault == true ? AppTheme.purple : AppTheme.light,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppTheme.black,
+                  width: 1,
+                ),
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
