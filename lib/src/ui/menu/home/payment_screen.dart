@@ -87,6 +87,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   @override
+  void dispose() {
+    _timer = 0; // Stop the timer by setting _timer to 0 or less
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
