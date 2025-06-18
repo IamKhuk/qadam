@@ -2,6 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Your app needs to save images to the photo library.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Your app needs photo library access to select car images for upload.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Your app needs camera access to take photos for uploading car images.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

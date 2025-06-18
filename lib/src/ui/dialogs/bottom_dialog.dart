@@ -12,6 +12,7 @@ import '../../model/passenger_model.dart';
 import '../../model/vehicle_model.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/validators.dart';
+import '../widgets/picker/custom_birth_date_picker.dart';
 import '../widgets/picker/custom_date_picker.dart';
 import '../widgets/textfield/main_textfield.dart';
 
@@ -184,7 +185,8 @@ class BottomDialog {
                             setState(() {
                               // Step 1: Clear neighborhood if selected (not confirmed by Apply)
                               if (selectedLocation.text.isNotEmpty) {
-                                selectedLocation = LocationModel(id: 0, text: '');
+                                selectedLocation =
+                                    LocationModel(id: 0, text: '');
                                 return; // Stay in neighborhood selection
                               }
 
@@ -233,19 +235,23 @@ class BottomDialog {
                                 if (selectedRegion.id == 0) {
                                   setState(() {
                                     selectedRegion = selectedLocation;
-                                    selectedLocation = LocationModel(id: 0, text: "");
+                                    selectedLocation =
+                                        LocationModel(id: 0, text: "");
                                   });
-                                  print("Region Selected: ${selectedRegion.text}");
+                                  print(
+                                      "Region Selected: ${selectedRegion.text}");
                                 } else if (selectedCity.id == 0) {
                                   setState(() {
                                     selectedCity = selectedLocation;
-                                    selectedLocation = LocationModel(id: 0, text: "");
+                                    selectedLocation =
+                                        LocationModel(id: 0, text: "");
                                   });
                                   print("City Selected: ${selectedCity.text}");
                                 } else {
                                   setState(() {
                                     selectedNeighbourhood = selectedLocation;
-                                    selectedLocation = LocationModel(id: 0, text: "");
+                                    selectedLocation =
+                                        LocationModel(id: 0, text: "");
                                   });
                                   print(
                                       "Neighbourhood Selected: ${selectedNeighbourhood.text}");
@@ -385,10 +391,10 @@ class BottomDialog {
   }
 
   static void showAddPassenger(
-      BuildContext context,
-      PassengerModel passenger,
-      Function(PassengerModel data) onAdd,
-      ) {
+    BuildContext context,
+    PassengerModel passenger,
+    Function(PassengerModel data) onAdd,
+  ) {
     TextEditingController fullNameController = TextEditingController();
     TextEditingController emailController = TextEditingController();
     TextEditingController phoneController = TextEditingController();
@@ -578,10 +584,10 @@ class BottomDialog {
                                       currentStep = PassengerStep.email;
                                     });
                                   } else if (currentStep ==
-                                      PassengerStep.email &&
+                                          PassengerStep.email &&
                                       emailController.text.isNotEmpty &&
                                       Validators.emailValidator(
-                                          emailController.text) ==
+                                              emailController.text) ==
                                           true) {
                                     setState(() {
                                       selectedPassenger.email =
@@ -589,7 +595,7 @@ class BottomDialog {
                                       currentStep = PassengerStep.phoneNumber;
                                     });
                                   } else if (currentStep ==
-                                      PassengerStep.phoneNumber &&
+                                          PassengerStep.phoneNumber &&
                                       phoneController.text.isNotEmpty) {
                                     setState(() {
                                       selectedPassenger.phoneNumber =
@@ -630,166 +636,134 @@ class BottomDialog {
     );
   }
 
-  static void createUploadImageChat(
-      BuildContext context,
-      Function onGallery,
-      Function onCamera,
-      ) async {
+  static void showUploadImage(
+      BuildContext context, {
+        required VoidCallback onGallery,
+        required VoidCallback onCamera,
+      }) {
     showModalBottomSheet(
-      barrierColor: AppTheme.black.withOpacity(0.45),
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withOpacity(0.45),
       builder: (context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return Container(
-              height: 212,
-              margin: const EdgeInsets.only(
-                bottom: 32,
-                left: 16,
-                right: 16,
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    height: 150,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color: Colors.white,
-                    ),
-                    child: Column(
-                      children: [
-                        Container(
-                          height: 48,
-                          decoration: const BoxDecoration(
-                            borderRadius: BorderRadius.only(
-                              topRight: Radius.circular(8),
-                              topLeft: Radius.circular(8),
-                            ),
-                            color: Colors.white,
-                          ),
-                          child: const Center(
-                            child: Text(
-                              'Uploading Image',
-                              style: TextStyle(
-                                fontFamily: AppTheme.fontFamily,
-                                fontWeight: FontWeight.w500,
-                                fontSize: 14,
-                                height: 1.2,
-                                color: AppTheme.gray,
-                              ),
-                            ),
-                          ),
-                        ),
-                        Container(
-                          height: 1,
-                          color: AppTheme.gray.withOpacity(0.1),
-                        ),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () async {
+        return SafeArea(
+          child: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                height: MediaQuery.of(context).size.height * 0.25,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        children: [
+                          _buildHeader(context),
+                          const Divider(height: 1, thickness: 1),
+                          _buildOptionButton(
+                            context,
+                            text: 'Upload from Gallery',
+                            onTap: () {
                               onGallery();
                               Navigator.pop(context);
                             },
-                            child: Container(
-                              height: 50,
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
-                              ),
-                              child: const Center(
-                                child: Text(
-                                  'Upload from Gallery',
-                                  style: TextStyle(
-                                    fontFamily: AppTheme.fontFamily,
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 16,
-                                    height: 1.2,
-                                    color: AppTheme.purple,
-                                  ),
-                                ),
-                              ),
-                            ),
+                            textColor: Theme.of(context).colorScheme.primary,
                           ),
-                        ),
-                        Container(
-                          height: 1,
-                          color: AppTheme.gray.withOpacity(0.1),
-                        ),
-                        Expanded(
-                          child: GestureDetector(
+                          const Divider(height: 2, thickness: 1),
+                          _buildOptionButton(
+                            context,
+                            text: 'Upload from Camera',
                             onTap: () {
                               onCamera();
                               Navigator.pop(context);
                             },
-                            child: Container(
-                              height: 50,
-                              decoration: const BoxDecoration(
-                                borderRadius: BorderRadius.only(
-                                  bottomLeft: Radius.circular(8),
-                                  bottomRight: Radius.circular(8),
-                                ),
-                                color: Colors.white,
-                              ),
-                              child: const Center(
-                                child: Text(
-                                  'Upload from Camera',
-                                  style: TextStyle(
-                                    fontFamily: AppTheme.fontFamily,
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 16,
-                                    height: 1.2,
-                                    color: AppTheme.black,
-                                  ),
-                                ),
-                              ),
-                            ),
+                            textColor: Theme.of(context).colorScheme.onSurface,
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(child: Container()),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    child: Container(
-                      height: 48,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        color: Colors.white,
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'Cancel',
-                          style: TextStyle(
-                            fontFamily: AppTheme.fontFamily,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            height: 1.2,
-                            color: AppTheme.black,
-                          ),
-                        ),
+                        ],
                       ),
                     ),
-                  ),
-                ],
-              ),
-            );
-          },
+                    const SizedBox(height: 8),
+                    _buildOptionButton(
+                      context,
+                      text: 'Cancel',
+                      onTap: () => Navigator.pop(context),
+                      textColor: Theme.of(context).colorScheme.onSurface,
+                      isCancel: true,
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
         );
       },
     );
   }
 
+  static Widget _buildHeader(BuildContext context) {
+    return Container(
+      height: 48,
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        color: Theme.of(context).colorScheme.surface,
+      ),
+      child: Center(
+        child: Text(
+          'Upload Image',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w500,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+          semanticsLabel: 'Upload Image Dialog',
+        ),
+      ),
+    );
+  }
+
+  static Widget _buildOptionButton(
+      BuildContext context, {
+        required String text,
+        required VoidCallback onTap,
+        required Color textColor,
+        bool isCancel = false,
+      }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 48,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.vertical(
+            bottom: isCancel ? const Radius.circular(16) : Radius.zero,
+          ),
+        ),
+        child: Center(
+          child: Text(
+            text,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              fontWeight: isCancel ? FontWeight.bold : FontWeight.w500,
+              color: textColor,
+            ),
+            semanticsLabel: text,
+          ),
+        ),
+      ),
+    );
+  }
+
   static void showSelectCar(
-      BuildContext context,
-      Function(
-          VehicleModel data,
-          ) onChanged,
-      VehicleModel car,
-      ) {
+    BuildContext context,
+    Function(
+      VehicleModel data,
+    ) onChanged,
+    VehicleModel car,
+  ) {
     VehicleModel selectedCar = VehicleModel(id: 0, vehicleName: "");
 
     showModalBottomSheet(
@@ -845,81 +819,81 @@ class BottomDialog {
                     curve: Curves.easeInOut,
                     child: selectedCar.id == 0
                         ? Expanded(
-                      child: ListView.builder(
-                        itemCount: Defaults().vehicles.length,
-                        padding: const EdgeInsets.only(
-                            top: 4, bottom: 0, left: 16, right: 16),
-                        itemBuilder: (context, index) {
-                          VehicleModel vehicle =
-                          Defaults().vehicles[index];
-                          return Column(
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    selectedCar = vehicle;
-                                  });
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.all(16),
-                                  color: AppTheme.light,
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text14h500w(
-                                          title: vehicle.vehicleName,
-                                          color:
-                                          vehicle.id == selectedCar.id
-                                              ? AppTheme.purple
-                                              : AppTheme.black,
+                            child: ListView.builder(
+                              itemCount: Defaults().vehicles.length,
+                              padding: const EdgeInsets.only(
+                                  top: 4, bottom: 0, left: 16, right: 16),
+                              itemBuilder: (context, index) {
+                                VehicleModel vehicle =
+                                    Defaults().vehicles[index];
+                                return Column(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          selectedCar = vehicle;
+                                        });
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(16),
+                                        color: AppTheme.light,
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: Text14h500w(
+                                                title: vehicle.vehicleName,
+                                                color:
+                                                    vehicle.id == selectedCar.id
+                                                        ? AppTheme.purple
+                                                        : AppTheme.black,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                    Container(
+                                      height: 1,
+                                      color: AppTheme.blue,
+                                      margin: const EdgeInsets.only(
+                                          left: 8, right: 8),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          )
+                        : Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  selectedCar =
+                                      VehicleModel(id: 0, vehicleName: "");
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(16),
+                                margin: const EdgeInsets.only(
+                                  top: 4,
+                                  bottom: 12,
+                                  left: 16,
+                                  right: 16,
+                                ),
+                                decoration: BoxDecoration(
+                                    color: AppTheme.light,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: AppTheme.purple)),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text16h500w(
+                                          title: selectedCar.vehicleName),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              Container(
-                                height: 1,
-                                color: AppTheme.blue,
-                                margin: const EdgeInsets.only(
-                                    left: 8, right: 8),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                    )
-                        : Expanded(
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            selectedCar =
-                                VehicleModel(id: 0, vehicleName: "");
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          margin: const EdgeInsets.only(
-                            top: 4,
-                            bottom: 12,
-                            left: 16,
-                            right: 16,
+                            ),
                           ),
-                          decoration: BoxDecoration(
-                              color: AppTheme.light,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: AppTheme.purple)),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text16h500w(
-                                    title: selectedCar.vehicleName),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
                   ),
                   Container(
                     padding: const EdgeInsets.only(
@@ -944,9 +918,9 @@ class BottomDialog {
                         ),
                         child: Center(
                             child: Text16h500w(
-                              title: translate("home.apply"),
-                              color: Colors.white,
-                            )),
+                          title: translate("home.apply"),
+                          color: Colors.white,
+                        )),
                       ),
                     ),
                   ),
@@ -960,14 +934,14 @@ class BottomDialog {
   }
 
   static void showSelectColor(
-      BuildContext context,
-      Function(
-          ColorModel data,
-          ) onChanged,
-      ColorModel color,
-      ) {
+    BuildContext context,
+    Function(
+      ColorModel data,
+    ) onChanged,
+    ColorModel color,
+  ) {
     ColorModel selectedColor =
-    ColorModel(name: "", colorCode: Colors.transparent);
+        ColorModel(name: "", colorCode: Colors.transparent);
 
     showModalBottomSheet(
       barrierColor: AppTheme.black.withOpacity(0.45),
@@ -1022,96 +996,96 @@ class BottomDialog {
                     curve: Curves.easeInOut,
                     child: selectedColor.name.isEmpty
                         ? Expanded(
-                      child: ListView.builder(
-                        itemCount: Defaults().colors.length,
-                        padding: const EdgeInsets.only(
-                            top: 4, bottom: 0, left: 16, right: 16),
-                        itemBuilder: (context, index) {
-                          ColorModel color = Defaults().colors[index];
+                            child: ListView.builder(
+                              itemCount: Defaults().colors.length,
+                              padding: const EdgeInsets.only(
+                                  top: 4, bottom: 0, left: 16, right: 16),
+                              itemBuilder: (context, index) {
+                                ColorModel color = Defaults().colors[index];
 
-                          return Column(
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    selectedColor = color;
-                                  });
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.all(16),
-                                  color: AppTheme.light,
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text14h500w(
-                                          title: color.name,
-                                          color: color.name ==
-                                              selectedColor.name
-                                              ? AppTheme.purple
-                                              : AppTheme.black,
+                                return Column(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          selectedColor = color;
+                                        });
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(16),
+                                        color: AppTheme.light,
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: Text14h500w(
+                                                title: color.name,
+                                                color: color.name ==
+                                                        selectedColor.name
+                                                    ? AppTheme.purple
+                                                    : AppTheme.black,
+                                              ),
+                                            ),
+                                            Container(
+                                              width: 32,
+                                              height: 32,
+                                              decoration: BoxDecoration(
+                                                color: color.colorCode,
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                                border: Border.all(
+                                                  color: AppTheme.purple,
+                                                  width: 1.5,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                      Container(
-                                        width: 32,
-                                        height: 32,
-                                        decoration: BoxDecoration(
-                                          color: color.colorCode,
-                                          borderRadius:
-                                          BorderRadius.circular(8),
-                                          border: Border.all(
-                                            color: AppTheme.purple,
-                                            width: 1.5,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                    Container(
+                                      height: 1,
+                                      color: AppTheme.blue,
+                                      margin: const EdgeInsets.only(
+                                          left: 8, right: 8),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          )
+                        : Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  selectedColor = ColorModel(
+                                    name: "",
+                                    colorCode: Colors.transparent,
+                                  );
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(16),
+                                margin: const EdgeInsets.only(
+                                  top: 4,
+                                  bottom: 12,
+                                  left: 16,
+                                  right: 16,
+                                ),
+                                decoration: BoxDecoration(
+                                    color: AppTheme.light,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: AppTheme.purple)),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text16h500w(
+                                          title: selectedColor.name),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              Container(
-                                height: 1,
-                                color: AppTheme.blue,
-                                margin: const EdgeInsets.only(
-                                    left: 8, right: 8),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                    )
-                        : Expanded(
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            selectedColor = ColorModel(
-                              name: "",
-                              colorCode: Colors.transparent,
-                            );
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          margin: const EdgeInsets.only(
-                            top: 4,
-                            bottom: 12,
-                            left: 16,
-                            right: 16,
+                            ),
                           ),
-                          decoration: BoxDecoration(
-                              color: AppTheme.light,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: AppTheme.purple)),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text16h500w(
-                                    title: selectedColor.name),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
                   ),
                   Container(
                     padding: const EdgeInsets.only(
@@ -1136,9 +1110,9 @@ class BottomDialog {
                         ),
                         child: Center(
                             child: Text16h500w(
-                              title: translate("home.apply"),
-                              color: Colors.white,
-                            )),
+                          title: translate("home.apply"),
+                          color: Colors.white,
+                        )),
                       ),
                     ),
                   ),
@@ -1146,6 +1120,104 @@ class BottomDialog {
               ),
             );
           },
+        );
+      },
+    );
+  }
+
+  static void showBirthDate(BuildContext context,
+      Function(DateTime data) onChoose, DateTime initDate, bool isBirth) {
+    DateTime chooseDate = initDate;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          height: 400,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topRight: Radius.circular(24),
+              topLeft: Radius.circular(24),
+            ),
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 8),
+              Container(
+                height: 4,
+                width: 48,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  color: AppTheme.gray,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                translate("profile.birth_date"),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 18,
+                  fontFamily: AppTheme.fontFamily,
+                  height: 1.5,
+                  color: AppTheme.black,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              Expanded(
+                child: BirthDatePicker(
+                  maximumDate: isBirth == true
+                      ? DateTime.now()
+                      : DateTime.now().add(
+                          const Duration(days: 5475),
+                        ),
+                  minimumDate: DateTime(1900, 02, 16),
+                  initialDateTime: initDate,
+                  onDateTimeChanged: (_date) {
+                    chooseDate = _date;
+                  },
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.pop(context);
+                  onChoose(chooseDate);
+                },
+                child: Container(
+                  height: 56,
+                  margin: const EdgeInsets.only(
+                    left: 36,
+                    right: 36,
+                    bottom: 24,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    color: AppTheme.purple,
+                    boxShadow: const [
+                      BoxShadow(
+                        offset: Offset(5, 9),
+                        blurRadius: 15,
+                        spreadRadius: 0,
+                        color: AppTheme.gray,
+                      ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'Choose',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        fontFamily: AppTheme.fontFamily,
+                        height: 1.5,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         );
       },
     );

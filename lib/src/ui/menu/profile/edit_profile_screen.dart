@@ -29,8 +29,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   TextEditingController fatherController = TextEditingController();
   TextEditingController carModelController = TextEditingController();
   TextEditingController carNumberController = TextEditingController();
-  TextEditingController carColorController = TextEditingController();
   TextEditingController colorController = TextEditingController();
+  TextEditingController birthDateController = TextEditingController();
 
   VehicleModel selectedVehicle = VehicleModel(
     id: 0,
@@ -146,9 +146,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   children: [
                                     GestureDetector(
                                       onTap: () {
-                                        BottomDialog.createUploadImageChat(
+                                        BottomDialog.showUploadImage(
                                           context,
-                                          () async {
+                                          onGallery: () {
                                             // final pickedFile = await picker.pickImage(
                                             //   source: ImageSource.gallery,
                                             // );
@@ -214,7 +214,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                             //   }
                                             // }
                                           },
-                                          () async {
+                                          onCamera: () {
                                             // final pickedFile = await picker.pickImage(
                                             //   source: ImageSource.camera,
                                             // );
