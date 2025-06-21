@@ -2,6 +2,7 @@ import 'package:dotted_line/dotted_line.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_translate/flutter_translate.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:qadam/src/ui/dialogs/bottom_dialog.dart';
 import 'package:qadam/src/ui/dialogs/center_dialog.dart';
 import 'package:qadam/src/ui/menu/home/payment_screen.dart';
@@ -18,6 +19,7 @@ import '../../../model/trip_model.dart';
 import '../../../theme/app_theme.dart';
 import '../../widgets/texts/text_12h_400w.dart';
 import '../new_qadam/map_select_screen.dart';
+import 'map_route_screen.dart';
 
 class TripDetailsScreen extends StatefulWidget {
   const TripDetailsScreen({super.key, required this.trip});
@@ -54,9 +56,9 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     totalPrice = widget.trip.pricePerSeat;
     initTimeState(widget.trip.startTime);
     from =
-    "${Defaults().neighborhoods.firstWhere((n) => n.id == widget.trip.startLocation[2]).text}, ${Defaults().cities.firstWhere((c) => c.id == widget.trip.startLocation[1]).text}, ${Defaults().regions.firstWhere((r) => r.id == widget.trip.startLocation[0]).text}";
+        "${Defaults().neighborhoods.firstWhere((n) => n.id == widget.trip.startLocation[2]).text}, ${Defaults().cities.firstWhere((c) => c.id == widget.trip.startLocation[1]).text}, ${Defaults().regions.firstWhere((r) => r.id == widget.trip.startLocation[0]).text}";
     to =
-    "${Defaults().neighborhoods.firstWhere((n) => n.id == widget.trip.endLocation[2]).text}, ${Defaults().cities.firstWhere((c) => c.id == widget.trip.endLocation[1]).text}, ${Defaults().regions.firstWhere((r) => r.id == widget.trip.endLocation[0]).text}";
+        "${Defaults().neighborhoods.firstWhere((n) => n.id == widget.trip.endLocation[2]).text}, ${Defaults().cities.firstWhere((c) => c.id == widget.trip.endLocation[1]).text}, ${Defaults().regions.firstWhere((r) => r.id == widget.trip.endLocation[0]).text}";
     super.initState();
   }
 
@@ -143,7 +145,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                   title: Defaults()
                                       .regions
                                       .firstWhere((r) =>
-                                  r.id == widget.trip.startLocation[0])
+                                          r.id == widget.trip.startLocation[0])
                                       .text,
                                   color: AppTheme.gray,
                                 ),
@@ -153,8 +155,8 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                       Defaults()
                                           .neighborhoods
                                           .firstWhere((n) =>
-                                      n.id ==
-                                          widget.trip.startLocation[2])
+                                              n.id ==
+                                              widget.trip.startLocation[2])
                                           .text,
                                       3),
                                   style: const TextStyle(
@@ -170,7 +172,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                   title: Defaults()
                                       .cities
                                       .firstWhere((c) =>
-                                  c.id == widget.trip.startLocation[1])
+                                          c.id == widget.trip.startLocation[1])
                                       .text,
                                   color: AppTheme.gray,
                                 ),
@@ -265,7 +267,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                   title: Defaults()
                                       .regions
                                       .firstWhere((r) =>
-                                  r.id == widget.trip.endLocation[0])
+                                          r.id == widget.trip.endLocation[0])
                                       .text,
                                   color: AppTheme.gray,
                                 ),
@@ -275,8 +277,8 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                       Defaults()
                                           .neighborhoods
                                           .firstWhere((n) =>
-                                      n.id ==
-                                          widget.trip.endLocation[2])
+                                              n.id ==
+                                              widget.trip.endLocation[2])
                                           .text,
                                       3),
                                   style: const TextStyle(
@@ -292,7 +294,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                   title: Defaults()
                                       .cities
                                       .firstWhere((c) =>
-                                  c.id == widget.trip.endLocation[1])
+                                          c.id == widget.trip.endLocation[1])
                                       .text,
                                   color: AppTheme.gray,
                                 ),
@@ -337,20 +339,19 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text16h500w(
-                                  title:
-                                      from,
+                                  title: from,
                                 ),
                               ],
                             ),
                           ),
                           const SizedBox(width: 12),
                           GestureDetector(
-                            onTap: (){
+                            onTap: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => MapSelectScreen(
-                                      place: from),
+                                  builder: (context) =>
+                                      MapSelectScreen(place: from),
                                 ),
                               ).then((value) {
                                 if (value != null) {
@@ -394,20 +395,19 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text16h500w(
-                                  title:
-                                      to,
+                                  title: to,
                                 ),
                               ],
                             ),
                           ),
                           const SizedBox(width: 12),
                           GestureDetector(
-                            onTap: (){
+                            onTap: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => MapSelectScreen(
-                                      place: to),
+                                  builder: (context) =>
+                                      MapSelectScreen(place: to),
                                 ),
                               ).then((value) {
                                 if (value != null) {
@@ -493,6 +493,27 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                             ],
                           )
                         ],
+                      ),
+                      const SizedBox(height: 16),
+                      SecondaryButton(
+                        title: translate("home.view_route_map"),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) {
+                                return MapRouteScreen(
+                                  start: const LatLng(
+                                      39.65102589159305, 66.96563837931475),
+                                  end: const LatLng(
+                                      41.31208082463855, 69.28203897643235),
+                                  startText: from,
+                                  endText: to,
+                                );
+                              },
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
