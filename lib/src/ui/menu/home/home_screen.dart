@@ -725,13 +725,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => CreateNewQadamScreen(
+                                    builder: (context) => TripDetailsScreen(
                                       trip: Defaults().trips[0],
-                                      onCreated: (data) {
-                                        setState(() {
-                                          myTrips.add(data);
-                                        });
-                                      },
+                                      isDriver: true,
                                     ),
                                   ),
                                 );

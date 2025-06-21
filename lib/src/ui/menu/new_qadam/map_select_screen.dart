@@ -123,6 +123,7 @@ class _MapSelectScreenState extends State<MapSelectScreen> {
                   ),
                   scrollGesturesEnabled: true,
                   zoomControlsEnabled: false,
+                  zoomGesturesEnabled: true,
                   compassEnabled: false,
                   myLocationEnabled: false,
                   mapType: _currentMapType,

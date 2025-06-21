@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:lottie/lottie.dart';
 import 'package:qadam/src/ui/dialogs/bottom_dialog.dart';
 import 'package:qadam/src/ui/dialogs/center_dialog.dart';
+import 'package:qadam/src/ui/menu/home/map_single_screen.dart';
 import 'package:qadam/src/ui/menu/home/payment_screen.dart';
 import 'package:qadam/src/ui/widgets/buttons/secondary_button.dart';
 import 'package:qadam/src/ui/widgets/containers/leading_back.dart';
@@ -22,9 +24,14 @@ import '../new_qadam/map_select_screen.dart';
 import 'map_route_screen.dart';
 
 class TripDetailsScreen extends StatefulWidget {
-  const TripDetailsScreen({super.key, required this.trip});
+  const TripDetailsScreen({
+    super.key,
+    required this.trip,
+    this.isDriver = false,
+  });
 
   final TripModel trip;
+  final bool isDriver;
 
   @override
   State<TripDetailsScreen> createState() => _TripDetailsScreenState();
@@ -350,15 +357,13 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                      MapSelectScreen(place: from),
+                                  builder: (context) => MapSingleScreen(
+                                    location: const LatLng(
+                                        39.65102589159305, 66.96563837931475),
+                                    place: from,
+                                  ),
                                 ),
-                              ).then((value) {
-                                if (value != null) {
-                                  print(
-                                      'Selected coordinates: $value'); // LatLng object
-                                }
-                              });
+                              );
                             },
                             child: Container(
                               height: 40,
@@ -406,15 +411,13 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                      MapSelectScreen(place: to),
+                                  builder: (context) => MapSingleScreen(
+                                    location: const LatLng(
+                                        41.31208082463855, 69.28203897643235),
+                                    place: to,
+                                  ),
                                 ),
-                              ).then((value) {
-                                if (value != null) {
-                                  print(
-                                      'Selected coordinates: $value'); // LatLng object
-                                }
-                              });
+                              );
                             },
                             child: Container(
                               height: 40,
@@ -521,119 +524,158 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                 const SizedBox(height: 24),
                 Text16h500w(title: translate("home.passenger_info")),
                 const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.dark.withOpacity(0.1),
-                        spreadRadius: 15,
-                        blurRadius: 25,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text14h400w(
-                              title: translate("home.number_passenger"),
-                              color: AppTheme.gray,
+                widget.isDriver == false
+                    ? Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.dark.withOpacity(0.1),
+                              spreadRadius: 15,
+                              blurRadius: 25,
+                              offset: const Offset(0, 5),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Text16h500w(title: passengersNum.toString()),
-                          const SizedBox(width: 12),
-                          GestureDetector(
-                            onTap: () {
-                              if (passengersNum < widget.trip.availableSeats) {
-                                BottomDialog.showAddPassenger(
-                                  context,
-                                  PassengerModel(fullName: ""),
-                                  (data) {
-                                    bool isExist = false;
-                                    for (int i = 0;
-                                        i < passengers.length;
-                                        i++) {
-                                      if (passengers[i].fullName ==
-                                          data.fullName) {
-                                        isExist = true;
-                                        break;
-                                      }
-                                    }
-                                    if (isExist == false &&
-                                        data.fullName != "") {
-                                      setState(() {
-                                        passengers.add(data);
-                                        passengersNum++;
-                                      });
-                                    } else {
-                                      CenterDialog.showActionFailed(
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text14h400w(
+                                    title: translate("home.number_passenger"),
+                                    color: AppTheme.gray,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Text16h500w(title: passengersNum.toString()),
+                                const SizedBox(width: 12),
+                                GestureDetector(
+                                  onTap: () {
+                                    if (passengersNum <
+                                        widget.trip.availableSeats) {
+                                      BottomDialog.showAddPassenger(
                                         context,
-                                        translate("home.passenger_exist"),
-                                        translate("home.passenger_exist_error"),
+                                        PassengerModel(fullName: ""),
+                                        (data) {
+                                          bool isExist = false;
+                                          for (int i = 0;
+                                              i < passengers.length;
+                                              i++) {
+                                            if (passengers[i].fullName ==
+                                                data.fullName) {
+                                              isExist = true;
+                                              break;
+                                            }
+                                          }
+                                          if (isExist == false &&
+                                              data.fullName != "") {
+                                            setState(() {
+                                              passengers.add(data);
+                                              passengersNum++;
+                                            });
+                                          } else {
+                                            CenterDialog.showActionFailed(
+                                              context,
+                                              translate("home.passenger_exist"),
+                                              translate(
+                                                  "home.passenger_exist_error"),
+                                            );
+                                          }
+                                        },
                                       );
                                     }
                                   },
-                                );
-                              }
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: AppTheme.light,
-                                borderRadius: BorderRadius.circular(24),
-                              ),
-                              child: const Icon(
-                                Icons.add,
-                                color: AppTheme.black,
-                                size: 24,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.light,
+                                      borderRadius: BorderRadius.circular(24),
+                                    ),
+                                    child: const Icon(
+                                      Icons.add,
+                                      color: AppTheme.black,
+                                      size: 24,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: passengers.length,
+                                padding: EdgeInsets.zero,
+                                itemBuilder: (context, index) {
+                                  return Column(
+                                    children: [
+                                      PassengersContainer(
+                                        passenger: passengers[index],
+                                        onEdit: (data) {
+                                          if (data.fullName != "" &&
+                                              data != passengers[index]) {
+                                            setState(() {
+                                              passengers[index] = data;
+                                            });
+                                          }
+                                        },
+                                        onDelete: () {
+                                          if (passengers.length > 1) {
+                                            setState(() {
+                                              passengers
+                                                  .remove(passengers[index]);
+                                              passengersNum--;
+                                            });
+                                          }
+                                        },
+                                      ),
+                                      index == passengers.length - 1
+                                          ? const SizedBox()
+                                          : const Divider(),
+                                    ],
+                                  );
+                                })
+                          ],
+                        ),
+                      )
+                    : Container(
+                        padding: const EdgeInsets.all(16),
+                        height: 96,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.dark.withOpacity(0.1),
+                              spreadRadius: 15,
+                              blurRadius: 25,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              height: 64,
+                              width: 64,
+                              child: Lottie.asset(
+                                "assets/lottie/waiting.json",
+                                width: 64,
+                                height: 64,
+                                fit: BoxFit.cover,
                               ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 16),
+                            Text14h400w(
+                              title: translate("home.no_passenger"),
+                              color: AppTheme.gray,
+                            ),
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 16),
-                      ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: passengers.length,
-                          padding: EdgeInsets.zero,
-                          itemBuilder: (context, index) {
-                            return Column(
-                              children: [
-                                PassengersContainer(
-                                  passenger: passengers[index],
-                                  onEdit: (data) {
-                                    if (data.fullName != "" &&
-                                        data != passengers[index]) {
-                                      setState(() {
-                                        passengers[index] = data;
-                                      });
-                                    }
-                                  },
-                                  onDelete: () {
-                                    if (passengers.length > 1) {
-                                      setState(() {
-                                        passengers.remove(passengers[index]);
-                                        passengersNum--;
-                                      });
-                                    }
-                                  },
-                                ),
-                                index == passengers.length - 1
-                                    ? const SizedBox()
-                                    : const Divider(),
-                              ],
-                            );
-                          })
-                    ],
-                  ),
-                ),
               ],
             ),
           ),
@@ -665,7 +707,9 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                       color: AppTheme.gray,
                     ),
                     Text(
-                      "\$${(int.parse(totalPrice) * passengersNum).toString()}",
+                      widget.isDriver == false
+                          ? "\$${(int.parse(totalPrice) * passengersNum).toString()}"
+                          : "\$0",
                       style: const TextStyle(
                         color: AppTheme.black,
                         fontSize: 20,
@@ -678,14 +722,21 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                 ),
                 const SizedBox(height: 16),
                 SecondaryButton(
-                  title: translate("home.book_now"),
+                  title: translate(widget.isDriver == false
+                      ? "home.book_now"
+                      : "home.cancel_trip"),
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PaymentScreen(trip: widget.trip),
-                      ),
-                    );
+                    if (widget.isDriver == false) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              PaymentScreen(trip: widget.trip),
+                        ),
+                      );
+                    } else {
+                      Navigator.pop(context);
+                    }
                   },
                 ),
               ],

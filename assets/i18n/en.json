@@ -121,7 +121,10 @@
     "payment_method_error": "Payment Method Error",
     "payment_method_error_msg": "Please add a credit card to continue",
     "my_active_trips": "My Active Trip",
-    "view_route_map": "View Route in Maps"
+    "view_route_map": "View Route in Maps",
+    "no_passenger": "No Passenger Yet",
+    "cancel_trip": "Cancel Trip",
+    "location": "Location"
   },
   "qadam": {
     "add_docs_title": "Missing Driver License",
