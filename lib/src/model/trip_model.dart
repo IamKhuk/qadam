@@ -13,8 +13,8 @@ class TripModel {
   TripModel({
     this.driverId = 0,
     required this.vehicleId,
-    this.startLocation = const [1, 2, 3],
-    this.endLocation = const [4, 5, 6],
+    this.startLocation = const [2, 201, 20101],
+    this.endLocation = const [1, 101, 10101],
     required this.startTime,
     required this.endTime,
     required this.pricePerSeat,

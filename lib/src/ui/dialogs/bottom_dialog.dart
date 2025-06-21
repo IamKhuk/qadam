@@ -20,21 +20,26 @@ enum PassengerStep { fullName, email, phoneNumber }
 
 class BottomDialog {
   static void showSelectLocation(
-    BuildContext context,
-    LocationModel region,
-    LocationModel city,
-    LocationModel neighbourhood,
-    Function(
+      BuildContext context,
       LocationModel region,
       LocationModel city,
       LocationModel neighbourhood,
-    ) onChanged,
-  ) {
-    bool onCh = false;
-    LocationModel selectedLocation = LocationModel(id: 0, text: "");
-    LocationModel selectedRegion = LocationModel(id: 0, text: "");
-    LocationModel selectedCity = LocationModel(id: 0, text: "");
-    LocationModel selectedNeighbourhood = LocationModel(id: 0, text: "");
+      Function(
+          LocationModel region,
+          LocationModel city,
+          LocationModel neighbourhood,
+          ) onChanged,
+      ) {
+    LocationModel selectedLocation = LocationModel(id: 0, text: "", parentID: 0);
+    LocationModel selectedRegion = region.id != 0
+        ? region
+        : LocationModel(id: 0, text: "", parentID: 0);
+    LocationModel selectedCity = city.id != 0
+        ? city
+        : LocationModel(id: 0, text: "", parentID: 0);
+    LocationModel selectedNeighbourhood = neighbourhood.id != 0
+        ? neighbourhood
+        : LocationModel(id: 0, text: "", parentID: 0);
 
     showModalBottomSheet(
       barrierColor: AppTheme.black.withOpacity(0.45),
@@ -42,13 +47,17 @@ class BottomDialog {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        if (region.id != 0) {
-          selectedLocation = region;
-        }
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
+            // Determine the list to display based on selection state
+            List<LocationModel> currentList = selectedRegion.id == 0
+                ? Defaults().regions
+                : selectedCity.id == 0
+                ? Defaults().cities.where((c) => c.parentID == selectedRegion.id).toList()
+                : Defaults().neighborhoods.where((n) => n.parentID == selectedCity.id).toList();
+
             return Container(
-              height: selectedLocation.text == "" ? 524 : 256,
+              height: selectedLocation.text.isEmpty ? 524 : 256,
               decoration: const BoxDecoration(
                 borderRadius: BorderRadius.only(
                   topRight: Radius.circular(24),
@@ -82,8 +91,8 @@ class BottomDialog {
                         title: selectedRegion.id == 0
                             ? translate("home.select_region")
                             : selectedCity.id == 0
-                                ? translate("home.select_city")
-                                : translate("home.select_neighborhood"),
+                            ? translate("home.select_city")
+                            : translate("home.select_neighborhood"),
                       ),
                     ],
                   ),
@@ -91,121 +100,103 @@ class BottomDialog {
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 270),
                     curve: Curves.easeInOut,
-                    child: selectedLocation.text == ""
+                    child: selectedLocation.text.isEmpty
                         ? Expanded(
-                            child: ListView.builder(
-                              itemCount: selectedRegion.id == 0
-                                  ? Defaults().regions.length
-                                  : selectedCity.id == 0
-                                      ? Defaults().cities.length
-                                      : Defaults().neighborhoods.length,
-                              padding: const EdgeInsets.only(
-                                  top: 4, bottom: 0, left: 16, right: 16),
-                              itemBuilder: (context, index) {
-                                LocationModel location = selectedRegion.id == 0
-                                    ? Defaults().regions[index]
-                                    : selectedCity.id == 0
-                                        ? Defaults().cities[index]
-                                        : Defaults().neighborhoods[index];
-                                return Column(
-                                  children: [
-                                    GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          selectedLocation = location;
-                                        });
-                                      },
-                                      child: Container(
-                                        padding: const EdgeInsets.all(16),
-                                        color: AppTheme.light,
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              child: Text14h500w(
-                                                title: location.text,
-                                              ),
-                                            ),
-                                          ],
+                      child: ListView.builder(
+                        itemCount: currentList.length,
+                        padding: const EdgeInsets.only(top: 4, bottom: 0, left: 16, right: 16),
+                        itemBuilder: (context, index) {
+                          LocationModel location = currentList[index];
+                          return Column(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    selectedLocation = location;
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(16),
+                                  color: AppTheme.light,
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text14h500w(
+                                          title: location.text,
                                         ),
                                       ),
-                                    ),
-                                    Container(
-                                      height: 1,
-                                      color: AppTheme.blue,
-                                      margin: const EdgeInsets.only(
-                                          left: 8, right: 8),
-                                    ),
-                                  ],
-                                );
-                              },
-                            ),
-                          )
-                        : Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  selectedLocation.text = '';
-                                });
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(16),
-                                margin: const EdgeInsets.only(
-                                  top: 4,
-                                  bottom: 12,
-                                  left: 16,
-                                  right: 16,
-                                ),
-                                decoration: BoxDecoration(
-                                    color: AppTheme.light,
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: AppTheme.purple)),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text16h500w(
-                                          title: selectedLocation.text),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
+                              Container(
+                                height: 1,
+                                color: AppTheme.blue,
+                                margin: const EdgeInsets.only(left: 8, right: 8),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    )
+                        : Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            selectedLocation = LocationModel(id: 0, text: "", parentID: 0);
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          margin: const EdgeInsets.only(top: 4, bottom: 12, left: 16, right: 16),
+                          decoration: BoxDecoration(
+                            color: AppTheme.light,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppTheme.purple),
                           ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text16h500w(
+                                  title: selectedLocation.text,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                   Container(
-                    padding: const EdgeInsets.only(
-                      top: 12,
-                      left: 16,
-                      right: 16,
-                      bottom: 32,
-                    ),
+                    padding: const EdgeInsets.only(top: 12, left: 16, right: 16, bottom: 32),
                     child: Row(
                       children: [
                         GestureDetector(
                           onTap: () {
                             setState(() {
-                              // Step 1: Clear neighborhood if selected (not confirmed by Apply)
+                              // Step 1: Clear selected location if one is selected
                               if (selectedLocation.text.isNotEmpty) {
-                                selectedLocation =
-                                    LocationModel(id: 0, text: '');
-                                return; // Stay in neighborhood selection
+                                selectedLocation = LocationModel(id: 0, text: "", parentID: 0);
+                                return;
                               }
 
-                              // Step 2: Clear city and go back to region selection
+                              // Step 2: Clear neighborhood and go back to city selection
+                              if (selectedNeighbourhood.id != 0) {
+                                selectedNeighbourhood = LocationModel(id: 0, text: "", parentID: 0);
+                                return;
+                              }
+
+                              // Step 3: Clear city and go back to region selection
                               if (selectedCity.id != 0) {
-                                selectedCity = LocationModel(id: 0, text: '');
-                                return; // Stay in city selection
+                                selectedCity = LocationModel(id: 0, text: "", parentID: 0);
+                                return;
                               }
 
-                              // Step 3: Clear region and close dialog
-                              if (selectedRegion.id != 0) {
-                                selectedRegion = LocationModel(id: 0, text: '');
+                              // Step 4: Close dialog if no region is selected
+                              if (selectedRegion.id == 0) {
+                                Navigator.pop(context);
                               }
                             });
-
-                            // Close dialog if no region is selected
-                            if (selectedRegion.id == 0) {
-                              Navigator.pop(context);
-                            }
                           },
                           child: Container(
                             height: 56,
@@ -231,30 +222,28 @@ class BottomDialog {
                         Expanded(
                           child: GestureDetector(
                             onTap: () {
-                              if (selectedLocation.text != '') {
+                              if (selectedLocation.text.isNotEmpty) {
                                 if (selectedRegion.id == 0) {
                                   setState(() {
                                     selectedRegion = selectedLocation;
-                                    selectedLocation =
-                                        LocationModel(id: 0, text: "");
+                                    selectedCity = LocationModel(id: 0, text: "", parentID: 0);
+                                    selectedNeighbourhood = LocationModel(id: 0, text: "", parentID: 0);
+                                    selectedLocation = LocationModel(id: 0, text: "", parentID: 0);
                                   });
-                                  print(
-                                      "Region Selected: ${selectedRegion.text}");
-                                } else if (selectedCity.id == 0) {
+                                  print("Region Selected: ${selectedRegion.text}");
+                                } else if (selectedCity.id == 0 && selectedLocation.parentID == selectedRegion.id) {
                                   setState(() {
                                     selectedCity = selectedLocation;
-                                    selectedLocation =
-                                        LocationModel(id: 0, text: "");
+                                    selectedNeighbourhood = LocationModel(id: 0, text: "", parentID: 0);
+                                    selectedLocation = LocationModel(id: 0, text: "", parentID: 0);
                                   });
                                   print("City Selected: ${selectedCity.text}");
-                                } else {
+                                } else if (selectedNeighbourhood.id == 0 && selectedLocation.parentID == selectedCity.id) {
                                   setState(() {
                                     selectedNeighbourhood = selectedLocation;
-                                    selectedLocation =
-                                        LocationModel(id: 0, text: "");
+                                    selectedLocation = LocationModel(id: 0, text: "", parentID: 0);
                                   });
-                                  print(
-                                      "Neighbourhood Selected: ${selectedNeighbourhood.text}");
+                                  print("Neighbourhood Selected: ${selectedNeighbourhood.text}");
 
                                   onChanged(
                                     selectedRegion,
@@ -267,17 +256,17 @@ class BottomDialog {
                             },
                             child: Container(
                               height: 56,
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
                               decoration: BoxDecoration(
                                 color: AppTheme.purple,
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: Center(
-                                  child: Text16h500w(
-                                title: translate("home.apply"),
-                                color: Colors.white,
-                              )),
+                                child: Text16h500w(
+                                  title: translate("home.apply"),
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -427,11 +416,11 @@ class BottomDialog {
             String getTitle() {
               switch (currentStep) {
                 case PassengerStep.fullName:
-                  return translate("home.enter_full_name");
+                  return translate("home.write_full_name");
                 case PassengerStep.email:
-                  return translate("home.enter_email");
+                  return translate("home.write_email");
                 case PassengerStep.phoneNumber:
-                  return translate("home.enter_phone_number");
+                  return translate("home.write_phone_number");
               }
             }
 
@@ -1126,7 +1115,7 @@ class BottomDialog {
   }
 
   static void showBirthDate(BuildContext context,
-      Function(DateTime data) onChoose, DateTime initDate, bool isBirth) {
+      Function(DateTime data) onChoose, DateTime initDate, bool isBirth, String title) {
     DateTime chooseDate = initDate;
     showModalBottomSheet(
       context: context,
@@ -1154,7 +1143,7 @@ class BottomDialog {
               ),
               const SizedBox(height: 12),
               Text(
-                translate("profile.birth_date"),
+                title,
                 style: const TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 18,
@@ -1167,14 +1156,15 @@ class BottomDialog {
               Expanded(
                 child: BirthDatePicker(
                   maximumDate: isBirth == true
-                      ? DateTime.now()
+                      ? DateTime.now().add(const Duration(days: -365*18))
                       : DateTime.now().add(
                           const Duration(days: 5475),
                         ),
-                  minimumDate: DateTime(1900, 02, 16),
+                  minimumDate: isBirth == true
+                      ? DateTime(1900, 02, 16) : DateTime.now(),
                   initialDateTime: initDate,
-                  onDateTimeChanged: (_date) {
-                    chooseDate = _date;
+                  onDateTimeChanged: (date) {
+                    chooseDate = date;
                   },
                 ),
               ),

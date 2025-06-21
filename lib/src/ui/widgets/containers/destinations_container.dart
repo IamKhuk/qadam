@@ -16,6 +16,9 @@ class DestinationsContainer extends StatelessWidget {
   String m1 = '';
   String h1 = '';
 
+  String from = '';
+  String to = '';
+
   initState(DateTime time) {
     m1 = time.minute < 10 ? '0${time.minute}' : time.minute.toString();
     time.weekday == 1
@@ -58,6 +61,9 @@ class DestinationsContainer extends StatelessWidget {
 
     time.hour < 13 ? t1 = 'AM' : t1 = 'PM';
     h1 = time.hour < 13 ? time.hour.toString() : (time.hour - 12).toString();
+
+    from = "${Defaults().neighborhoods.firstWhere((n) => n.id == trip.startLocation[2]).text}, ${Defaults().cities.firstWhere((c) => c.id == trip.startLocation[1]).text}, ${Defaults().regions.firstWhere((r) => r.id == trip.startLocation[0]).text}";
+    to = "${Defaults().neighborhoods.firstWhere((n) => n.id == trip.endLocation[2]).text}, ${Defaults().cities.firstWhere((c) => c.id == trip.endLocation[1]).text}, ${Defaults().regions.firstWhere((r) => r.id == trip.endLocation[0]).text}";
   }
 
   @override
@@ -202,7 +208,7 @@ class DestinationsContainer extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "${Defaults().locations[trip.startLocation[2] - 1].text}, ${Defaults().locations[trip.startLocation[1] - 1].text}, ${Defaults().locations[trip.startLocation[0] - 1].text}",
+                      from,
                       style: const TextStyle(
                         color: AppTheme.black,
                         fontSize: 16,
@@ -212,7 +218,7 @@ class DestinationsContainer extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      "${Defaults().locations[trip.endLocation[2] - 1].text}, ${Defaults().locations[trip.endLocation[1] - 1].text}, ${Defaults().locations[trip.endLocation[0] - 1].text}",
+                      to,
                       style: const TextStyle(
                         color: AppTheme.black,
                         fontSize: 16,

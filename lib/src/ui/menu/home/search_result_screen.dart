@@ -116,7 +116,9 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                               children: [
                                 Text12h400w(
                                   title: Defaults()
-                                      .regions[widget.trip.startLocation[0] - 1]
+                                      .regions
+                                      .firstWhere((r) =>
+                                          r.id == widget.trip.startLocation[0])
                                       .text,
                                   color: AppTheme.light,
                                 ),
@@ -124,8 +126,10 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                 Text(
                                   safeSubstring(
                                       Defaults()
-                                          .neighborhoods[
-                                              widget.trip.startLocation[2] - 1]
+                                          .neighborhoods
+                                          .firstWhere((n) =>
+                                              n.id ==
+                                              widget.trip.startLocation[2])
                                           .text,
                                       3),
                                   style: const TextStyle(
@@ -139,7 +143,9 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                 const SizedBox(height: 4),
                                 Text12h400w(
                                   title: Defaults()
-                                      .cities[widget.trip.startLocation[1] - 1]
+                                      .cities
+                                      .firstWhere((c) =>
+                                          c.id == widget.trip.startLocation[1])
                                       .text,
                                   color: AppTheme.light,
                                 ),
@@ -165,11 +171,11 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                     direction: Axis.horizontal,
                                     lineThickness: 2,
                                     lineLength:
-                                    ((MediaQuery.of(context).size.width -
-                                        96) /
-                                        3 -
-                                        40) /
-                                        2,
+                                        ((MediaQuery.of(context).size.width -
+                                                        96) /
+                                                    3 -
+                                                40) /
+                                            2,
                                     dashLength: 2,
                                     dashColor: AppTheme.gray,
                                   ),
@@ -193,11 +199,11 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                     direction: Axis.horizontal,
                                     lineThickness: 2,
                                     lineLength:
-                                    ((MediaQuery.of(context).size.width -
-                                        96) /
-                                        3 -
-                                        40) /
-                                        2,
+                                        ((MediaQuery.of(context).size.width -
+                                                        96) /
+                                                    3 -
+                                                40) /
+                                            2,
                                     dashLength: 2,
                                     dashColor: AppTheme.gray,
                                   ),
@@ -226,7 +232,9 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                               children: [
                                 Text12h400w(
                                   title: Defaults()
-                                      .regions[widget.trip.endLocation[0] - 1]
+                                      .regions
+                                      .firstWhere((r) =>
+                                  r.id == widget.trip.endLocation[0])
                                       .text,
                                   color: AppTheme.light,
                                 ),
@@ -234,8 +242,10 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                 Text(
                                   safeSubstring(
                                       Defaults()
-                                          .neighborhoods[
-                                              widget.trip.endLocation[2] - 1]
+                                          .neighborhoods
+                                          .firstWhere((n) =>
+                                      n.id ==
+                                          widget.trip.endLocation[2])
                                           .text,
                                       3),
                                   style: const TextStyle(
@@ -248,9 +258,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text12h400w(
-                                  title: Defaults()
-                                      .cities[widget.trip.endLocation[1] - 1]
-                                      .text,
+                                  title: Defaults().cities.firstWhere((c) => c.id == widget.trip.endLocation[1]).text,
                                   color: AppTheme.light,
                                 ),
                               ],

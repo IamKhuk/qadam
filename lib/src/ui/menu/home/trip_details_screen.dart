@@ -17,6 +17,7 @@ import '../../../model/passenger_model.dart';
 import '../../../model/trip_model.dart';
 import '../../../theme/app_theme.dart';
 import '../../widgets/texts/text_12h_400w.dart';
+import '../new_qadam/map_select_screen.dart';
 
 class TripDetailsScreen extends StatefulWidget {
   const TripDetailsScreen({super.key, required this.trip});
@@ -37,6 +38,9 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
   String m1 = '';
   String h1 = '';
 
+  String from = '';
+  String to = '';
+
   List<PassengerModel> passengers = [
     PassengerModel(
       fullName: "Khusan Khukumov",
@@ -49,6 +53,10 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
   void initState() {
     totalPrice = widget.trip.pricePerSeat;
     initTimeState(widget.trip.startTime);
+    from =
+    "${Defaults().neighborhoods.firstWhere((n) => n.id == widget.trip.startLocation[2]).text}, ${Defaults().cities.firstWhere((c) => c.id == widget.trip.startLocation[1]).text}, ${Defaults().regions.firstWhere((r) => r.id == widget.trip.startLocation[0]).text}";
+    to =
+    "${Defaults().neighborhoods.firstWhere((n) => n.id == widget.trip.endLocation[2]).text}, ${Defaults().cities.firstWhere((c) => c.id == widget.trip.endLocation[1]).text}, ${Defaults().regions.firstWhere((r) => r.id == widget.trip.endLocation[0]).text}";
     super.initState();
   }
 
@@ -133,7 +141,9 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                               children: [
                                 Text12h400w(
                                   title: Defaults()
-                                      .regions[widget.trip.startLocation[0] - 1]
+                                      .regions
+                                      .firstWhere((r) =>
+                                  r.id == widget.trip.startLocation[0])
                                       .text,
                                   color: AppTheme.gray,
                                 ),
@@ -141,8 +151,10 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                 Text(
                                   safeSubstring(
                                       Defaults()
-                                          .neighborhoods[
-                                              widget.trip.startLocation[2] - 1]
+                                          .neighborhoods
+                                          .firstWhere((n) =>
+                                      n.id ==
+                                          widget.trip.startLocation[2])
                                           .text,
                                       3),
                                   style: const TextStyle(
@@ -156,7 +168,9 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                 const SizedBox(height: 2),
                                 Text12h400w(
                                   title: Defaults()
-                                      .cities[widget.trip.startLocation[1] - 1]
+                                      .cities
+                                      .firstWhere((c) =>
+                                  c.id == widget.trip.startLocation[1])
                                       .text,
                                   color: AppTheme.gray,
                                 ),
@@ -249,7 +263,9 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                               children: [
                                 Text12h400w(
                                   title: Defaults()
-                                      .regions[widget.trip.endLocation[0] - 1]
+                                      .regions
+                                      .firstWhere((r) =>
+                                  r.id == widget.trip.endLocation[0])
                                       .text,
                                   color: AppTheme.gray,
                                 ),
@@ -257,8 +273,10 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                 Text(
                                   safeSubstring(
                                       Defaults()
-                                          .neighborhoods[
-                                              widget.trip.endLocation[2] - 1]
+                                          .neighborhoods
+                                          .firstWhere((n) =>
+                                      n.id ==
+                                          widget.trip.endLocation[2])
                                           .text,
                                       3),
                                   style: const TextStyle(
@@ -272,7 +290,9 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                 const SizedBox(height: 2),
                                 Text12h400w(
                                   title: Defaults()
-                                      .cities[widget.trip.endLocation[1] - 1]
+                                      .cities
+                                      .firstWhere((c) =>
+                                  c.id == widget.trip.endLocation[1])
                                       .text,
                                   color: AppTheme.gray,
                                 ),
@@ -318,27 +338,43 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                 const SizedBox(height: 4),
                                 Text16h500w(
                                   title:
-                                      "${Defaults().neighborhoods[widget.trip.startLocation[2] - 1].text}, ${Defaults().cities[widget.trip.startLocation[1] - 1].text}, ${Defaults().regions[widget.trip.startLocation[0] - 1].text}",
+                                      from,
                                 ),
                               ],
                             ),
                           ),
                           const SizedBox(width: 12),
-                          Container(
-                            height: 40,
-                            width: 40,
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: AppTheme.light,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: SvgPicture.asset(
-                              "assets/icons/map_pin.svg",
-                              height: 24,
-                              width: 24,
-                              colorFilter: const ColorFilter.mode(
-                                AppTheme.black,
-                                BlendMode.srcIn,
+                          GestureDetector(
+                            onTap: (){
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => MapSelectScreen(
+                                      place: from),
+                                ),
+                              ).then((value) {
+                                if (value != null) {
+                                  print(
+                                      'Selected coordinates: $value'); // LatLng object
+                                }
+                              });
+                            },
+                            child: Container(
+                              height: 40,
+                              width: 40,
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppTheme.light,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: SvgPicture.asset(
+                                "assets/icons/map_pin.svg",
+                                height: 24,
+                                width: 24,
+                                colorFilter: const ColorFilter.mode(
+                                  AppTheme.black,
+                                  BlendMode.srcIn,
+                                ),
                               ),
                             ),
                           ),
@@ -359,27 +395,43 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                 const SizedBox(height: 4),
                                 Text16h500w(
                                   title:
-                                      "${Defaults().neighborhoods[widget.trip.endLocation[2] - 1].text}, ${Defaults().cities[widget.trip.endLocation[1] - 1].text}, ${Defaults().regions[widget.trip.endLocation[0] - 1].text}",
+                                      to,
                                 ),
                               ],
                             ),
                           ),
                           const SizedBox(width: 12),
-                          Container(
-                            height: 40,
-                            width: 40,
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: AppTheme.light,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: SvgPicture.asset(
-                              "assets/icons/map_pin.svg",
-                              height: 24,
-                              width: 24,
-                              colorFilter: const ColorFilter.mode(
-                                AppTheme.black,
-                                BlendMode.srcIn,
+                          GestureDetector(
+                            onTap: (){
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => MapSelectScreen(
+                                      place: to),
+                                ),
+                              ).then((value) {
+                                if (value != null) {
+                                  print(
+                                      'Selected coordinates: $value'); // LatLng object
+                                }
+                              });
+                            },
+                            child: Container(
+                              height: 40,
+                              width: 40,
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppTheme.light,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: SvgPicture.asset(
+                                "assets/icons/map_pin.svg",
+                                height: 24,
+                                width: 24,
+                                colorFilter: const ColorFilter.mode(
+                                  AppTheme.black,
+                                  BlendMode.srcIn,
+                                ),
                               ),
                             ),
                           ),

@@ -23,10 +23,10 @@ class HistoryContainer extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            offset: const Offset(0, 4),
-            blurRadius: 100,
+            offset: const Offset(0, 5),
+            blurRadius: 25,
             spreadRadius: 0,
-            color: AppTheme.black.withOpacity(0.05),
+            color: AppTheme.dark.withOpacity(0.4),
           ),
         ],
       ),
@@ -74,15 +74,13 @@ class HistoryContainer extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text12h400w(
-                      title: Defaults().regions[trip.startLocation[0] - 1].text,
+                      title: Defaults().regions.firstWhere((r) => r.id == trip.startLocation[0]).text,
                       color: AppTheme.gray,
                     ),
                     const SizedBox(height: 2),
                     Text(
                       safeSubstring(
-                          Defaults()
-                              .neighborhoods[trip.startLocation[2] - 1]
-                              .text,
+                          Defaults().neighborhoods.firstWhere((n) => n.id == trip.startLocation[2]).text,
                           3),
                       style: const TextStyle(
                         fontFamily: AppTheme.fontFamily,
@@ -94,7 +92,7 @@ class HistoryContainer extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text12h400w(
-                      title: Defaults().cities[trip.startLocation[1] - 1].text,
+                      title: Defaults().cities.firstWhere((c) => c.id == trip.startLocation[1]).text,
                       color: AppTheme.gray,
                     ),
                   ],
@@ -179,15 +177,13 @@ class HistoryContainer extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text12h400w(
-                      title: Defaults().regions[trip.endLocation[0] - 1].text,
+                      title: Defaults().regions.firstWhere((r) => r.id == trip.endLocation[0]).text,
                       color: AppTheme.gray,
                     ),
                     const SizedBox(height: 2),
                     Text(
                       safeSubstring(
-                          Defaults()
-                              .neighborhoods[trip.endLocation[2] - 1]
-                              .text,
+                          Defaults().neighborhoods.firstWhere((n) => n.id == trip.endLocation[2]).text,
                           3),
                       style: const TextStyle(
                         fontFamily: AppTheme.fontFamily,
@@ -199,7 +195,7 @@ class HistoryContainer extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text12h400w(
-                      title: Defaults().cities[trip.endLocation[1] - 1].text,
+                      title: Defaults().cities.firstWhere((c) => c.id == trip.endLocation[1]).text,
                       color: AppTheme.gray,
                     ),
                   ],

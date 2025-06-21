@@ -33,7 +33,7 @@ class _AddDocsScreenState extends State<AddDocsScreen> {
   TextEditingController carModelController = TextEditingController();
   TextEditingController carNumberController = TextEditingController();
   TextEditingController colorController = TextEditingController();
-  DateTime birthDate = DateTime.now();
+  DateTime birthDate = DateTime.now().subtract(const Duration(days: 365 * 18));
   DateTime licenseExpiryDate = DateTime.now();
 
   VehicleModel selectedVehicle = VehicleModel(
@@ -209,6 +209,7 @@ class _AddDocsScreenState extends State<AddDocsScreen> {
                               },
                               licenseExpiryDate,
                               false,
+                              translate("qadam.driver_license_expiry_date"),
                             );
                           },
                           readOnly: true,
@@ -281,6 +282,7 @@ class _AddDocsScreenState extends State<AddDocsScreen> {
                               },
                               birthDate,
                               true,
+                              translate("profile.birth_date"),
                             );
                           },
                           readOnly: true,

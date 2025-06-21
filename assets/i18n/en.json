@@ -119,7 +119,8 @@
     "done": "Done",
     "get_a_receipt": "Get a Receipt",
     "payment_method_error": "Payment Method Error",
-    "payment_method_error_msg": "Please add a credit card to continue"
+    "payment_method_error_msg": "Please add a credit card to continue",
+    "my_active_trips": "My Active Trip"
   },
   "qadam": {
     "add_docs_title": "Missing Driver License",
@@ -137,7 +138,21 @@
     "missing_docs_msg": "Please add all documents to continue",
     "verification_in_progress": "Verification In Progress",
     "verification_in_progress_msg": "Please wait while we verify your documents",
-    "verify": "Verify"
+    "verify": "Verify",
+    "select_car_title": "Select Which Car You Want To Drive",
+    "select_car": "Select Car",
+    "vehicle_capacity": "Vehicle Capacity",
+    "passengers": "Passengers",
+    "max_passengers_reached": "Passenger Error",
+    "max_passengers_reached_msg": "Number of passengers cannot exceed the vehicle capacity",
+    "min_passengers_reached": "Passenger Error",
+    "min_passengers_reached_msg": "Number of passengers cannot be less than 1",
+    "price_per_seat": "Price Per Seat (USD)",
+    "No_trip_found": "No Trip Found",
+    "No_trip_found_msg": "Please add a trip to continue",
+    "create_new_trip": "Create A New Trip",
+    "create_trip": "Create Trip",
+    "end_date": "End Date"
   },
   "search": {
     "all": "All",
@@ -171,7 +186,7 @@
     "first_name": "First Name",
     "last_name": "Last Name",
     "father_name": "Father's Name",
-    "email": "Email",
+    "email_address": "Email Address",
     "gender": "Gender",
     "phone_number": "Phone Number",
     "birth_date": "Birth Date",

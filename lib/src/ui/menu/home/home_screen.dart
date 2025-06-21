@@ -6,7 +6,10 @@ import 'package:qadam/src/ui/dialogs/bottom_dialog.dart';
 import 'package:qadam/src/ui/dialogs/center_dialog.dart';
 import 'package:qadam/src/ui/menu/home/search_result_screen.dart';
 import 'package:qadam/src/ui/menu/home/trip_details_screen.dart';
+import 'package:qadam/src/ui/menu/new_qadam/create_new_qadam_screen.dart';
+import 'package:qadam/src/ui/widgets/containers/active_trips_container.dart';
 import 'package:qadam/src/utils/utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../defaults/defaults.dart';
 import '../../../model/trip_model.dart';
@@ -33,6 +36,19 @@ class _HomeScreenState extends State<HomeScreen> {
   String departure = "";
   String returnDate = "";
 
+  bool isDocsAdded = false;
+  bool isDocsVerified = false;
+
+  Future<void> getDriverStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isDocsAdded = prefs.getBool('isDocsAdded') ?? false;
+      isDocsVerified = prefs.getBool('isDocsVerified') ?? false;
+    });
+  }
+
+  List<TripModel> myTrips = [];
+
   LocationModel fromRegion = LocationModel(id: 0, text: "");
   LocationModel fromCity = LocationModel(id: 0, text: "");
   LocationModel fromNeighborhood = LocationModel(id: 0, text: "");
@@ -51,7 +67,18 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     // departureController.text = Utils.tripDateFormat(departureDate);
+    getDriverStatus();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    fromController.dispose();
+    toController.dispose();
+    departureController.dispose();
+    returnController.dispose();
+    super.dispose();
   }
 
   @override
@@ -668,6 +695,55 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
                 const SizedBox(height: 24),
+                isDocsAdded == true
+                    ? Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const SizedBox(width: 24),
+                              Expanded(
+                                child: Text(
+                                  translate("home.my_active_trips"),
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                    fontFamily: AppTheme.fontFamily,
+                                    height: 1.5,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 24),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => CreateNewQadamScreen(
+                                      trip: Defaults().trips[0],
+                                      onCreated: (data) {
+                                        setState(() {
+                                          myTrips.add(data);
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: ActiveTripsContainer(
+                                  trip: Defaults().trips[0]),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+                      )
+                    : const SizedBox(),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [

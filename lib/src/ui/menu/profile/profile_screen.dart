@@ -52,7 +52,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const CircleAvatar(
                   radius: 40,
                   backgroundImage: AssetImage(
-                    "assets/images/intersect.png",
+                    "assets/images/avatar.jpg",
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -61,7 +61,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text18h500w(
-                        title: translate("Erali Choriev"),
+                        title: translate("Khusan Khukumov"),
                       ),
                       const SizedBox(height: 4),
                       const Text12h400w(

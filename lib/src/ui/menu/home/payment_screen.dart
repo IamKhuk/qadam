@@ -237,8 +237,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                   children: [
                                     Text12h400w(
                                       title: Defaults()
-                                          .regions[
-                                              widget.trip.startLocation[0] - 1]
+                                          .regions
+                                          .firstWhere((r) =>
+                                      r.id == widget.trip.startLocation[0])
                                           .text,
                                       color: AppTheme.gray,
                                     ),
@@ -246,9 +247,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                     Text(
                                       safeSubstring(
                                           Defaults()
-                                              .neighborhoods[
-                                                  widget.trip.startLocation[2] -
-                                                      1]
+                                              .neighborhoods
+                                              .firstWhere((n) =>
+                                          n.id ==
+                                              widget.trip.startLocation[2])
                                               .text,
                                           3),
                                       style: const TextStyle(
@@ -262,8 +264,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                     const SizedBox(height: 2),
                                     Text12h400w(
                                       title: Defaults()
-                                          .cities[
-                                              widget.trip.startLocation[1] - 1]
+                                          .cities
+                                          .firstWhere((c) =>
+                                      c.id == widget.trip.startLocation[1])
                                           .text,
                                       color: AppTheme.gray,
                                     ),
@@ -275,8 +278,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
                                     children: [
                                       Container(
                                         width: 8,
@@ -289,12 +291,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                       DottedLine(
                                         direction: Axis.horizontal,
                                         lineThickness: 2,
-                                        lineLength: ((MediaQuery.of(context)
-                                                            .size
-                                                            .width -
-                                                        96) /
-                                                    3 -
-                                                40) /
+                                        lineLength:
+                                        ((MediaQuery.of(context).size.width -
+                                            96) /
+                                            3 -
+                                            40) /
                                             2,
                                         dashLength: 2,
                                         dashColor: AppTheme.gray,
@@ -303,8 +304,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                         padding: const EdgeInsets.all(8),
                                         decoration: BoxDecoration(
                                           color: AppTheme.black,
-                                          borderRadius:
-                                              BorderRadius.circular(24),
+                                          borderRadius: BorderRadius.circular(24),
                                         ),
                                         child: SvgPicture.asset(
                                           "assets/icons/car.svg",
@@ -319,12 +319,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                       DottedLine(
                                         direction: Axis.horizontal,
                                         lineThickness: 2,
-                                        lineLength: ((MediaQuery.of(context)
-                                                            .size
-                                                            .width -
-                                                        96) /
-                                                    3 -
-                                                40) /
+                                        lineLength:
+                                        ((MediaQuery.of(context).size.width -
+                                            96) /
+                                            3 -
+                                            40) /
                                             2,
                                         dashLength: 2,
                                         dashColor: AppTheme.gray,
@@ -360,8 +359,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                   children: [
                                     Text12h400w(
                                       title: Defaults()
-                                          .regions[
-                                              widget.trip.endLocation[0] - 1]
+                                          .regions
+                                          .firstWhere((r) =>
+                                      r.id == widget.trip.endLocation[0])
                                           .text,
                                       color: AppTheme.gray,
                                     ),
@@ -369,9 +369,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                     Text(
                                       safeSubstring(
                                           Defaults()
-                                              .neighborhoods[
-                                                  widget.trip.endLocation[2] -
-                                                      1]
+                                              .neighborhoods
+                                              .firstWhere((n) =>
+                                          n.id ==
+                                              widget.trip.endLocation[2])
                                               .text,
                                           3),
                                       style: const TextStyle(
@@ -385,8 +386,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                     const SizedBox(height: 2),
                                     Text12h400w(
                                       title: Defaults()
-                                          .cities[
-                                              widget.trip.endLocation[1] - 1]
+                                          .cities
+                                          .firstWhere((c) =>
+                                      c.id == widget.trip.endLocation[1])
                                           .text,
                                       color: AppTheme.gray,
                                     ),

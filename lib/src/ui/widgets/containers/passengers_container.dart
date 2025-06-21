@@ -29,6 +29,7 @@ class _PassengersContainerState extends State<PassengersContainer> {
       duration: const Duration(
         milliseconds: 270,
       ),
+      curve: Curves.easeInOut,
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
