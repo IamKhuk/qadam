@@ -10,4 +10,10 @@ class Validators {
     RegExp regExp = RegExp(pattern);
     return regExp.hasMatch(value);
   }
+
+  static bool phoneNumberValidator(String phoneNumber) {
+    final cleanedNumber = phoneNumber.replaceAll(RegExp(r'[\s-]'), '');
+    final phoneRegex = RegExp(r'^\+?[0-9]{9,15}$');
+    return phoneRegex.hasMatch(cleanedNumber);
+  }
 }

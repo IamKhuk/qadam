@@ -19,7 +19,7 @@
     "login": "Log in",
     "hello": "Hello",
     "welcome_back": "Welcome Back!",
-    "please_enter": "Please enter your email and password details to access to your account.",
+    "please_enter": "Please enter your phone number and password details to access to your account.",
     "sign_up": "Sign Up",
     "password": "Password",
     "confirm_password": "Confirm password",
@@ -27,7 +27,16 @@
     "pin_incorrect": "Pin is incorrect",
     "no_code": "Did not get the code? ",
     "send_again": "Send Again",
-    "send_code": "Send Code"
+    "send_code": "Send Code",
+    "phone_number": "Phone Number",
+    "full_name": "Full Name",
+    "register_failed": "Register Failed",
+    "failed_msg": "Please try again later",
+    "connection_failed": "Connection Failed",
+    "connection_failed_msg": "Please check your internet connection and try again",
+    "something_went_wrong": "Something went wrong",
+    "resend_failed": "Resend Failed",
+    "enter_pin_text": "Enter the Verification Code Sent to Your Phone Number to complete the Registration process"
   },
   "home": {
     "home": "Home",

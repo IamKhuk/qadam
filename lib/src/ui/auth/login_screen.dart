@@ -4,6 +4,9 @@ import 'package:qadam/src/ui/auth/verification_screen.dart';
 import 'package:qadam/src/ui/widgets/texts/text_16h_500w.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../model/api/login_model.dart';
+import '../../model/api/register_model.dart';
+import '../../resources/repository.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/validators.dart';
 import '../dialogs/center_dialog.dart';
@@ -22,14 +25,14 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isLoading = false;
   bool isLogin = true;
 
-  TextEditingController emailController = TextEditingController();
+  Repository _repository = Repository();
+
+  TextEditingController phoneController = TextEditingController();
   TextEditingController passController = TextEditingController();
-  TextEditingController emailRegController = TextEditingController();
+  TextEditingController phoneRegController = TextEditingController();
   TextEditingController passRegController = TextEditingController();
   TextEditingController passAgainController = TextEditingController();
-  TextEditingController firstController = TextEditingController();
-  TextEditingController lastController = TextEditingController();
-  TextEditingController fatherController = TextEditingController();
+  TextEditingController fullNameController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +52,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 Container(
                   color: AppTheme.black,
                   child: Container(
-                    padding: const EdgeInsets.only(top: 98, left: 16, right: 16),
+                    padding:
+                        const EdgeInsets.only(top: 98, left: 16, right: 16),
                     height: MediaQuery.sizeOf(context).height / 2.2,
                     decoration: BoxDecoration(
                       image: DecorationImage(
@@ -113,13 +117,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 470),
-                    margin: EdgeInsets.only(top: isLogin?340:0),
+                    margin: EdgeInsets.only(top: isLogin ? 340 : 0),
                     // Ensure full width
                     padding: EdgeInsets.only(
-                      left: 16.0 *
-                          MediaQuery.textScalerOf(context).scale(1),
-                      right: 16.0 *
-                          MediaQuery.textScalerOf(context).scale(1),
+                      left: 16.0 * MediaQuery.textScalerOf(context).scale(1),
+                      right: 16.0 * MediaQuery.textScalerOf(context).scale(1),
                       top: 0,
                       bottom: 24.0,
                     ),
@@ -133,15 +135,19 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   Container(
-                    height: isLogin? MediaQuery.of(context).size.height-340: MediaQuery.of(context).size.height-22,
+                    height: isLogin
+                        ? MediaQuery.of(context).size.height - 340
+                        : MediaQuery.of(context).size.height - 22,
                     padding: const EdgeInsets.only(left: 16, right: 16),
                     decoration: const BoxDecoration(
                       color: Colors.white,
                     ),
                     child: ListView(
                       shrinkWrap: true,
-                      padding: EdgeInsets.only(top: isLogin?0: 98),
-                      physics: isLogin? const NeverScrollableScrollPhysics(): const AlwaysScrollableScrollPhysics(),
+                      padding: EdgeInsets.only(top: isLogin ? 0 : 98),
+                      physics: isLogin
+                          ? const NeverScrollableScrollPhysics()
+                          : const AlwaysScrollableScrollPhysics(),
                       children: [
                         Container(
                           height: 56,
@@ -162,8 +168,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     }
                                   },
                                   child: AnimatedContainer(
-                                    duration:
-                                    const Duration(milliseconds: 280),
+                                    duration: const Duration(milliseconds: 280),
                                     height: 40,
                                     decoration: BoxDecoration(
                                       color: isLogin
@@ -209,8 +214,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     }
                                   },
                                   child: AnimatedContainer(
-                                    duration:
-                                    const Duration(milliseconds: 280),
+                                    duration: const Duration(milliseconds: 280),
                                     height: 40,
                                     decoration: BoxDecoration(
                                       color: isLogin
@@ -223,8 +227,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           blurRadius: 8,
                                           color: isLogin
                                               ? Colors.transparent
-                                              : AppTheme.dark
-                                              .withOpacity(0.2),
+                                              : AppTheme.dark.withOpacity(0.2),
                                         ),
                                       ],
                                     ),
@@ -252,138 +255,58 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 28),
                         isLogin
                             ? Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment:
-                          CrossAxisAlignment.stretch,
-                          children: [
-                            MainTextField(
-                              hintText: "Email address",
-                              icon: Icons.email_outlined,
-                              controller: emailController,
-                            ),
-                            const SizedBox(height: 16),
-                            MainTextField(
-                              hintText: translate("auth.password"),
-                              icon: Icons.lock_outline_rounded,
-                              controller: passController,
-                              pass: true,
-                            ),
-                          ],
-                        )
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  MainTextField(
+                                    hintText: translate("auth.phone_number"),
+                                    icon: Icons.phone_outlined,
+                                    controller: phoneController,
+                                    phone: true,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  MainTextField(
+                                    hintText: translate("auth.password"),
+                                    icon: Icons.lock_outline_rounded,
+                                    controller: passController,
+                                    pass: true,
+                                  ),
+                                ],
+                              )
                             : Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment:
-                          CrossAxisAlignment.stretch,
-                          children: [
-                            MainTextField(
-                              hintText: translate("profile.first_name"),
-                              icon: Icons.person_outline_rounded,
-                              controller: firstController,
-                            ),
-                            const SizedBox(height: 16),
-                            Container(
-                              height: 66,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    offset: const Offset(0, 4),
-                                    blurRadius: 100,
-                                    spreadRadius: 0,
-                                    color: AppTheme.black
-                                        .withOpacity(0.05),
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  MainTextField(
+                                    hintText: translate("auth.full_name"),
+                                    icon: Icons.person_outline_rounded,
+                                    controller: fullNameController,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  const SizedBox(height: 16),
+                                  MainTextField(
+                                    hintText: translate("auth.phone_number"),
+                                    icon: Icons.phone_outlined,
+                                    controller: phoneRegController,
+                                    phone: true,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  MainTextField(
+                                    hintText: translate("auth.password"),
+                                    icon: Icons.lock_outline_rounded,
+                                    controller: passRegController,
+                                    pass: true,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  MainTextField(
+                                    hintText:
+                                        translate("auth.confirm_password"),
+                                    icon: Icons.lock_outline_rounded,
+                                    controller: passAgainController,
+                                    pass: true,
                                   ),
                                 ],
                               ),
-                              child: TextFormField(
-                                controller: lastController,
-                                textAlignVertical:
-                                TextAlignVertical.center,
-                                cursorColor: AppTheme.purple,
-                                enableInteractiveSelection: true,
-                                obscureText: false,
-                                style: const TextStyle(
-                                  fontFamily: AppTheme.fontFamily,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.normal,
-                                  height: 1.5,
-                                  color: AppTheme.black,
-                                ),
-                                autofocus: false,
-                                decoration: InputDecoration(
-                                  border: const OutlineInputBorder(),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius:
-                                    BorderRadius.circular(16),
-                                    borderSide: const BorderSide(
-                                        color: AppTheme.border),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius:
-                                    BorderRadius.circular(16),
-                                    borderSide: const BorderSide(
-                                        color: AppTheme.purple),
-                                  ),
-                                  contentPadding:
-                                  const EdgeInsets.symmetric(
-                                    vertical: 20,
-                                    horizontal: 16,
-                                  ),
-                                  labelText:
-                                  translate("profile.last_name"),
-                                  labelStyle: TextStyle(
-                                    fontFamily: AppTheme.fontFamily,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.normal,
-                                    color:
-                                    AppTheme.dark.withOpacity(0.6),
-                                  ),
-                                  prefixIcon: const Icon(
-                                      Icons.person_outline_rounded),
-                                  prefixIconColor:
-                                  WidgetStateColor.resolveWith(
-                                        (Set<WidgetState> states) {
-                                      if (states.contains(
-                                          WidgetState.focused)) {
-                                        return AppTheme.black;
-                                      }
-                                      return AppTheme.dark;
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            MainTextField(
-                              hintText:
-                              translate("profile.father_name"),
-                              icon: Icons.person_outline_rounded,
-                              controller: fatherController,
-                            ),
-                            const SizedBox(height: 16),
-                            MainTextField(
-                              hintText: "Email address",
-                              icon: Icons.email_outlined,
-                              controller: emailRegController,
-                            ),
-                            const SizedBox(height: 16),
-                            MainTextField(
-                              hintText: translate("auth.password"),
-                              icon: Icons.lock_outline_rounded,
-                              controller: passRegController,
-                              pass: true,
-                            ),
-                            const SizedBox(height: 16),
-                            MainTextField(
-                              hintText:
-                              translate("auth.confirm_password"),
-                              icon: Icons.lock_outline_rounded,
-                              controller: passAgainController,
-                              pass: true,
-                            ),
-                          ],
-                        ),
                       ],
                     ),
                   ),
@@ -405,69 +328,153 @@ class _LoginScreenState extends State<LoginScreen> {
                         : translate("auth.register"),
                     onTap: () async {
                       if (isLogin == true) {
-                        if (emailController.text == 'qwerty@gmail.com' &&
-                            passController.text == 'Qwerty5!') {
-                          SharedPreferences prefs =
-                              await SharedPreferences.getInstance();
-                          prefs.setString("token", "token");
-                          prefs.setBool("isFirst", false);
+                        setState(() {
+                          isLoading = true;
+                        });
+                        var response = await _repository.fetchLogin(
+                          phoneController.text,
+                          passController.text,
+                        );
 
-                          Navigator.of(context).popUntil(
-                            (route) => route.isFirst,
-                          );
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) {
-                                return const MainScreen();
-                              },
-                            ),
-                          );
+                        var result = LoginModel.fromJson(response.result);
+
+                        if (response.isSuccess) {
+                          setState(() {
+                            isLoading = false;
+                          });
+                          if (result.status == "success") {
+                            SharedPreferences prefs =
+                                await SharedPreferences.getInstance();
+                            prefs.setString(
+                                "token", result.authorisation.token);
+                            prefs.setBool("isFirst", false);
+                            prefs.setString(
+                              "token_date",
+                              "${result.user.createdAt.day}-${result.user.createdAt.month}-${result.user.createdAt.year}",
+                            );
+                            await _repository.cacheLoginUser(result.user);
+                            Navigator.of(context).popUntil(
+                              (route) => route.isFirst,
+                            );
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return const MainScreen();
+                                },
+                              ),
+                            );
+                          } else {
+                            CenterDialog.showActionFailed(
+                              context,
+                              translate("auth.login_failed"),
+                              result.message,
+                            );
+                          }
                         } else {
-                          CenterDialog.showActionFailed(
-                            context,
-                            'Login Error',
-                            'Your login or password is incorrect',
-                          );
+                          setState(() {
+                            isLoading = false;
+                          });
+                          if (response.status == -1) {
+                            CenterDialog.showActionFailed(
+                              context,
+                              translate("auth.connection_failed"),
+                              translate("auth.connection_failed_msg"),
+                            );
+                          } else {
+                            CenterDialog.showActionFailed(
+                              context,
+                              translate("auth.something_went_wrong"),
+                              translate("auth.failed_msg"),
+                            );
+                          }
                         }
                       } else {
-                        if (firstController.text.isNotEmpty &&
-                            lastController.text.isNotEmpty &&
-                            fatherController.text.isNotEmpty &&
-                            fatherController.text.isNotEmpty &&
-                            Validators.emailValidator(
-                                    emailRegController.text) ==
-                                true &&
+                        String phone = phoneRegController.text;
+
+                        setState(() {
+                          phone = phone.replaceAll(' ', '');
+                          phone = phone.replaceAll('-', '');
+                          if (phone.contains("+") == false) {
+                            phone = "+$phone";
+                          }
+                        });
+
+                        if (fullNameController.text.isNotEmpty &&
+                            Validators.phoneNumberValidator(phone) == true &&
                             Validators.passwordValidator(
                                     passRegController.text) ==
                                 true &&
                             passAgainController.text ==
                                 passRegController.text) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) {
-                                return const VerificationScreen();
-                              },
-                            ),
+                          setState(() {
+                            isLoading = true;
+                          });
+                          var response = await _repository.fetchRegister(
+                            phone,
+                            passRegController.text,
+                            passAgainController.text,
+                            fullNameController.text,
                           );
-                        } else if (firstController.text.isEmpty ||
-                            lastController.text.isEmpty ||
-                            fatherController.text.isEmpty ||
-                            emailRegController.text.isEmpty ||
-                            passRegController.text.isEmpty) {
+                          var result = RegisterModel.fromJson(
+                            response.result,
+                          );
+                          if (response.isSuccess) {
+                            setState(() {
+                              isLoading = false;
+                            });
+                            if (result.status == "success") {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    return VerificationScreen(
+                                      phone: phone,
+                                    );
+                                  },
+                                ),
+                              );
+                            } else {
+                              CenterDialog.showActionFailed(
+                                context,
+                                translate("auth.register_failed"),
+                                result.message,
+                              );
+                            }
+                          } else {
+                            setState(() {
+                              isLoading = false;
+                            });
+                            if (response.status == -1) {
+                              CenterDialog.showActionFailed(
+                                context,
+                                translate("auth.connection_failed"),
+                                translate("auth.connection_failed_msg"),
+                              );
+                            } else {
+                              CenterDialog.showActionFailed(
+                                context,
+                                translate("auth.something_went_wrong"),
+                                translate("auth.failed_msg"),
+                              );
+                            }
+                          }
+                        } else if (fullNameController.text.isEmpty ||
+                            phoneRegController.text.isEmpty ||
+                            passRegController.text.isEmpty ||
+                            passAgainController.text.isEmpty) {
                           CenterDialog.showActionFailed(
                             context,
                             'Error',
                             'Please fill the forms to sign up',
                           );
-                        } else if (Validators.emailValidator(
-                                emailRegController.text) ==
+                        } else if (Validators.phoneNumberValidator(
+                                phoneRegController.text) ==
                             false) {
                           CenterDialog.showActionFailed(
                             context,
                             'Error',
-                            'Please enter valid email address',
+                            'Please enter valid phone number',
                           );
                         } else if (Validators.passwordValidator(
                                 passRegController.text) ==
@@ -534,10 +541,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void resetValues() {
-    firstController.clear();
-    lastController.clear();
-    fatherController.clear();
-    emailRegController.clear();
+    fullNameController.clear();
+    phoneRegController.clear();
     passRegController.clear();
     passAgainController.clear();
   }
