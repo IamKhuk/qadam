@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_translate/flutter_translate.dart';
+import 'package:qadam/src/lan_localization/load_places.dart';
 import 'package:qadam/src/model/location_model.dart';
 import 'package:qadam/src/ui/dialogs/bottom_dialog.dart';
 import 'package:qadam/src/ui/dialogs/center_dialog.dart';
 import 'package:qadam/src/ui/menu/home/search_result_screen.dart';
 import 'package:qadam/src/ui/menu/home/trip_details_screen.dart';
-import 'package:qadam/src/ui/menu/new_qadam/create_new_qadam_screen.dart';
 import 'package:qadam/src/ui/widgets/containers/active_trips_container.dart';
 import 'package:qadam/src/utils/utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -49,13 +49,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<TripModel> myTrips = [];
 
-  LocationModel fromRegion = LocationModel(id: 0, text: "");
-  LocationModel fromCity = LocationModel(id: 0, text: "");
-  LocationModel fromNeighborhood = LocationModel(id: 0, text: "");
+  LocationModel fromRegion = LocationModel(id: "0", text: "", parentID: '');
+  LocationModel fromCity = LocationModel(id: "0", text: "", parentID: '');
+  LocationModel fromNeighborhood = LocationModel(id: "0", text: "", parentID: '');
 
-  LocationModel toRegion = LocationModel(id: 0, text: "");
-  LocationModel toCity = LocationModel(id: 0, text: "");
-  LocationModel toNeighborhood = LocationModel(id: 0, text: "");
+  LocationModel toRegion = LocationModel(id: "0", text: "", parentID: '');
+  LocationModel toCity = LocationModel(id: "0", text: "", parentID: '');
+  LocationModel toNeighborhood = LocationModel(id: "0", text: "", parentID: '');
 
   DateTime departureDate = DateTime.now();
   DateTime returnDateTime = DateTime.now();
@@ -68,6 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     // departureController.text = Utils.tripDateFormat(departureDate);
     getDriverStatus();
+    // LocationData.loadPlaces(context);
     super.initState();
   }
 
@@ -628,12 +629,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                 height: 56,
                                 child: ElevatedButton(
                                   onPressed: () {
-                                    if (toRegion.id != 0 &&
-                                        fromRegion.id != 0 &&
-                                        toCity.id != 0 &&
-                                        fromCity.id != 0 &&
-                                        toNeighborhood.id != 0 &&
-                                        fromNeighborhood.id != 0) {
+                                    if (toRegion.id != "0" &&
+                                        fromRegion.id != "0" &&
+                                        toCity.id != "0" &&
+                                        fromCity.id != "0" &&
+                                        toNeighborhood.id != "0" &&
+                                        fromNeighborhood.id != "0") {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
@@ -646,14 +647,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                               pricePerSeat: '15',
                                               availableSeats: 0,
                                               startLocation: [
-                                                toRegion.id,
-                                                toCity.id,
-                                                toNeighborhood.id
+                                                int.parse(toRegion.id),
+                                                int.parse(toCity.id),
+                                                int.parse(toNeighborhood.id),
                                               ],
                                               endLocation: [
-                                                fromRegion.id,
-                                                fromCity.id,
-                                                fromNeighborhood.id
+                                                int.parse(fromRegion.id),
+                                                int.parse(fromCity.id),
+                                                int.parse(fromNeighborhood.id),
                                               ],
                                             ),
                                           ),

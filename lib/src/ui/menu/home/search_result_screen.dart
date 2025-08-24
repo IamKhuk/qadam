@@ -8,6 +8,7 @@ import 'package:qadam/src/ui/widgets/containers/destinations_container.dart';
 import 'package:qadam/src/ui/widgets/texts/text_12h_400w.dart';
 import 'package:qadam/src/utils/utils.dart';
 import '../../../defaults/defaults.dart';
+import '../../../lan_localization/load_places.dart';
 import '../../../theme/app_theme.dart';
 import '../../widgets/texts/text_16h_500w.dart';
 
@@ -115,21 +116,22 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text12h400w(
-                                  title: Defaults()
-                                      .regions
+                                  title: LocationData.regions
                                       .firstWhere((r) =>
-                                          r.id == widget.trip.startLocation[0])
+                                          r.id ==
+                                          widget.trip.startLocation[0]
+                                              .toString())
                                       .text,
                                   color: AppTheme.light,
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   safeSubstring(
-                                      Defaults()
-                                          .neighborhoods
+                                      LocationData.villages
                                           .firstWhere((n) =>
                                               n.id ==
-                                              widget.trip.startLocation[2])
+                                              widget.trip.startLocation[2]
+                                                  .toString())
                                           .text,
                                       3),
                                   style: const TextStyle(
@@ -142,10 +144,11 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text12h400w(
-                                  title: Defaults()
-                                      .cities
+                                  title: LocationData.cities
                                       .firstWhere((c) =>
-                                          c.id == widget.trip.startLocation[1])
+                                          c.id ==
+                                          widget.trip.startLocation[1]
+                                              .toString())
                                       .text,
                                   color: AppTheme.light,
                                 ),
@@ -231,21 +234,21 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 Text12h400w(
-                                  title: Defaults()
-                                      .regions
+                                  title: LocationData.regions
                                       .firstWhere((r) =>
-                                  r.id == widget.trip.endLocation[0])
+                                          r.id ==
+                                          widget.trip.endLocation[0].toString())
                                       .text,
                                   color: AppTheme.light,
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   safeSubstring(
-                                      Defaults()
-                                          .neighborhoods
+                                      LocationData.villages
                                           .firstWhere((n) =>
-                                      n.id ==
-                                          widget.trip.endLocation[2])
+                                              n.id ==
+                                              widget.trip.endLocation[2]
+                                                  .toString())
                                           .text,
                                       3),
                                   style: const TextStyle(
@@ -258,7 +261,11 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text12h400w(
-                                  title: Defaults().cities.firstWhere((c) => c.id == widget.trip.endLocation[1]).text,
+                                  title: LocationData.cities
+                                      .firstWhere((c) =>
+                                          c.id ==
+                                          widget.trip.endLocation[1].toString())
+                                      .text,
                                   color: AppTheme.light,
                                 ),
                               ],

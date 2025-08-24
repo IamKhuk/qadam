@@ -27,12 +27,18 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Repository _repository = Repository();
 
+  /// Login
   TextEditingController phoneController = TextEditingController();
   TextEditingController passController = TextEditingController();
+
+  /// Register
   TextEditingController phoneRegController = TextEditingController();
   TextEditingController passRegController = TextEditingController();
   TextEditingController passAgainController = TextEditingController();
-  TextEditingController fullNameController = TextEditingController();
+  TextEditingController firstNameController = TextEditingController();
+  TextEditingController lastNameController = TextEditingController();
+  TextEditingController fatherNameController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -278,17 +284,34 @@ class _LoginScreenState extends State<LoginScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   MainTextField(
-                                    hintText: translate("auth.full_name"),
+                                    hintText: translate("auth.first_name"),
                                     icon: Icons.person_outline_rounded,
-                                    controller: fullNameController,
+                                    controller: firstNameController,
                                   ),
                                   const SizedBox(height: 16),
+                                  MainTextField(
+                                    hintText: translate("auth.last_name"),
+                                    icon: Icons.person_outline_rounded,
+                                    controller: lastNameController,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  MainTextField(
+                                    hintText: translate("auth.father_name"),
+                                    icon: Icons.person_outline_rounded,
+                                    controller: fatherNameController,
+                                  ),
                                   const SizedBox(height: 16),
                                   MainTextField(
                                     hintText: translate("auth.phone_number"),
                                     icon: Icons.phone_outlined,
                                     controller: phoneRegController,
                                     phone: true,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  MainTextField(
+                                    hintText: translate("auth.email"),
+                                    icon: Icons.email_outlined,
+                                    controller: emailController,
                                   ),
                                   const SizedBox(height: 16),
                                   MainTextField(
@@ -400,7 +423,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           }
                         });
 
-                        if (fullNameController.text.isNotEmpty &&
+                        if (firstNameController.text.isNotEmpty &&
+                            lastNameController.text.isNotEmpty &&
+                            fatherNameController.text.isNotEmpty &&
+                            emailController.text.isNotEmpty &&
+                            phoneRegController.text.isNotEmpty &&
+                            passRegController.text.isNotEmpty &&
                             Validators.phoneNumberValidator(phone) == true &&
                             Validators.passwordValidator(
                                     passRegController.text) ==
@@ -411,10 +439,13 @@ class _LoginScreenState extends State<LoginScreen> {
                             isLoading = true;
                           });
                           var response = await _repository.fetchRegister(
+                            firstNameController.text,
+                            lastNameController.text,
+                            fatherNameController.text,
+                            emailController.text,
                             phone,
                             passRegController.text,
                             passAgainController.text,
-                            fullNameController.text,
                           );
                           var result = RegisterModel.fromJson(
                             response.result,
@@ -430,6 +461,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   builder: (context) {
                                     return VerificationScreen(
                                       phone: phone,
+                                      code: result.code.toString(),
                                     );
                                   },
                                 ),
@@ -459,7 +491,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               );
                             }
                           }
-                        } else if (fullNameController.text.isEmpty ||
+                        } else if (firstNameController.text.isEmpty ||
+                            lastNameController.text.isEmpty ||
+                            fatherNameController.text.isEmpty ||
+                            emailController.text.isEmpty ||
                             phoneRegController.text.isEmpty ||
                             passRegController.text.isEmpty ||
                             passAgainController.text.isEmpty) {
@@ -541,7 +576,11 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void resetValues() {
-    fullNameController.clear();
+    phoneController.clear();
+    passController.clear();
+    firstNameController.clear();
+    lastNameController.clear();
+    fatherNameController.clear();
     phoneRegController.clear();
     passRegController.clear();
     passAgainController.clear();

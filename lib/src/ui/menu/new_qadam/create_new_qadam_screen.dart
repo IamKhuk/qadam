@@ -6,6 +6,7 @@ import 'package:qadam/src/model/trip_model.dart';
 import 'package:qadam/src/ui/widgets/buttons/primary_button.dart';
 import 'package:qadam/src/ui/widgets/containers/leading_back.dart';
 import '../../../defaults/defaults.dart';
+import '../../../lan_localization/load_places.dart';
 import '../../../model/color_model.dart';
 import '../../../model/location_model.dart';
 import '../../../model/vehicle_model.dart';
@@ -48,13 +49,15 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
   String departure = "";
   String end = "";
 
-  LocationModel fromRegion = LocationModel(id: 0, text: "");
-  LocationModel fromCity = LocationModel(id: 0, text: "");
-  LocationModel fromNeighborhood = LocationModel(id: 0, text: "");
+  LocationModel fromRegion = LocationModel(id: "0", text: "", parentID: '0');
+  LocationModel fromCity = LocationModel(id: "0", text: "", parentID: '0');
+  LocationModel fromNeighborhood =
+      LocationModel(id: "0", text: "", parentID: '0');
 
-  LocationModel toRegion = LocationModel(id: 0, text: "");
-  LocationModel toCity = LocationModel(id: 0, text: "");
-  LocationModel toNeighborhood = LocationModel(id: 0, text: "");
+  LocationModel toRegion = LocationModel(id: "0", text: "", parentID: '0');
+  LocationModel toCity = LocationModel(id: "0", text: "", parentID: '0');
+  LocationModel toNeighborhood =
+      LocationModel(id: "0", text: "", parentID: '0');
 
   DateTime departureDate = DateTime.now();
   DateTime endDate = DateTime.now();
@@ -109,9 +112,9 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
     currentTrip = widget.trip;
     if (widget.trip.pricePerSeat.isNotEmpty) {
       fromController.text =
-          "${Defaults().neighborhoods.firstWhere((n) => n.id == widget.trip.startLocation[2]).text}, ${Defaults().cities.firstWhere((c) => c.id == widget.trip.startLocation[1]).text}, ${Defaults().regions.firstWhere((r) => r.id == widget.trip.startLocation[0]).text}";
+          "${LocationData.villages.firstWhere((n) => n.id == widget.trip.startLocation[2].toString()).text}, ${LocationData.cities.firstWhere((c) => c.id == widget.trip.startLocation[1].toString()).text}, ${LocationData.regions.firstWhere((r) => r.id == widget.trip.startLocation[0].toString()).text}";
       toController.text =
-          "${Defaults().neighborhoods.firstWhere((n) => n.id == widget.trip.endLocation[2]).text}, ${Defaults().cities.firstWhere((c) => c.id == widget.trip.endLocation[1]).text}, ${Defaults().regions.firstWhere((r) => r.id == widget.trip.endLocation[0]).text}";
+          "${LocationData.villages.firstWhere((n) => n.id == widget.trip.endLocation[2].toString()).text}, ${LocationData.cities.firstWhere((c) => c.id == widget.trip.endLocation[1].toString()).text}, ${LocationData.regions.firstWhere((r) => r.id == widget.trip.endLocation[0].toString()).text}";
       priceController.text = currentTrip.pricePerSeat;
       departureController.text = Utils.tripDateFormat(DateTime.now());
     }

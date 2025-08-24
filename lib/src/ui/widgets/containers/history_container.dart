@@ -10,8 +10,11 @@ import 'package:qadam/src/ui/widgets/texts/text_14h_500w.dart';
 import 'package:qadam/src/ui/widgets/texts/text_16h_500w.dart';
 import 'package:qadam/src/utils/utils.dart';
 
+import '../../../lan_localization/load_places.dart';
+
 class HistoryContainer extends StatelessWidget {
   const HistoryContainer({super.key, required this.trip});
+
   final TripModel trip;
 
   @override
@@ -74,13 +77,19 @@ class HistoryContainer extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text12h400w(
-                      title: Defaults().regions.firstWhere((r) => r.id == trip.startLocation[0]).text,
+                      title: LocationData.regions
+                          .firstWhere(
+                              (r) => r.id == trip.startLocation[0].toString())
+                          .text,
                       color: AppTheme.gray,
                     ),
                     const SizedBox(height: 2),
                     Text(
                       safeSubstring(
-                          Defaults().neighborhoods.firstWhere((n) => n.id == trip.startLocation[2]).text,
+                          LocationData.villages
+                              .firstWhere((n) =>
+                                  n.id == trip.startLocation[2].toString())
+                              .text,
                           3),
                       style: const TextStyle(
                         fontFamily: AppTheme.fontFamily,
@@ -92,7 +101,10 @@ class HistoryContainer extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text12h400w(
-                      title: Defaults().cities.firstWhere((c) => c.id == trip.startLocation[1]).text,
+                      title: LocationData.cities
+                          .firstWhere(
+                              (c) => c.id == trip.startLocation[1].toString())
+                          .text,
                       color: AppTheme.gray,
                     ),
                   ],
@@ -177,13 +189,19 @@ class HistoryContainer extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text12h400w(
-                      title: Defaults().regions.firstWhere((r) => r.id == trip.endLocation[0]).text,
+                      title: LocationData.regions
+                          .firstWhere(
+                              (r) => r.id == trip.endLocation[0].toString())
+                          .text,
                       color: AppTheme.gray,
                     ),
                     const SizedBox(height: 2),
                     Text(
                       safeSubstring(
-                          Defaults().neighborhoods.firstWhere((n) => n.id == trip.endLocation[2]).text,
+                          LocationData.villages
+                              .firstWhere(
+                                  (n) => n.id == trip.endLocation[2].toString())
+                              .text,
                           3),
                       style: const TextStyle(
                         fontFamily: AppTheme.fontFamily,
@@ -195,7 +213,10 @@ class HistoryContainer extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text12h400w(
-                      title: Defaults().cities.firstWhere((c) => c.id == trip.endLocation[1]).text,
+                      title: LocationData.cities
+                          .firstWhere(
+                              (c) => c.id == trip.endLocation[1].toString())
+                          .text,
                       color: AppTheme.gray,
                     ),
                   ],

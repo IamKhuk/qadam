@@ -16,11 +16,11 @@ import 'package:qadam/src/ui/widgets/texts/text_16h_500w.dart';
 import 'package:qadam/src/utils/utils.dart';
 
 import '../../../defaults/defaults.dart';
+import '../../../lan_localization/load_places.dart';
 import '../../../model/passenger_model.dart';
 import '../../../model/trip_model.dart';
 import '../../../theme/app_theme.dart';
 import '../../widgets/texts/text_12h_400w.dart';
-import '../new_qadam/map_select_screen.dart';
 import 'map_route_screen.dart';
 
 class TripDetailsScreen extends StatefulWidget {
@@ -63,9 +63,9 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     totalPrice = widget.trip.pricePerSeat;
     initTimeState(widget.trip.startTime);
     from =
-        "${Defaults().neighborhoods.firstWhere((n) => n.id == widget.trip.startLocation[2]).text}, ${Defaults().cities.firstWhere((c) => c.id == widget.trip.startLocation[1]).text}, ${Defaults().regions.firstWhere((r) => r.id == widget.trip.startLocation[0]).text}";
+        "${LocationData.villages.firstWhere((n) => n.id == widget.trip.startLocation[2].toString()).text}, ${LocationData.cities.firstWhere((c) => c.id == widget.trip.startLocation[1].toString()).text}, ${LocationData.regions.firstWhere((r) => r.id == widget.trip.startLocation[0].toString()).text}";
     to =
-        "${Defaults().neighborhoods.firstWhere((n) => n.id == widget.trip.endLocation[2]).text}, ${Defaults().cities.firstWhere((c) => c.id == widget.trip.endLocation[1]).text}, ${Defaults().regions.firstWhere((r) => r.id == widget.trip.endLocation[0]).text}";
+        "${LocationData.villages.firstWhere((n) => n.id == widget.trip.endLocation[2].toString()).text}, ${LocationData.cities.firstWhere((c) => c.id == widget.trip.endLocation[1].toString()).text}, ${LocationData.regions.firstWhere((r) => r.id == widget.trip.endLocation[0].toString()).text}";
     super.initState();
   }
 
@@ -149,21 +149,22 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text12h400w(
-                                  title: Defaults()
-                                      .regions
+                                  title: LocationData.regions
                                       .firstWhere((r) =>
-                                          r.id == widget.trip.startLocation[0])
+                                          r.id ==
+                                          widget.trip.startLocation[0]
+                                              .toString())
                                       .text,
                                   color: AppTheme.gray,
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
                                   safeSubstring(
-                                      Defaults()
-                                          .neighborhoods
+                                      LocationData.villages
                                           .firstWhere((n) =>
                                               n.id ==
-                                              widget.trip.startLocation[2])
+                                              widget.trip.startLocation[2]
+                                                  .toString())
                                           .text,
                                       3),
                                   style: const TextStyle(
@@ -176,10 +177,11 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                 ),
                                 const SizedBox(height: 2),
                                 Text12h400w(
-                                  title: Defaults()
-                                      .cities
+                                  title: LocationData.cities
                                       .firstWhere((c) =>
-                                          c.id == widget.trip.startLocation[1])
+                                          c.id ==
+                                          widget.trip.startLocation[1]
+                                              .toString())
                                       .text,
                                   color: AppTheme.gray,
                                 ),
@@ -271,21 +273,21 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 Text12h400w(
-                                  title: Defaults()
-                                      .regions
+                                  title: LocationData.regions
                                       .firstWhere((r) =>
-                                          r.id == widget.trip.endLocation[0])
+                                          r.id ==
+                                          widget.trip.endLocation[0].toString())
                                       .text,
                                   color: AppTheme.gray,
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
                                   safeSubstring(
-                                      Defaults()
-                                          .neighborhoods
+                                      LocationData.villages
                                           .firstWhere((n) =>
                                               n.id ==
-                                              widget.trip.endLocation[2])
+                                              widget.trip.endLocation[2]
+                                                  .toString())
                                           .text,
                                       3),
                                   style: const TextStyle(
@@ -298,10 +300,10 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                 ),
                                 const SizedBox(height: 2),
                                 Text12h400w(
-                                  title: Defaults()
-                                      .cities
+                                  title: LocationData.cities
                                       .firstWhere((c) =>
-                                          c.id == widget.trip.endLocation[1])
+                                          c.id ==
+                                          widget.trip.endLocation[1].toString())
                                       .text,
                                   color: AppTheme.gray,
                                 ),

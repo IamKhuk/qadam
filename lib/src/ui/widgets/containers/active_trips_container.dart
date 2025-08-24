@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:qadam/src/model/trip_model.dart';
 
 import '../../../defaults/defaults.dart';
+import '../../../lan_localization/load_places.dart';
 import '../../../theme/app_theme.dart';
 
 class ActiveTripsContainer extends StatefulWidget {
@@ -119,9 +120,9 @@ class _ActiveTripsContainerState extends State<ActiveTripsContainer> {
   void initState() {
     init(widget.trip.startTime, widget.trip.endTime);
     from =
-        "${Defaults().neighborhoods.firstWhere((n) => n.id == widget.trip.startLocation[2]).text}, ${Defaults().cities.firstWhere((c) => c.id == widget.trip.startLocation[1]).text}, ${Defaults().regions.firstWhere((r) => r.id == widget.trip.startLocation[0]).text}";
+    "${LocationData.villages.firstWhere((n) => n.id == widget.trip.startLocation[2].toString()).text}, ${LocationData.cities.firstWhere((c) => c.id == widget.trip.startLocation[1].toString()).text}, ${LocationData.regions.firstWhere((r) => r.id == widget.trip.startLocation[0].toString()).text}";
     to =
-        "${Defaults().neighborhoods.firstWhere((n) => n.id == widget.trip.endLocation[2]).text}, ${Defaults().cities.firstWhere((c) => c.id == widget.trip.endLocation[1]).text}, ${Defaults().regions.firstWhere((r) => r.id == widget.trip.endLocation[0]).text}";
+    "${LocationData.villages.firstWhere((n) => n.id == widget.trip.endLocation[2].toString()).text}, ${LocationData.cities.firstWhere((c) => c.id == widget.trip.endLocation[1].toString()).text}, ${LocationData.regions.firstWhere((r) => r.id == widget.trip.endLocation[0].toString()).text}";
     super.initState();
   }
 

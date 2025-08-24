@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_translate/flutter_translate.dart';
+import 'package:qadam/src/lan_localization/load_places.dart';
 import 'package:qadam/src/ui/auth/login_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../theme/app_theme.dart';
@@ -22,6 +23,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     _setLanguage();
+    LocationData.loadPlaces(context);
     _nextScreen();
     controller = AnimationController(
       vsync: this,

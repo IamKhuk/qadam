@@ -15,6 +15,7 @@ import 'package:qadam/src/ui/widgets/texts/text_14h_400w.dart';
 import 'package:qadam/src/ui/widgets/texts/text_14h_500w.dart';
 
 import '../../../defaults/defaults.dart';
+import '../../../lan_localization/load_places.dart';
 import '../../../theme/app_theme.dart';
 import '../../widgets/containers/leading_back.dart';
 import '../../widgets/texts/text_12h_400w.dart';
@@ -236,21 +237,22 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text12h400w(
-                                      title: Defaults()
-                                          .regions
+                                      title: LocationData.regions
                                           .firstWhere((r) =>
-                                      r.id == widget.trip.startLocation[0])
+                                              r.id ==
+                                              widget.trip.startLocation[0]
+                                                  .toString())
                                           .text,
                                       color: AppTheme.gray,
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
                                       safeSubstring(
-                                          Defaults()
-                                              .neighborhoods
+                                          LocationData.villages
                                               .firstWhere((n) =>
-                                          n.id ==
-                                              widget.trip.startLocation[2])
+                                                  n.id ==
+                                                  widget.trip.startLocation[2]
+                                                      .toString())
                                               .text,
                                           3),
                                       style: const TextStyle(
@@ -263,10 +265,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                     ),
                                     const SizedBox(height: 2),
                                     Text12h400w(
-                                      title: Defaults()
-                                          .cities
+                                      title: LocationData.cities
                                           .firstWhere((c) =>
-                                      c.id == widget.trip.startLocation[1])
+                                              c.id ==
+                                              widget.trip.startLocation[1]
+                                                  .toString())
                                           .text,
                                       color: AppTheme.gray,
                                     ),
@@ -278,7 +281,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Row(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
                                       Container(
                                         width: 8,
@@ -291,11 +295,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                       DottedLine(
                                         direction: Axis.horizontal,
                                         lineThickness: 2,
-                                        lineLength:
-                                        ((MediaQuery.of(context).size.width -
-                                            96) /
-                                            3 -
-                                            40) /
+                                        lineLength: ((MediaQuery.of(context)
+                                                            .size
+                                                            .width -
+                                                        96) /
+                                                    3 -
+                                                40) /
                                             2,
                                         dashLength: 2,
                                         dashColor: AppTheme.gray,
@@ -304,7 +309,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                         padding: const EdgeInsets.all(8),
                                         decoration: BoxDecoration(
                                           color: AppTheme.black,
-                                          borderRadius: BorderRadius.circular(24),
+                                          borderRadius:
+                                              BorderRadius.circular(24),
                                         ),
                                         child: SvgPicture.asset(
                                           "assets/icons/car.svg",
@@ -319,11 +325,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                       DottedLine(
                                         direction: Axis.horizontal,
                                         lineThickness: 2,
-                                        lineLength:
-                                        ((MediaQuery.of(context).size.width -
-                                            96) /
-                                            3 -
-                                            40) /
+                                        lineLength: ((MediaQuery.of(context)
+                                                            .size
+                                                            .width -
+                                                        96) /
+                                                    3 -
+                                                40) /
                                             2,
                                         dashLength: 2,
                                         dashColor: AppTheme.gray,
@@ -358,21 +365,22 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     Text12h400w(
-                                      title: Defaults()
-                                          .regions
+                                      title: LocationData.regions
                                           .firstWhere((r) =>
-                                      r.id == widget.trip.endLocation[0])
+                                              r.id ==
+                                              widget.trip.endLocation[0]
+                                                  .toString())
                                           .text,
                                       color: AppTheme.gray,
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
                                       safeSubstring(
-                                          Defaults()
-                                              .neighborhoods
+                                          LocationData.villages
                                               .firstWhere((n) =>
-                                          n.id ==
-                                              widget.trip.endLocation[2])
+                                                  n.id ==
+                                                  widget.trip.endLocation[2]
+                                                      .toString())
                                               .text,
                                           3),
                                       style: const TextStyle(
@@ -385,10 +393,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                     ),
                                     const SizedBox(height: 2),
                                     Text12h400w(
-                                      title: Defaults()
-                                          .cities
+                                      title: LocationData.cities
                                           .firstWhere((c) =>
-                                      c.id == widget.trip.endLocation[1])
+                                              c.id ==
+                                              widget.trip.endLocation[1]
+                                                  .toString())
                                           .text,
                                       color: AppTheme.gray,
                                     ),
@@ -544,7 +553,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                                 setState(() {
                                                   data.isDefault = true;
                                                   selectedCard = data;
-                                                  selectedCardNumber = data.cardNumber;
+                                                  selectedCardNumber =
+                                                      data.cardNumber;
                                                   cards.add(data);
                                                 });
                                               },
@@ -670,7 +680,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                                             cards[index]
                                                                     .isDefault =
                                                                 true;
-                                                            selectedCardNumber = cards[index].cardNumber;
+                                                            selectedCardNumber =
+                                                                cards[index]
+                                                                    .cardNumber;
                                                           });
                                                         }
                                                       },
@@ -704,7 +716,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                                                     true;
                                                                 selectedCard =
                                                                     data;
-                                                                selectedCardNumber = data.cardNumber;
+                                                                selectedCardNumber =
+                                                                    data.cardNumber;
                                                               }
                                                               cards.add(data);
                                                             });

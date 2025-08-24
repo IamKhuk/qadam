@@ -48,6 +48,7 @@ flutter:
     - assets/i18n/
     - assets/fonts/
     - assets/lottie/
+    - assets/places.json
 
   fonts:
     - family: Poppins

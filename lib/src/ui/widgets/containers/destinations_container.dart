@@ -4,6 +4,7 @@ import 'package:flutter_translate/flutter_translate.dart';
 import 'package:qadam/src/model/trip_model.dart';
 
 import '../../../defaults/defaults.dart';
+import '../../../lan_localization/load_places.dart';
 import '../../../theme/app_theme.dart';
 
 class DestinationsContainer extends StatelessWidget {
@@ -62,8 +63,10 @@ class DestinationsContainer extends StatelessWidget {
     time.hour < 13 ? t1 = 'AM' : t1 = 'PM';
     h1 = time.hour < 13 ? time.hour.toString() : (time.hour - 12).toString();
 
-    from = "${Defaults().neighborhoods.firstWhere((n) => n.id == trip.startLocation[2]).text}, ${Defaults().cities.firstWhere((c) => c.id == trip.startLocation[1]).text}, ${Defaults().regions.firstWhere((r) => r.id == trip.startLocation[0]).text}";
-    to = "${Defaults().neighborhoods.firstWhere((n) => n.id == trip.endLocation[2]).text}, ${Defaults().cities.firstWhere((c) => c.id == trip.endLocation[1]).text}, ${Defaults().regions.firstWhere((r) => r.id == trip.endLocation[0]).text}";
+    from =
+        "${LocationData.villages.firstWhere((n) => n.id == trip.startLocation[2].toString()).text}, ${LocationData.cities.firstWhere((c) => c.id == trip.startLocation[1].toString()).text}, ${LocationData.regions.firstWhere((r) => r.id == trip.startLocation[0].toString()).text}";
+    to =
+        "${LocationData.villages.firstWhere((n) => n.id == trip.endLocation[2].toString()).text}, ${LocationData.cities.firstWhere((c) => c.id == trip.endLocation[1].toString()).text}, ${LocationData.regions.firstWhere((r) => r.id == trip.endLocation[0].toString()).text}";
   }
 
   @override
@@ -91,7 +94,8 @@ class DestinationsContainer extends StatelessWidget {
               Column(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: AppTheme.light,
                       borderRadius: BorderRadius.circular(16),

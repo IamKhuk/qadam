@@ -14,10 +14,10 @@ class ApiProvider {
 
   static Future<HttpResult> postRequest(url, body, head) async {
     debugPrint(url);
-    debugPrint(body);
+    debugPrint("Post: ${body.toString()}");
     dynamic headers = await _getReqHeader();
 
-    debugPrint(headers);
+    debugPrint(headers.toString());
     try {
       http.Response response = await http
           .post(
@@ -26,7 +26,7 @@ class ApiProvider {
         body: body,
       )
           .timeout(durationTimeout);
-      debugPrint(response.body);
+      debugPrint("Response: ${response.body.toString()}");
       return _result(response);
     } on TimeoutException catch (_) {
       return HttpResult(
@@ -53,7 +53,7 @@ class ApiProvider {
         headers: headers,
       )
           .timeout(durationTimeout);
-      debugPrint(response.body);
+      debugPrint("Get Request Response: ${response.body.toString()}");
       return _result(response);
     } on TimeoutException catch (_) {
       return HttpResult(
@@ -119,18 +119,24 @@ class ApiProvider {
 
   /// Register Post
   Future<HttpResult> fetchRegister(
+      String firstName,
+      String lastName,
+      String fatherName,
+      String email,
       String phone,
       String password,
       String passwordConfirm,
-      String name,
       ) async {
     String url = '$baseUrl/auth/register';
 
     final data = {
+      "first_name": firstName,
+      "last_name": lastName,
+      "father_name": fatherName,
+      "email": email,
       "phone": phone,
       "password": password,
       "password_confirmation": passwordConfirm,
-      "name": name,
     };
     return await postRequest(url, data, false);
   }
@@ -164,5 +170,17 @@ class ApiProvider {
       "password": password,
     };
     return await postRequest(url, data, false);
+  }
+
+  /// Get User Data
+  Future<HttpResult> fetchMe() async {
+    String url = '$baseUrl/auth/me';
+    return await getRequest(url);
+  }
+
+  /// Get Trip List
+  Future<HttpResult> fetchTripList() async {
+    String url = '$baseUrl/public/trips/view';
+    return await getRequest(url);
   }
 }

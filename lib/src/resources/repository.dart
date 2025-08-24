@@ -1,6 +1,7 @@
 import 'package:qadam/src/model/api/user_model.dart';
 import 'package:qadam/src/model/event_bus/http_result.dart';
 
+import '../model/api/get_user.model.dart';
 import '../utils/cache.dart';
 import 'app_provider.dart';
 
@@ -9,16 +10,22 @@ class Repository {
   final appCache = AppCache();
 
   Future<HttpResult> fetchRegister(
+    String firstName,
+    String lastName,
+    String fatherName,
+    String email,
     String phone,
     String password,
     String passwordConfirm,
-    String name,
   ) =>
       apiProvider.fetchRegister(
+        firstName,
+        lastName,
+        fatherName,
+        email,
         phone,
         password,
         passwordConfirm,
-        name,
       );
 
   Future<HttpResult> fetchVerificationResend(String phone) =>
@@ -30,5 +37,13 @@ class Repository {
   Future<HttpResult> fetchLogin(String phone, String password) =>
       apiProvider.fetchLogin(phone, password);
 
+  Future<HttpResult> fetchMe() => apiProvider.fetchMe();
+
+  Future<HttpResult> fetchTripList() => apiProvider.fetchTripList();
+
   Future<void> cacheLoginUser(UserModel user) => appCache.saveLoginUser(user);
+
+  Future<void> cacheSetMe(User user) => appCache.saveUser(user);
+
+  Future<User> cacheGetMe() => appCache.cacheGetMe();
 }
