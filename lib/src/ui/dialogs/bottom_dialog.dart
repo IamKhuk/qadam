@@ -77,7 +77,7 @@ class BottomDialog {
                         width: 80,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(5),
-                          color: Colors.grey, // Using AppTheme.gray
+                          color: AppTheme.gray,
                         ),
                       ),
                     ],
@@ -118,7 +118,7 @@ class BottomDialog {
                               },
                               child: Container(
                                 padding: const EdgeInsets.all(16),
-                                color: Colors.grey[100], // Using AppTheme.light
+                                color: AppTheme.light,
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -136,7 +136,7 @@ class BottomDialog {
                             ),
                             Container(
                               height: 1,
-                              color: Colors.blue, // Using AppTheme.blue
+                              color: AppTheme.blue,
                               margin: const EdgeInsets.symmetric(horizontal: 8),
                             ),
                           ],
@@ -155,9 +155,9 @@ class BottomDialog {
                         margin: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.grey[100], // Using AppTheme.light
+                          color: AppTheme.light,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.purple), // Using AppTheme.purple
+                          border: Border.all(color: AppTheme.purple),
                         ),
                         child: Row(
                           children: [
@@ -201,7 +201,7 @@ class BottomDialog {
                             width: 72,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(16),
-                              color: Colors.purple.withOpacity(0.1), // Using AppTheme.purple
+                              color: AppTheme.purple.withOpacity(0.1), // Using AppTheme.purple
                             ),
                             child: Center(
                               child: SvgPicture.asset(
@@ -209,7 +209,7 @@ class BottomDialog {
                                 height: 24,
                                 width: 24,
                                 colorFilter: const ColorFilter.mode(
-                                  Colors.purple, // Using AppTheme.purple
+                                  AppTheme.purple,
                                   BlendMode.srcIn,
                                 ),
                               ),
@@ -252,7 +252,7 @@ class BottomDialog {
                               height: 56,
                               padding: const EdgeInsets.symmetric(horizontal: 16),
                               decoration: BoxDecoration(
-                                color: Colors.purple, // Using AppTheme.purple
+                                color: AppTheme.purple,
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: Center(

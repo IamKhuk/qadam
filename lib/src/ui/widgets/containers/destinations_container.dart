@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_translate/flutter_translate.dart';
-import 'package:qadam/src/model/trip_model.dart';
-
-import '../../../defaults/defaults.dart';
 import '../../../lan_localization/load_places.dart';
+import '../../../model/api/trip_list_model.dart';
 import '../../../theme/app_theme.dart';
+import '../../../utils/utils.dart';
 
 class DestinationsContainer extends StatelessWidget {
   DestinationsContainer({super.key, required this.trip});
 
-  TripModel trip;
+  final TripListModel trip;
   String weekDay = '';
   String month = '';
   String t1 = '';
@@ -64,9 +63,9 @@ class DestinationsContainer extends StatelessWidget {
     h1 = time.hour < 13 ? time.hour.toString() : (time.hour - 12).toString();
 
     from =
-        "${LocationData.villages.firstWhere((n) => n.id == trip.startLocation[2].toString()).text}, ${LocationData.cities.firstWhere((c) => c.id == trip.startLocation[1].toString()).text}, ${LocationData.regions.firstWhere((r) => r.id == trip.startLocation[0].toString()).text}";
+        "${LocationData.villages.firstWhere((n) => n.id == trip.fromVillageId.toString()).text}, ${LocationData.cities.firstWhere((c) => c.id == trip.fromCityId.toString()).text}, ${LocationData.regions.firstWhere((r) => r.id == trip.fromRegionId.toString()).text}";
     to =
-        "${LocationData.villages.firstWhere((n) => n.id == trip.endLocation[2].toString()).text}, ${LocationData.cities.firstWhere((c) => c.id == trip.endLocation[1].toString()).text}, ${LocationData.regions.firstWhere((r) => r.id == trip.endLocation[0].toString()).text}";
+        "${LocationData.villages.firstWhere((n) => n.id == trip.toVillageId.toString()).text}, ${LocationData.cities.firstWhere((c) => c.id == trip.toCityId.toString()).text}, ${LocationData.regions.firstWhere((r) => r.id == trip.toRegionId.toString()).text}";
   }
 
   @override
@@ -118,7 +117,7 @@ class DestinationsContainer extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                "${trip.pricePerSeat} \$",
+                "${Utils.priceFormat(trip.pricePerSeat)} ${translate("currency")}",
                 style: const TextStyle(
                   color: AppTheme.black,
                   fontSize: 20,
@@ -257,7 +256,7 @@ class DestinationsContainer extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    Defaults().vehicles[trip.vehicleId].vehicleName,
+                    trip.vehicle.model,
                     style: const TextStyle(
                       color: AppTheme.black,
                       fontSize: 12,

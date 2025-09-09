@@ -10,10 +10,10 @@ class TripListModel {
   String toWhere;
   int fromRegionId;
   int toRegionId;
-  int fromDistrictId;
-  int toDistrictId;
-  int fromQuarterId;
-  int toQuarterId;
+  int fromCityId;
+  int toCityId;
+  int fromVillageId;
+  int toVillageId;
   DateTime startTime;
   DateTime endTime;
   String pricePerSeat;
@@ -27,7 +27,7 @@ class TripListModel {
   DateTime createdAt;
   DateTime updatedAt;
   Driver driver;
-  Vehicle vehicle;
+  TripVehicle vehicle;
 
   TripListModel({
     required this.id,
@@ -35,10 +35,10 @@ class TripListModel {
     required this.toWhere,
     required this.fromRegionId,
     required this.toRegionId,
-    required this.fromDistrictId,
-    required this.toDistrictId,
-    required this.fromQuarterId,
-    required this.toQuarterId,
+    required this.fromCityId,
+    required this.toCityId,
+    required this.fromVillageId,
+    required this.toVillageId,
     required this.startTime,
     required this.endTime,
     required this.pricePerSeat,
@@ -61,10 +61,10 @@ class TripListModel {
     toWhere: json["to_where"]??"",
     fromRegionId: json["from_region_id"]??0,
     toRegionId: json["to_region_id"]??0,
-    fromDistrictId: json["from_district_id"]??0,
-    toDistrictId: json["to_district_id"]??0,
-    fromQuarterId: json["from_quarter_id"]??0,
-    toQuarterId: json["to_quarter_id"]??0,
+    fromCityId: json["from_district_id"]??0,
+    toCityId: json["to_district_id"]??0,
+    fromVillageId: json["from_quarter_id"]??0,
+    toVillageId: json["to_quarter_id"]??0,
     startTime: DateTime.parse(json["start_time"]),
     endTime: DateTime.parse(json["end_time"]),
     pricePerSeat: json["price_per_seat"]??"",
@@ -78,7 +78,7 @@ class TripListModel {
     createdAt: DateTime.parse(json["created_at"]),
     updatedAt: DateTime.parse(json["updated_at"]),
     driver: Driver.fromJson(json["driver"]),
-    vehicle: Vehicle.fromJson(json["vehicle"]),
+    vehicle: TripVehicle.fromJson(json["vehicle"]),
   );
 
   Map<String, dynamic> toJson() => {
@@ -87,10 +87,10 @@ class TripListModel {
     "to_where": toWhere,
     "from_region_id": fromRegionId,
     "to_region_id": toRegionId,
-    "from_district_id": fromDistrictId,
-    "to_district_id": toDistrictId,
-    "from_quarter_id": fromQuarterId,
-    "to_quarter_id": toQuarterId,
+    "from_district_id": fromCityId,
+    "to_district_id": toCityId,
+    "from_quarter_id": fromVillageId,
+    "to_quarter_id": toVillageId,
     "start_time": startTime.toIso8601String(),
     "end_time": endTime.toIso8601String(),
     "price_per_seat": pricePerSeat,
@@ -132,14 +132,14 @@ class Driver {
   };
 }
 
-class Vehicle {
+class TripVehicle {
   int id;
   String model;
   int seats;
   String carNumber;
-  Color color;
+  CarColor color;
 
-  Vehicle({
+  TripVehicle({
     required this.id,
     required this.model,
     required this.seats,
@@ -147,12 +147,12 @@ class Vehicle {
     required this.color,
   });
 
-  factory Vehicle.fromJson(Map<String, dynamic> json) => Vehicle(
+  factory TripVehicle.fromJson(Map<String, dynamic> json) => TripVehicle(
     id: json["id"]??0,
     model: json["model"]??"",
     seats: json["seats"]??0,
     carNumber: json["car_number"]??"",
-    color: Color.fromJson(json["color"]),
+    color: CarColor.fromJson(json["color"]),
   );
 
   Map<String, dynamic> toJson() => {
@@ -164,14 +164,14 @@ class Vehicle {
   };
 }
 
-class Color {
+class CarColor {
   int id;
   String titleUz;
   String titleRu;
   String titleEn;
   String code;
 
-  Color({
+  CarColor({
     required this.id,
     required this.titleUz,
     required this.titleRu,
@@ -179,7 +179,7 @@ class Color {
     required this.code,
   });
 
-  factory Color.fromJson(Map<String, dynamic> json) => Color(
+  factory CarColor.fromJson(Map<String, dynamic> json) => CarColor(
     id: json["id"]??0,
     titleUz: json["title_uz"]??"",
     titleRu: json["title_ru"]??"",

@@ -2,19 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_translate/flutter_translate.dart';
-import 'package:qadam/src/model/trip_model.dart';
+import 'package:qadam/src/model/api/created_trip_model.dart';
 import 'package:qadam/src/ui/widgets/buttons/primary_button.dart';
 import 'package:qadam/src/ui/widgets/containers/leading_back.dart';
-import '../../../defaults/defaults.dart';
-import '../../../lan_localization/load_places.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../model/api/trip_list_model.dart';
 import '../../../model/color_model.dart';
 import '../../../model/location_model.dart';
 import '../../../model/vehicle_model.dart';
+import '../../../resources/repository.dart';
 import '../../../theme/app_theme.dart';
 import '../../../utils/text_formatters.dart';
 import '../../../utils/utils.dart';
 import '../../dialogs/bottom_dialog.dart';
 import '../../dialogs/center_dialog.dart';
+import '../../dialogs/snack_bar.dart';
 import '../../widgets/containers/car_container.dart';
 import '../../widgets/textfield/main_textfield.dart';
 import '../../widgets/texts/text_14h_400w.dart';
@@ -24,12 +26,10 @@ import 'map_select_screen.dart';
 class CreateNewQadamScreen extends StatefulWidget {
   const CreateNewQadamScreen({
     super.key,
-    required this.trip,
     required this.onCreated,
   });
 
-  final TripModel trip;
-  final Function(TripModel data) onCreated;
+  final Function(TripListModel data) onCreated;
 
   @override
   State<CreateNewQadamScreen> createState() => _CreateNewQadamScreenState();
@@ -42,7 +42,17 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
   TextEditingController endController = TextEditingController();
   TextEditingController priceController = TextEditingController();
 
-  late TripModel currentTrip;
+  String startLat = "";
+  String startLong = "";
+  String endLat = "";
+  String endLong = "";
+
+  late TripListModel currentTrip;
+
+  final Repository _repository = Repository();
+
+  String vehicleId = "2";
+  bool isLoading = false;
 
   String from = "";
   String to = "";
@@ -89,7 +99,7 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
     ),
     VehicleModel(
       id: 1,
-      vehicleName: "Toyota Prius 3",
+      vehicleName: "Toyota Arius",
       color: ColorModel(
         name: "Rosy Red",
         colorCode: AppTheme.red.withOpacity(0.6),
@@ -109,15 +119,7 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
 
   @override
   void initState() {
-    currentTrip = widget.trip;
-    if (widget.trip.pricePerSeat.isNotEmpty) {
-      fromController.text =
-          "${LocationData.villages.firstWhere((n) => n.id == widget.trip.startLocation[2].toString()).text}, ${LocationData.cities.firstWhere((c) => c.id == widget.trip.startLocation[1].toString()).text}, ${LocationData.regions.firstWhere((r) => r.id == widget.trip.startLocation[0].toString()).text}";
-      toController.text =
-          "${LocationData.villages.firstWhere((n) => n.id == widget.trip.endLocation[2].toString()).text}, ${LocationData.cities.firstWhere((c) => c.id == widget.trip.endLocation[1].toString()).text}, ${LocationData.regions.firstWhere((r) => r.id == widget.trip.endLocation[0].toString()).text}";
-      priceController.text = currentTrip.pricePerSeat;
-      departureController.text = Utils.tripDateFormat(DateTime.now());
-    }
+    getVehicleId();
     super.initState();
   }
 
@@ -227,7 +229,17 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => MapSelectScreen(
-                                          place: fromController.text),
+                                        place: fromController.text,
+                                        onSelected: (data) {
+                                          debugPrint(
+                                              "${data.latitude} ${data.longitude}");
+                                          setState(() {
+                                            startLat = data.latitude.toString();
+                                            startLong =
+                                                data.longitude.toString();
+                                          });
+                                        },
+                                      ),
                                     ),
                                   ).then((value) {
                                     if (value != null) {
@@ -333,7 +345,16 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => MapSelectScreen(
-                                          place: toController.text),
+                                        place: toController.text,
+                                        onSelected: (data) {
+                                          debugPrint(
+                                              "${data.latitude} ${data.longitude}");
+                                          setState(() {
+                                            endLat = data.latitude.toString();
+                                            endLong = data.longitude.toString();
+                                          });
+                                        },
+                                      ),
                                     ),
                                   ).then((value) {
                                     if (value != null) {
@@ -746,24 +767,88 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
                   bottom: 32,
                 ),
                 child: GestureDetector(
-                  onTap: () {
+                  onTap: () async {
                     if (fromController.text.isNotEmpty &&
                         toController.text.isNotEmpty &&
                         departureController.text.isNotEmpty &&
                         selectedVehicle.vehicleName.isNotEmpty &&
-                        priceController.text.isNotEmpty) {
+                        priceController.text.isNotEmpty &&
+                        startLat.isNotEmpty &&
+                        startLong.isNotEmpty &&
+                        endLat.isNotEmpty &&
+                        endLong.isNotEmpty) {
+                      // setState(() {
+                      //   currentTrip = TripModel(
+                      //     vehicleId: selectedVehicle.id,
+                      //     startTime: departureDate,
+                      //     endTime: endDate,
+                      //     pricePerSeat: priceController.text,
+                      //     availableSeats: passengersNum,
+                      //   );
+                      // });
                       setState(() {
-                        currentTrip = TripModel(
-                          vehicleId: selectedVehicle.id,
-                          startTime: departureDate,
-                          endTime: endDate,
-                          pricePerSeat: priceController.text,
-                          availableSeats: passengersNum,
-                        );
+                        isLoading = true;
                       });
-                      if (currentTrip.pricePerSeat.isNotEmpty) {
-                        widget.onCreated(currentTrip);
-                        Navigator.pop(context);
+                      var response = await _repository.fetchCreateTrip(
+                        vehicleId,
+                        departureDate,
+                        endDate,
+                        Utils().stringToInt(priceController.text).toString(),
+                        passengersNum.toString(),
+                        startLat,
+                        startLong,
+                        endLat,
+                        endLong,
+                        fromRegion.id,
+                        fromCity.id,
+                        fromNeighborhood.id,
+                        toRegion.id,
+                        toCity.id,
+                        toNeighborhood.id,
+                      );
+
+                      var result =
+                          CreatedTripResponseModel.fromJson(response.result);
+
+                      if (response.isSuccess) {
+                        setState(() {
+                          isLoading = false;
+                        });
+                        if (result.id.toString().isNotEmpty && result.id != 0) {
+                          SharedPreferences prefs =
+                              await SharedPreferences.getInstance();
+                          prefs.setString(
+                              "active_trip_id", result.id.toString());
+                          CustomSnackBar().showSnackBar(
+                            context,
+                            translate("qadam.trip_created"),
+                            1,
+                          );
+                          Navigator.pop(context);
+                        } else {
+                          CenterDialog.showActionFailed(
+                            context,
+                            translate("qadam.trip_creation_failed"),
+                            translate("qadam.trip_creation_failed_msg"),
+                          );
+                        }
+                      } else {
+                        setState(() {
+                          isLoading = false;
+                        });
+                        if (response.status == -1) {
+                          CenterDialog.showActionFailed(
+                            context,
+                            translate("auth.connection_failed"),
+                            translate("auth.connection_failed_msg"),
+                          );
+                        } else {
+                          CenterDialog.showActionFailed(
+                            context,
+                            translate("auth.something_went_wrong"),
+                            translate("auth.failed_msg"),
+                          );
+                        }
                       }
                     }
                   },
@@ -775,5 +860,12 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> getVehicleId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      vehicleId = prefs.getString('vehicle_id') ?? "0";
+    });
   }
 }

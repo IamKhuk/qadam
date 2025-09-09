@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:lottie/lottie.dart';
+import 'package:qadam/src/model/api/image_response_model.dart';
+import 'package:qadam/src/model/api/trip_list_model.dart';
 import 'package:qadam/src/model/trip_model.dart';
 import 'package:qadam/src/theme/app_theme.dart';
+import 'package:qadam/src/ui/menu/main_screen.dart';
 import 'package:qadam/src/ui/menu/new_qadam/create_new_qadam_screen.dart';
 import 'package:qadam/src/ui/widgets/buttons/secondary_button.dart';
 import 'package:qadam/src/ui/widgets/texts/text_16h_500w.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../resources/repository.dart';
+import '../../dialogs/center_dialog.dart';
 import '../../widgets/containers/destinations_container.dart';
 import 'add_docs_screen.dart';
 
@@ -21,7 +26,11 @@ class _NewQadamState extends State<NewQadam> {
   bool isDocsAdded = false;
   bool isDocsVerified = false;
 
-  List<TripModel> myTrips = [];
+  bool isLoading = false;
+
+  final Repository _repository = Repository();
+
+  List<TripListModel> myTrips = [];
 
   Future<void> getDriverStatus() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -135,12 +144,50 @@ class _NewQadamState extends State<NewQadam> {
                       child: SecondaryButton(
                         title: translate("qadam.verify"),
                         onTap: () async {
-                          SharedPreferences prefs =
-                              await SharedPreferences.getInstance();
-                          prefs.setBool('isDocsVerified', true);
                           setState(() {
-                            isDocsVerified = true;
+                            isLoading = true;
                           });
+                          SharedPreferences prefs = await SharedPreferences.getInstance();
+
+                          var response = await _repository.fetchVerifyDriver(prefs.getInt('id').toString());
+
+                          var result = ImageUploadResponseModel.fromJson(response.result);
+
+                          if (response.isSuccess) {
+                            setState(() {
+                              isLoading = false;
+                            });
+                            if (result.status == "success") {
+                              prefs.setBool('isDocsVerified', true);
+                              setState(() {
+                                selectedIndex = 0;
+                                isDocsVerified = true;
+                              });
+                            } else {
+                              CenterDialog.showActionFailed(
+                                context,
+                                "Verification Failed",
+                                result.message,
+                              );
+                            }
+                          } else {
+                            setState(() {
+                              isLoading = false;
+                            });
+                            if (response.status == -1) {
+                              CenterDialog.showActionFailed(
+                                context,
+                                translate("auth.connection_failed"),
+                                translate("auth.connection_failed_msg"),
+                              );
+                            } else {
+                              CenterDialog.showActionFailed(
+                                context,
+                                translate("auth.something_went_wrong"),
+                                translate("auth.failed_msg"),
+                              );
+                            }
+                          }
                         },
                       ),
                     ),
@@ -189,13 +236,6 @@ class _NewQadamState extends State<NewQadam> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => CreateNewQadamScreen(
-                                    trip: TripModel(
-                                      vehicleId: 0,
-                                      startTime: DateTime.now(),
-                                      endTime: DateTime.now(),
-                                      pricePerSeat: "",
-                                      availableSeats: 0,
-                                    ),
                                     onCreated: (data) {
                                       myTrips.add(data);
                                     },
@@ -220,7 +260,8 @@ class _NewQadamState extends State<NewQadam> {
                                 return Column(
                                   children: [
                                     SizedBox(
-                                      width: MediaQuery.of(context).size.width - 48,
+                                      width: MediaQuery.of(context).size.width -
+                                          48,
                                       child: GestureDetector(
                                         onTap: () {
                                           Navigator.push(
@@ -228,7 +269,6 @@ class _NewQadamState extends State<NewQadam> {
                                             MaterialPageRoute(
                                               builder: (context) =>
                                                   CreateNewQadamScreen(
-                                                trip: myTrips[index],
                                                 onCreated: (data) {
                                                   setState(() {
                                                     myTrips.add(data);
@@ -261,27 +301,21 @@ class _NewQadamState extends State<NewQadam> {
                                 right: 16,
                               ),
                               child: SecondaryButton(
-                                  title: translate("qadam.create_new_trip"),
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            CreateNewQadamScreen(
-                                          trip: TripModel(
-                                            vehicleId: 0,
-                                            startTime: DateTime.now(),
-                                            endTime: DateTime.now(),
-                                            pricePerSeat: "",
-                                            availableSeats: 0,
-                                          ),
-                                          onCreated: (data) {
-                                            myTrips.add(data);
-                                          },
-                                        ),
+                                title: translate("qadam.create_new_trip"),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          CreateNewQadamScreen(
+                                        onCreated: (data) {
+                                          myTrips.add(data);
+                                        },
                                       ),
-                                    );
-                                  }),
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
                           ],
                         )

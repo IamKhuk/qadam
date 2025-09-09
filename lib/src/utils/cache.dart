@@ -1,7 +1,7 @@
 import 'package:qadam/src/model/api/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../model/api/get_user.model.dart';
+import '../model/api/get_user_model.dart';
 
 class AppCache {
   Future<void> saveLoginUser(UserModel user) async {
@@ -24,6 +24,7 @@ class AppCache {
     prefs.setString("role", user.role);
     prefs.setString(
         "driving_verification_status", user.drivingVerificationStatus);
+    prefs.setString("balance", user.balance.balance);
   }
 
   Future<User> cacheGetMe() async {

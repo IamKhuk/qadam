@@ -2,20 +2,29 @@ import 'package:dotted_line/dotted_line.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_translate/flutter_translate.dart';
-import 'package:qadam/src/model/trip_model.dart';
+import 'package:lottie/lottie.dart';
+import 'package:qadam/src/bloc/home_bloc.dart';
+import 'package:qadam/src/model/api/trip_list_model.dart';
 import 'package:qadam/src/ui/menu/home/trip_details_screen.dart';
 import 'package:qadam/src/ui/widgets/containers/destinations_container.dart';
 import 'package:qadam/src/ui/widgets/texts/text_12h_400w.dart';
 import 'package:qadam/src/utils/utils.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../../defaults/defaults.dart';
 import '../../../lan_localization/load_places.dart';
+import '../../../model/api/trip_search_model.dart';
 import '../../../theme/app_theme.dart';
 import '../../widgets/texts/text_16h_500w.dart';
 
 class SearchResultScreen extends StatefulWidget {
-  const SearchResultScreen({super.key, required this.trip});
+  const SearchResultScreen({
+    super.key,
+    required this.trip,
+    this.isRoundTrip = false,
+  });
 
-  final TripModel trip;
+  final TripListModel trip;
+  final bool isRoundTrip;
 
   @override
   State<SearchResultScreen> createState() => _SearchResultScreenState();
@@ -23,40 +32,110 @@ class SearchResultScreen extends StatefulWidget {
 
 class _SearchResultScreenState extends State<SearchResultScreen> {
   @override
+  void initState() {
+    blocHome.fetchTripSearch(
+      widget.trip.fromVillageId.toString(),
+      widget.trip.toVillageId.toString(),
+      widget.trip.startTime,
+      widget.trip.endTime,
+      widget.isRoundTrip,
+    );
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          ListView.builder(
-            itemCount: Defaults().trips.length,
-            padding: const EdgeInsets.only(
-              top: 282,
-              left: 16,
-              right: 16,
-              bottom: 32,
-            ),
-            itemBuilder: (context, index) {
-              return Column(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) {
-                            return TripDetailsScreen(
-                                trip: Defaults().trips[index]);
-                          },
-                        ),
+          StreamBuilder(
+            stream: blocHome.getTripSearch,
+            builder: (context, AsyncSnapshot<TripSearchModel> snapshot) {
+              if (snapshot.hasData) {
+                if (snapshot.data!.departureTrips.isNotEmpty) {
+                  return ListView.builder(
+                    itemCount: snapshot.data!.departureTrips.length,
+                    padding: const EdgeInsets.only(
+                      top: 282,
+                      left: 16,
+                      right: 16,
+                      bottom: 32,
+                    ),
+                    itemBuilder: (context, index) {
+                      return Column(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    return TripDetailsScreen(
+                                        trip: snapshot.data!.departureTrips[index]);
+                                  },
+                                ),
+                              );
+                            },
+                            child: DestinationsContainer(
+                                trip: snapshot.data!.departureTrips[index]),
+                          ),
+                          index != Defaults().trips.length - 1
+                              ? const SizedBox(height: 16)
+                              : const SizedBox(),
+                        ],
                       );
                     },
-                    child: DestinationsContainer(trip: Defaults().trips[index]),
+                  );
+                }else{
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Lottie.asset(
+                            "assets/lottie/empty.json",
+                            width: 200,
+                            height: 200,
+                            fit: BoxFit.cover,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      Text16h500w(title: translate("qadam.No_trip_found")),
+                    ]
+                  );
+                }
+              } else {
+                return Shimmer.fromColors(
+                  baseColor: AppTheme.baseColor,
+                  highlightColor: AppTheme.highlightColor,
+                  child: ListView.builder(
+                    itemCount: 10,
+                    padding: const EdgeInsets.only(
+                      top: 282,
+                      left: 16,
+                      right: 16,
+                      bottom: 32,
+                    ),
+                    itemBuilder: (context, index) {
+                      return Column(
+                        children: [
+                          Container(
+                            height: 250,
+                            width: MediaQuery.of(context).size.width - 32,
+                            color: AppTheme.baseColor,
+                          ),
+                          index != 10
+                              ? const SizedBox(height: 16)
+                              : const SizedBox(),
+                        ],
+                      );
+                    },
                   ),
-                  index != Defaults().trips.length - 1
-                      ? const SizedBox(height: 16)
-                      : const SizedBox(),
-                ],
-              );
+                );
+              }
             },
           ),
           Column(
@@ -119,8 +198,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                   title: LocationData.regions
                                       .firstWhere((r) =>
                                           r.id ==
-                                          widget.trip.startLocation[0]
-                                              .toString())
+                                          widget.trip.fromRegionId.toString())
                                       .text,
                                   color: AppTheme.light,
                                 ),
@@ -130,7 +208,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                       LocationData.villages
                                           .firstWhere((n) =>
                                               n.id ==
-                                              widget.trip.startLocation[2]
+                                              widget.trip.fromVillageId
                                                   .toString())
                                           .text,
                                       3),
@@ -147,8 +225,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                   title: LocationData.cities
                                       .firstWhere((c) =>
                                           c.id ==
-                                          widget.trip.startLocation[1]
-                                              .toString())
+                                          widget.trip.fromCityId.toString())
                                       .text,
                                   color: AppTheme.light,
                                 ),
@@ -237,7 +314,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                   title: LocationData.regions
                                       .firstWhere((r) =>
                                           r.id ==
-                                          widget.trip.endLocation[0].toString())
+                                          widget.trip.toRegionId.toString())
                                       .text,
                                   color: AppTheme.light,
                                 ),
@@ -247,7 +324,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                       LocationData.villages
                                           .firstWhere((n) =>
                                               n.id ==
-                                              widget.trip.endLocation[2]
+                                              widget.trip.toVillageId
                                                   .toString())
                                           .text,
                                       3),
@@ -264,7 +341,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                   title: LocationData.cities
                                       .firstWhere((c) =>
                                           c.id ==
-                                          widget.trip.endLocation[1].toString())
+                                          widget.trip.toCityId.toString())
                                       .text,
                                   color: AppTheme.light,
                                 ),

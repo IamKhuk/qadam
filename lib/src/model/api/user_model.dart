@@ -4,10 +4,10 @@ class UserModel {
   String phone;
   String password;
   String image;
-  int regionId;
-  int districtId;
-  int quarterId;
-  int home;
+  String regionId;
+  String districtId;
+  String quarterId;
+  String home;
   String role;
   int isVerified;
   dynamic verificationCode;
@@ -37,10 +37,10 @@ class UserModel {
     phone: json["phone"]??"",
     password: json["password"]??"",
     image: json["image"]??"",
-    regionId: json["region_id"]??0,
-    districtId: json["district_id"]??0,
-    quarterId: json["quarter_id"]??0,
-    home: json["home"]??0,
+    regionId: json["region_id"]??"0",
+    districtId: json["district_id"]??"0",
+    quarterId: json["quarter_id"]??"0",
+    home: json["home"]??"0",
     role: json["role"]??"client",
     isVerified: json["is_verified"]??1,
     verificationCode: json["verification_code"]??"",

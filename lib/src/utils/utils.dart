@@ -109,4 +109,29 @@ class Utils {
 
     return '${time.day} $month ${time.hour}:${time.minute}';
   }
+
+  static String priceFormat(String price) {
+    String priceResult = '';
+    if(price.contains('.')){
+      priceResult = price.split('.')[0];
+    }else{
+      priceResult = price;
+    }
+    priceResult = priceResult.replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},');
+    return priceResult;
+  }
+
+  String formatCardNumber(String cardNumber) {
+    if (cardNumber.length <= 4) {
+      return cardNumber; // or handle as an error, card number too short
+    }
+    String lastFourDigits = cardNumber.substring(cardNumber.length - 4);
+    return "**** **** **** $lastFourDigits";
+  }
+
+  int stringToInt(String value) {
+    String cleaned = value.replaceAll(',', '');
+    double parsed = double.parse(cleaned);
+    return parsed.toInt();
+  }
 }

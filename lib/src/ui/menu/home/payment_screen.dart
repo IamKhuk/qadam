@@ -3,29 +3,37 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_translate/flutter_translate.dart';
-import 'package:qadam/src/model/credit_card_model.dart';
-import 'package:qadam/src/model/trip_model.dart';
+import 'package:qadam/src/model/api/book_model.dart';
+import 'package:qadam/src/model/passenger_model.dart';
 import 'package:qadam/src/ui/dialogs/center_dialog.dart';
-import 'package:qadam/src/ui/menu/home/add_credit_card_screen.dart';
-import 'package:qadam/src/ui/menu/home/payment_success_screen.dart';
+import 'package:qadam/src/ui/menu/home/home_screen.dart';
+import 'package:qadam/src/ui/menu/main_screen.dart';
+import 'package:qadam/src/ui/menu/profile/top_up_screen.dart';
 import 'package:qadam/src/ui/widgets/buttons/primary_button.dart';
-import 'package:qadam/src/ui/widgets/buttons/secondary_button.dart';
-import 'package:qadam/src/ui/widgets/containers/card_container.dart';
 import 'package:qadam/src/ui/widgets/texts/text_14h_400w.dart';
-import 'package:qadam/src/ui/widgets/texts/text_14h_500w.dart';
-
-import '../../../defaults/defaults.dart';
+import 'package:qadam/src/ui/widgets/texts/text_18h_500w.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../lan_localization/load_places.dart';
+import '../../../model/api/trip_list_model.dart';
+import '../../../resources/repository.dart';
 import '../../../theme/app_theme.dart';
+import '../../../utils/utils.dart';
+import '../../dialogs/snack_bar.dart';
 import '../../widgets/containers/leading_back.dart';
 import '../../widgets/texts/text_12h_400w.dart';
 import '../../widgets/texts/text_16h_500w.dart';
 
 class PaymentScreen extends StatefulWidget {
-  const PaymentScreen({super.key, required this.trip, this.passengersNum = 1});
+  const PaymentScreen({
+    super.key,
+    required this.trip,
+    this.passengersNum = 1,
+    required this.passengers,
+  });
 
-  final TripModel trip;
+  final TripListModel trip;
   final int passengersNum;
+  final List<PassengerModel> passengers;
 
   @override
   State<PaymentScreen> createState() => _PaymentScreenState();
@@ -39,29 +47,59 @@ class _PaymentScreenState extends State<PaymentScreen> {
   String h1 = '';
   String seconds = "00";
   int _timer = 720;
+  String pricePerSeat = "";
+  String balance = "";
 
-  CreditCardModel? selectedCard;
+  String fromRegion = "";
+  String fromCity = "";
+  String fromNeighborhood = "";
+  String toRegion = "";
+  String toCity = "";
+  String toNeighborhood = "";
+  String from = "";
+  String to = "";
 
-  String selectedCardNumber = '';
+  bool isLoading = false;
 
-  bool isCardSelectOpen = false;
-
-  List<CreditCardModel> cards = [];
+  final Repository _repository = Repository();
 
   @override
   void initState() {
     super.initState();
+    if (widget.trip.pricePerSeat.contains(".")) {
+      pricePerSeat = widget.trip.pricePerSeat.split(".")[0];
+    } else {
+      pricePerSeat = widget.trip.pricePerSeat;
+    }
     startTimer();
     initTimeState(widget.trip.startTime);
-    if (cards.isNotEmpty) {
-      for (int i = 0; i < cards.length; i++) {
-        if (cards[i].isDefault == true) {
-          selectedCard = cards[i];
-          selectedCardNumber = cards[i].cardNumber;
-          break;
-        }
-      }
-    }
+    getBalance();
+    setLocations();
+  }
+
+  void setLocations() {
+    fromRegion = LocationData.regions
+        .firstWhere((r) => r.id == widget.trip.fromRegionId.toString())
+        .text;
+    fromCity = LocationData.cities
+        .firstWhere((c) => c.id == widget.trip.fromCityId.toString())
+        .text;
+    fromNeighborhood = LocationData.villages
+        .firstWhere((n) => n.id == widget.trip.fromVillageId.toString())
+        .text;
+
+    toRegion = LocationData.regions
+        .firstWhere((r) => r.id == widget.trip.toRegionId.toString())
+        .text;
+    toCity = LocationData.cities
+        .firstWhere((c) => c.id == widget.trip.toCityId.toString())
+        .text;
+    toNeighborhood = LocationData.villages
+        .firstWhere((n) => n.id == widget.trip.toVillageId.toString())
+        .text;
+
+    from = "$fromNeighborhood, $fromCity, $fromRegion";
+    to = "$toNeighborhood, $toCity, $toRegion";
   }
 
   void startTimer() {
@@ -237,24 +275,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text12h400w(
-                                      title: LocationData.regions
-                                          .firstWhere((r) =>
-                                              r.id ==
-                                              widget.trip.startLocation[0]
-                                                  .toString())
-                                          .text,
+                                      title: fromRegion,
                                       color: AppTheme.gray,
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      safeSubstring(
-                                          LocationData.villages
-                                              .firstWhere((n) =>
-                                                  n.id ==
-                                                  widget.trip.startLocation[2]
-                                                      .toString())
-                                              .text,
-                                          3),
+                                      safeSubstring(fromNeighborhood, 3),
                                       style: const TextStyle(
                                         fontFamily: AppTheme.fontFamily,
                                         fontSize: 36,
@@ -265,12 +291,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                     ),
                                     const SizedBox(height: 2),
                                     Text12h400w(
-                                      title: LocationData.cities
-                                          .firstWhere((c) =>
-                                              c.id ==
-                                              widget.trip.startLocation[1]
-                                                  .toString())
-                                          .text,
+                                      title: fromCity,
                                       color: AppTheme.gray,
                                     ),
                                   ],
@@ -347,9 +368,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    Defaults()
-                                        .vehicles[widget.trip.vehicleId]
-                                        .vehicleName,
+                                    widget.trip.vehicle.model,
                                     style: const TextStyle(
                                       color: AppTheme.gray,
                                       fontSize: 12,
@@ -364,25 +383,20 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
-                                    Text12h400w(
-                                      title: LocationData.regions
-                                          .firstWhere((r) =>
-                                              r.id ==
-                                              widget.trip.endLocation[0]
-                                                  .toString())
-                                          .text,
-                                      color: AppTheme.gray,
+                                    Text(
+                                      toRegion,
+                                      style: const TextStyle(
+                                        fontFamily: AppTheme.fontFamily,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.normal,
+                                        height: 1.5,
+                                        color: AppTheme.gray,
+                                      ),
+                                      textAlign: TextAlign.end,
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      safeSubstring(
-                                          LocationData.villages
-                                              .firstWhere((n) =>
-                                                  n.id ==
-                                                  widget.trip.endLocation[2]
-                                                      .toString())
-                                              .text,
-                                          3),
+                                      safeSubstring(toNeighborhood, 3),
                                       style: const TextStyle(
                                         fontFamily: AppTheme.fontFamily,
                                         fontSize: 36,
@@ -392,14 +406,16 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                       ),
                                     ),
                                     const SizedBox(height: 2),
-                                    Text12h400w(
-                                      title: LocationData.cities
-                                          .firstWhere((c) =>
-                                              c.id ==
-                                              widget.trip.endLocation[1]
-                                                  .toString())
-                                          .text,
-                                      color: AppTheme.gray,
+                                    Text(
+                                      toCity,
+                                      style: const TextStyle(
+                                        fontFamily: AppTheme.fontFamily,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.normal,
+                                        height: 1.5,
+                                        color: AppTheme.gray,
+                                      ),
+                                      textAlign: TextAlign.end,
                                     ),
                                   ],
                                 ),
@@ -430,6 +446,77 @@ class _PaymentScreenState extends State<PaymentScreen> {
                             child: Text14h400w(
                               title: translate("home.payment_info"),
                               color: AppTheme.blue,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.dark.withOpacity(0.1),
+                            spreadRadius: 15,
+                            blurRadius: 25,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text16h500w(
+                                    title: translate("profile.my_balance")),
+                                const SizedBox(height: 16),
+                                Text18h500w(
+                                    title:
+                                        "${Utils.priceFormat(balance)} ${translate("currency")}")
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const TopUpScreen(),
+                                ),
+                              ).then((_) {
+                                getBalance();
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 8,
+                                horizontal: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppTheme.purple,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Row(
+                                children: [
+                                  Text14h400w(
+                                    title: translate("profile.top_up"),
+                                    color: Colors.white,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Icon(
+                                    Icons.monetization_on_outlined,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
@@ -479,8 +566,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text16h500w(
-                                      title:
-                                          "\$${int.parse(widget.trip.pricePerSeat) * widget.passengersNum}"),
+                                    title:
+                                        "${Utils.priceFormat(pricePerSeat)} ${translate("currency")}",
+                                  ),
                                 ],
                               ),
                             ],
@@ -502,7 +590,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                 color: AppTheme.gray,
                               ),
                               Text(
-                                "\$${(int.parse(widget.trip.pricePerSeat) * widget.passengersNum).toString()}",
+                                "${Utils.priceFormat((int.parse(pricePerSeat) * widget.passengersNum).toString())} ${translate("currency")}",
                                 style: const TextStyle(
                                   color: AppTheme.black,
                                   fontSize: 20,
@@ -514,224 +602,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
                             ],
                           ),
                         ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 270),
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppTheme.dark.withOpacity(0.1),
-                              spreadRadius: 15,
-                              blurRadius: 25,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: cards.isEmpty
-                            ? Row(
-                                children: [
-                                  Expanded(
-                                    child: Text14h400w(
-                                        title:
-                                            translate("home.no_cards_added")),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) {
-                                            return AddCreditCardScreen(
-                                              onAdded: (data) {
-                                                setState(() {
-                                                  data.isDefault = true;
-                                                  selectedCard = data;
-                                                  selectedCardNumber =
-                                                      data.cardNumber;
-                                                  cards.add(data);
-                                                });
-                                              },
-                                            );
-                                          },
-                                        ),
-                                      );
-                                    },
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 8,
-                                        horizontal: 12,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: AppTheme.purple,
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Text14h400w(
-                                            title: translate("home.add_card"),
-                                            color: Colors.white,
-                                          ),
-                                          const SizedBox(width: 8),
-                                          const Icon(
-                                            Icons.add,
-                                            color: Colors.white,
-                                            size: 16,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : Column(
-                                children: [
-                                  Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(8),
-                                        decoration: BoxDecoration(
-                                          color: AppTheme.light,
-                                          borderRadius:
-                                              BorderRadius.circular(24),
-                                        ),
-                                        child: const Icon(
-                                          Icons.credit_card,
-                                          color: AppTheme.black,
-                                          size: 24,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Text14h500w(
-                                            title: formatCardNumber(
-                                                selectedCard!.cardNumber)),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      GestureDetector(
-                                        onTap: () {
-                                          setState(() {
-                                            isCardSelectOpen =
-                                                !isCardSelectOpen;
-                                          });
-                                        },
-                                        child: Container(
-                                          padding: const EdgeInsets.all(8),
-                                          decoration: BoxDecoration(
-                                            color: AppTheme.light,
-                                            borderRadius:
-                                                BorderRadius.circular(24),
-                                          ),
-                                          child: Icon(
-                                            isCardSelectOpen == false
-                                                ? Icons
-                                                    .keyboard_arrow_down_outlined
-                                                : Icons
-                                                    .keyboard_arrow_up_outlined,
-                                            color: AppTheme.black,
-                                            size: 24,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  isCardSelectOpen == true
-                                      ? Column(
-                                          children: [
-                                            const SizedBox(height: 16),
-                                            ListView.builder(
-                                              itemCount: cards.length,
-                                              padding: EdgeInsets.zero,
-                                              shrinkWrap: true,
-                                              itemBuilder: (context, index) {
-                                                return Column(
-                                                  children: [
-                                                    CardContainer(
-                                                      card: cards[index],
-                                                      onTapped: () {
-                                                        setState(() {
-                                                          isCardSelectOpen =
-                                                              false;
-                                                        });
-                                                        if (cards[index]
-                                                                .isDefault ==
-                                                            false) {
-                                                          for (int i = 0;
-                                                              i < cards.length;
-                                                              i++) {
-                                                            if (cards[i]
-                                                                    .isDefault ==
-                                                                true) {
-                                                              setState(() {
-                                                                cards[i].isDefault =
-                                                                    false;
-                                                              });
-                                                            }
-                                                          }
-                                                          setState(() {
-                                                            selectedCard =
-                                                                cards[index];
-                                                            cards[index]
-                                                                    .isDefault =
-                                                                true;
-                                                            selectedCardNumber =
-                                                                cards[index]
-                                                                    .cardNumber;
-                                                          });
-                                                        }
-                                                      },
-                                                    ),
-                                                    index != cards.length - 1
-                                                        ? Container(
-                                                            height: 1,
-                                                            color:
-                                                                AppTheme.border,
-                                                          )
-                                                        : const SizedBox(),
-                                                  ],
-                                                );
-                                              },
-                                            ),
-                                            const SizedBox(height: 12),
-                                            SecondaryButton(
-                                                title: translate(
-                                                    "home.add_new_card"),
-                                                onTap: () {
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) {
-                                                        return AddCreditCardScreen(
-                                                          onAdded: (data) {
-                                                            setState(() {
-                                                              if (cards
-                                                                  .isEmpty) {
-                                                                data.isDefault =
-                                                                    true;
-                                                                selectedCard =
-                                                                    data;
-                                                                selectedCardNumber =
-                                                                    data.cardNumber;
-                                                              }
-                                                              cards.add(data);
-                                                            });
-                                                          },
-                                                        );
-                                                      },
-                                                    ),
-                                                  );
-                                                })
-                                          ],
-                                        )
-                                      : const SizedBox(),
-                                ],
-                              ),
                       ),
                     ),
                   ],
@@ -749,19 +619,82 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   bottom: 32,
                 ),
                 child: GestureDetector(
-                  onTap: () {
-                    if (selectedCardNumber.isEmpty) {
+                  onTap: () async {
+                    if (_timer > 0) {
+                      if (Utils().stringToInt(balance) >
+                          Utils().stringToInt(Utils.priceFormat(
+                              (int.parse(pricePerSeat) * widget.passengersNum)
+                                  .toString()))) {
+                        setState(() {
+                          isLoading = true;
+                        });
+                        var response = await _repository.fetchBookTrip(
+                            widget.trip.id.toString(), widget.passengers);
+
+                        var result = BookModel.fromJson(response.result);
+
+                        if (response.isSuccess) {
+                          setState(() {
+                            isLoading = false;
+                          });
+                          if (result.status == "confirmed") {
+                            CustomSnackBar().showSnackBar(
+                              context,
+                              translate("qadam.booking_success"),
+                              1,
+                            );
+                            SharedPreferences prefs =
+                                await SharedPreferences.getInstance();
+                            prefs.setString("active_booked_id",
+                                result.bookingId.toString());
+                            Navigator.of(context).popUntil(
+                              (route) => route.isFirst,
+                            );
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return const MainScreen();
+                                },
+                              ),
+                            );
+                          } else {
+                            CenterDialog.showActionFailed(
+                              context,
+                              translate("qadam.booking_failed"),
+                              translate("qadam.booking_failed_msg"),
+                            );
+                          }
+                        } else {
+                          setState(() {
+                            isLoading = false;
+                          });
+                          if (response.status == -1) {
+                            CenterDialog.showActionFailed(
+                              context,
+                              translate("auth.connection_failed"),
+                              translate("auth.connection_failed_msg"),
+                            );
+                          } else {
+                            CenterDialog.showActionFailed(
+                              context,
+                              translate("auth.something_went_wrong"),
+                              translate("auth.failed_msg"),
+                            );
+                          }
+                        }
+                      } else {
+                        CenterDialog.showActionFailed(
+                          context,
+                          translate("qadam.not_enough_balance"),
+                          translate("qadam.not_enough_balance_msg"),
+                        );
+                      }
+                    } else {
                       CenterDialog.showActionFailed(
                         context,
-                        translate("home.payment_method_error"),
-                        translate("home.payment_method_error_msg"),
-                      );
-                    } else if (selectedCard!.cardNumber.isNotEmpty) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => PaymentSuccessScreen(
-                                trip: widget.trip, card: selectedCard!)),
+                        translate("qadam.time_is_up"),
+                        translate("qadam.time_is_up_msg"),
                       );
                     }
                   },
@@ -772,6 +705,35 @@ class _PaymentScreenState extends State<PaymentScreen> {
               ),
             ],
           ),
+          isLoading == true
+              ? Container(
+                  color: AppTheme.black.withOpacity(0.45),
+                  child: Center(
+                    child: Container(
+                      height: 96,
+                      width: 96,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            offset: const Offset(0, 5),
+                            blurRadius: 25,
+                            spreadRadius: 0,
+                            color: AppTheme.dark.withOpacity(0.2),
+                          ),
+                        ],
+                      ),
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(AppTheme.purple),
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+              : Container()
         ],
       ),
     );
@@ -827,11 +789,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
         : text.toUpperCase();
   }
 
-  String formatCardNumber(String cardNumber) {
-    if (cardNumber.length <= 4) {
-      return cardNumber; // or handle as an error, card number too short
-    }
-    String lastFourDigits = cardNumber.substring(cardNumber.length - 4);
-    return "**** **** **** $lastFourDigits";
+  Future<void> getBalance() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      balance = prefs.getString('balance') ?? "0";
+    });
   }
 }

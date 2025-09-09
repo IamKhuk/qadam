@@ -14,11 +14,9 @@ import 'package:qadam/src/ui/widgets/containers/passengers_container.dart';
 import 'package:qadam/src/ui/widgets/texts/text_14h_400w.dart';
 import 'package:qadam/src/ui/widgets/texts/text_16h_500w.dart';
 import 'package:qadam/src/utils/utils.dart';
-
-import '../../../defaults/defaults.dart';
 import '../../../lan_localization/load_places.dart';
+import '../../../model/api/trip_list_model.dart';
 import '../../../model/passenger_model.dart';
-import '../../../model/trip_model.dart';
 import '../../../theme/app_theme.dart';
 import '../../widgets/texts/text_12h_400w.dart';
 import 'map_route_screen.dart';
@@ -30,7 +28,7 @@ class TripDetailsScreen extends StatefulWidget {
     this.isDriver = false,
   });
 
-  final TripModel trip;
+  final TripListModel trip;
   final bool isDriver;
 
   @override
@@ -38,7 +36,7 @@ class TripDetailsScreen extends StatefulWidget {
 }
 
 class _TripDetailsScreenState extends State<TripDetailsScreen> {
-  String totalPrice = "";
+  String pricePerSeat = "";
   int passengersNum = 1;
 
   String weekDay = '';
@@ -50,6 +48,13 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
   String from = '';
   String to = '';
 
+  String fromRegion = "";
+  String fromCity = "";
+  String fromNeighborhood = "";
+  String toRegion = "";
+  String toCity = "";
+  String toNeighborhood = "";
+
   List<PassengerModel> passengers = [
     PassengerModel(
       fullName: "Khusan Khukumov",
@@ -60,13 +65,39 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
 
   @override
   void initState() {
-    totalPrice = widget.trip.pricePerSeat;
+    if (widget.trip.pricePerSeat.contains(".")) {
+      pricePerSeat = widget.trip.pricePerSeat.split(".")[0];
+    } else {
+      pricePerSeat = widget.trip.pricePerSeat;
+    }
     initTimeState(widget.trip.startTime);
-    from =
-        "${LocationData.villages.firstWhere((n) => n.id == widget.trip.startLocation[2].toString()).text}, ${LocationData.cities.firstWhere((c) => c.id == widget.trip.startLocation[1].toString()).text}, ${LocationData.regions.firstWhere((r) => r.id == widget.trip.startLocation[0].toString()).text}";
-    to =
-        "${LocationData.villages.firstWhere((n) => n.id == widget.trip.endLocation[2].toString()).text}, ${LocationData.cities.firstWhere((c) => c.id == widget.trip.endLocation[1].toString()).text}, ${LocationData.regions.firstWhere((r) => r.id == widget.trip.endLocation[0].toString()).text}";
+    setLocations();
     super.initState();
+  }
+
+  void setLocations() {
+    fromRegion = LocationData.regions
+        .firstWhere((r) => r.id == widget.trip.fromRegionId.toString())
+        .text;
+    fromCity = LocationData.cities
+        .firstWhere((c) => c.id == widget.trip.fromCityId.toString())
+        .text;
+    fromNeighborhood = LocationData.villages
+        .firstWhere((n) => n.id == widget.trip.fromVillageId.toString())
+        .text;
+
+    toRegion = LocationData.regions
+        .firstWhere((r) => r.id == widget.trip.toRegionId.toString())
+        .text;
+    toCity = LocationData.cities
+        .firstWhere((c) => c.id == widget.trip.toCityId.toString())
+        .text;
+    toNeighborhood = LocationData.villages
+        .firstWhere((n) => n.id == widget.trip.toVillageId.toString())
+        .text;
+
+    from = "$fromNeighborhood, $fromCity, $fromRegion";
+    to = "$toNeighborhood, $toCity, $toRegion";
   }
 
   @override
@@ -149,24 +180,12 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text12h400w(
-                                  title: LocationData.regions
-                                      .firstWhere((r) =>
-                                          r.id ==
-                                          widget.trip.startLocation[0]
-                                              .toString())
-                                      .text,
+                                  title: fromRegion,
                                   color: AppTheme.gray,
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  safeSubstring(
-                                      LocationData.villages
-                                          .firstWhere((n) =>
-                                              n.id ==
-                                              widget.trip.startLocation[2]
-                                                  .toString())
-                                          .text,
-                                      3),
+                                  safeSubstring(fromNeighborhood, 3),
                                   style: const TextStyle(
                                     fontFamily: AppTheme.fontFamily,
                                     fontSize: 36,
@@ -177,12 +196,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                 ),
                                 const SizedBox(height: 2),
                                 Text12h400w(
-                                  title: LocationData.cities
-                                      .firstWhere((c) =>
-                                          c.id ==
-                                          widget.trip.startLocation[1]
-                                              .toString())
-                                      .text,
+                                  title: fromCity,
                                   color: AppTheme.gray,
                                 ),
                               ],
@@ -255,9 +269,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                Defaults()
-                                    .vehicles[widget.trip.vehicleId]
-                                    .vehicleName,
+                                widget.trip.vehicle.model,
                                 style: const TextStyle(
                                   color: AppTheme.gray,
                                   fontSize: 12,
@@ -272,24 +284,20 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                Text12h400w(
-                                  title: LocationData.regions
-                                      .firstWhere((r) =>
-                                          r.id ==
-                                          widget.trip.endLocation[0].toString())
-                                      .text,
-                                  color: AppTheme.gray,
+                                Text(
+                                  toRegion,
+                                  style: const TextStyle(
+                                    fontFamily: AppTheme.fontFamily,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.normal,
+                                    height: 1.5,
+                                    color: AppTheme.gray,
+                                  ),
+                                  textAlign: TextAlign.end,
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  safeSubstring(
-                                      LocationData.villages
-                                          .firstWhere((n) =>
-                                              n.id ==
-                                              widget.trip.endLocation[2]
-                                                  .toString())
-                                          .text,
-                                      3),
+                                  safeSubstring(toNeighborhood, 3),
                                   style: const TextStyle(
                                     fontFamily: AppTheme.fontFamily,
                                     fontSize: 36,
@@ -299,13 +307,16 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 2),
-                                Text12h400w(
-                                  title: LocationData.cities
-                                      .firstWhere((c) =>
-                                          c.id ==
-                                          widget.trip.endLocation[1].toString())
-                                      .text,
-                                  color: AppTheme.gray,
+                                Text(
+                                  toCity,
+                                  style: const TextStyle(
+                                    fontFamily: AppTheme.fontFamily,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.normal,
+                                    height: 1.5,
+                                    color: AppTheme.gray,
+                                  ),
+                                  textAlign: TextAlign.end,
                                 ),
                               ],
                             ),
@@ -360,8 +371,10 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => MapSingleScreen(
-                                    location: const LatLng(
-                                        39.65102589159305, 66.96563837931475),
+                                    location: LatLng(
+                                      double.parse(widget.trip.startLat),
+                                      double.parse(widget.trip.startLong),
+                                    ),
                                     place: from,
                                   ),
                                 ),
@@ -414,8 +427,10 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => MapSingleScreen(
-                                    location: const LatLng(
-                                        41.31208082463855, 69.28203897643235),
+                                    location: LatLng(
+                                      double.parse(widget.trip.endLat),
+                                      double.parse(widget.trip.endLong),
+                                    ),
                                     place: to,
                                   ),
                                 ),
@@ -473,6 +488,32 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Text14h400w(
+                            title: translate("home.arrival_date"),
+                            color: AppTheme.gray,
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text14h400w(
+                                title: Utils.scheduleDateFormat(
+                                    widget.trip.startTime),
+                                color: AppTheme.gray,
+                              ),
+                              const SizedBox(height: 4),
+                              Text16h500w(
+                                title:
+                                    "${widget.trip.endTime.hour}:${widget.trip.endTime.minute} ${widget.trip.endTime.hour < 13 ? 'AM' : 'PM'}",
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -494,7 +535,8 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text16h500w(
-                                  title: "\$${widget.trip.pricePerSeat}"),
+                                  title:
+                                      "${Utils.priceFormat(pricePerSeat)} ${translate("currency")}"),
                             ],
                           )
                         ],
@@ -508,10 +550,10 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                             MaterialPageRoute(
                               builder: (context) {
                                 return MapRouteScreen(
-                                  start: const LatLng(
-                                      39.65102589159305, 66.96563837931475),
-                                  end: const LatLng(
-                                      41.31208082463855, 69.28203897643235),
+                                  start: LatLng(
+                                      double.parse(widget.trip.startLat), double.parse(widget.trip.startLong)),
+                                  end: LatLng(
+                                      double.parse(widget.trip.endLat), double.parse(widget.trip.endLong)),
                                   startText: from,
                                   endText: to,
                                 );
@@ -709,9 +751,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                       color: AppTheme.gray,
                     ),
                     Text(
-                      widget.isDriver == false
-                          ? "\$${(int.parse(totalPrice) * passengersNum).toString()}"
-                          : "\$0",
+                      "${Utils.priceFormat((int.parse(pricePerSeat) * passengersNum).toString())} ${translate("currency")}",
                       style: const TextStyle(
                         color: AppTheme.black,
                         fontSize: 20,
@@ -724,16 +764,17 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                 ),
                 const SizedBox(height: 16),
                 SecondaryButton(
-                  title: translate(widget.isDriver == false
-                      ? "home.book_now"
-                      : "home.cancel_trip"),
+                  title: translate("home.book_now"),
                   onTap: () {
                     if (widget.isDriver == false) {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              PaymentScreen(trip: widget.trip),
+                          builder: (context) => PaymentScreen(
+                            trip: widget.trip,
+                            passengersNum: passengersNum,
+                            passengers: passengers,
+                          ),
                         ),
                       );
                     } else {

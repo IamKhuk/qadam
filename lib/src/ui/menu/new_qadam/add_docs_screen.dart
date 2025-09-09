@@ -7,16 +7,22 @@ import 'package:lottie/lottie.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:qadam/src/ui/dialogs/bottom_dialog.dart';
 import 'package:qadam/src/ui/dialogs/center_dialog.dart';
+import 'package:qadam/src/ui/menu/main_screen.dart';
 import 'package:qadam/src/ui/widgets/buttons/primary_button.dart';
 import 'package:qadam/src/ui/widgets/containers/leading_back.dart';
 import 'package:qadam/src/ui/widgets/textfield/main_textfield.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../model/api/apply_driver_response_model.dart';
+import '../../../model/api/image_response_model.dart';
 import '../../../model/color_model.dart';
 import '../../../model/vehicle_model.dart';
+import '../../../resources/repository.dart';
 import '../../../theme/app_theme.dart';
+import '../../dialogs/snack_bar.dart';
 import '../../widgets/texts/text_14h_400w.dart';
 import '../../widgets/texts/text_16h_500w.dart';
 import '../../widgets/texts/text_18h_500w.dart';
+import '../home/home_screen.dart';
 
 class AddDocsScreen extends StatefulWidget {
   const AddDocsScreen({super.key});
@@ -26,6 +32,15 @@ class AddDocsScreen extends StatefulWidget {
 }
 
 class _AddDocsScreenState extends State<AddDocsScreen> {
+  final picker = ImagePicker();
+
+  bool isLoading = false;
+
+  final Repository _repository = Repository();
+
+  String frontImage = '';
+  String backImage = '';
+
   TextEditingController birthDateController = TextEditingController();
   TextEditingController licenseNumController = TextEditingController();
   TextEditingController licenseExpiryDateController = TextEditingController();
@@ -33,6 +48,8 @@ class _AddDocsScreenState extends State<AddDocsScreen> {
   TextEditingController carModelController = TextEditingController();
   TextEditingController carNumberController = TextEditingController();
   TextEditingController colorController = TextEditingController();
+  TextEditingController techPassportController = TextEditingController();
+
   DateTime birthDate = DateTime.now().subtract(const Duration(days: 365 * 18));
   DateTime licenseExpiryDate = DateTime.now();
 
@@ -47,19 +64,20 @@ class _AddDocsScreenState extends State<AddDocsScreen> {
 
   List<XFile> carImages = [];
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   _checkPermissions();
-  // }
-  //
-  // Future<void> _checkPermissions() async {
-  //   final cameraStatus = await Permission.camera.request();
-  //   final photosStatus = await Permission.photos.request();
-  //   if (mounted) {
-  //     print('Initial permissions - Camera: $cameraStatus, Photos: $photosStatus');
-  //   }
-  // }
+  @override
+  void initState() {
+    super.initState();
+    _checkPermissions();
+  }
+
+  Future<void> _checkPermissions() async {
+    final cameraStatus = await Permission.camera.request();
+    final photosStatus = await Permission.photos.request();
+    if (mounted) {
+      print(
+          'Initial permissions - Camera: $cameraStatus, Photos: $photosStatus');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +90,10 @@ class _AddDocsScreenState extends State<AddDocsScreen> {
       ),
       body: GestureDetector(
         onTap: () {
-          FocusScope.of(context).unfocus();
+          FocusScopeNode currentFocus = FocusScope.of(context);
+          if (!currentFocus.hasPrimaryFocus) {
+            currentFocus.unfocus();
+          }
         },
         child: Stack(
           children: [
@@ -95,8 +116,126 @@ class _AddDocsScreenState extends State<AddDocsScreen> {
                         onTap: () {
                           BottomDialog.showUploadImage(
                             context,
-                            onGallery: () {},
-                            onCamera: () {},
+                            onGallery: () async {
+                              final pickedFile = await picker.pickImage(
+                                source: ImageSource.gallery,
+                              );
+                              if (pickedFile != null) {
+                                setState(() {
+                                  isLoading = true;
+                                });
+                                var response =
+                                    await Repository().fetchDrivingBackUpload(
+                                  pickedFile.path,
+                                );
+                                if (response.isSuccess) {
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                  var result =
+                                      ImageUploadResponseModel.fromJson(
+                                          response.result);
+                                  if (result.status == "success") {
+                                    setState(() {
+                                      isLoading = false;
+                                      frontImage = pickedFile.path;
+                                    });
+                                    SharedPreferences prefs =
+                                        await SharedPreferences.getInstance();
+                                    prefs.setString(
+                                      "driving_front_image",
+                                      pickedFile.path,
+                                    );
+                                  } else {
+                                    setState(() {
+                                      isLoading = false;
+                                    });
+                                    if (response.status == -1) {
+                                      CenterDialog.showActionFailed(
+                                        context,
+                                        'Connection Failed',
+                                        'You do not have internet connection, please try again',
+                                      );
+                                    } else {
+                                      CenterDialog.showActionFailed(
+                                        context,
+                                        'Action Failed',
+                                        'Uploading Image Failed, Please try again after sometime',
+                                      );
+                                    }
+                                  }
+                                } else {
+                                  CenterDialog.showActionFailed(
+                                    context,
+                                    'Action Failed',
+                                    'Could not upload the image, please try again',
+                                  );
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                }
+                              }
+                            },
+                            onCamera: () async {
+                              final pickedFile = await picker.pickImage(
+                                source: ImageSource.camera,
+                              );
+                              if (pickedFile != null) {
+                                setState(() {
+                                  isLoading = true;
+                                });
+                                var response =
+                                    await Repository().fetchDrivingFrontUpload(
+                                  pickedFile.path,
+                                );
+                                if (response.isSuccess) {
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                  var result =
+                                      ImageUploadResponseModel.fromJson(
+                                          response.result);
+                                  if (result.status == "success") {
+                                    setState(() {
+                                      isLoading = false;
+                                      frontImage = pickedFile.path;
+                                    });
+                                    SharedPreferences prefs =
+                                        await SharedPreferences.getInstance();
+                                    prefs.setString(
+                                      "driving_front_image",
+                                      pickedFile.path,
+                                    );
+                                  } else {
+                                    setState(() {
+                                      isLoading = false;
+                                    });
+                                    if (response.status == -1) {
+                                      CenterDialog.showActionFailed(
+                                        context,
+                                        'Connection Failed',
+                                        'You do not have internet connection, please try again',
+                                      );
+                                    } else {
+                                      CenterDialog.showActionFailed(
+                                        context,
+                                        'Action Failed',
+                                        'Uploading Image Failed, Please try again after sometime',
+                                      );
+                                    }
+                                  }
+                                } else {
+                                  CenterDialog.showActionFailed(
+                                    context,
+                                    'Action Failed',
+                                    'Could not upload the image, please try again',
+                                  );
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                }
+                              }
+                            },
                           );
                         },
                         child: Container(
@@ -115,64 +254,239 @@ class _AddDocsScreenState extends State<AddDocsScreen> {
                               ),
                             ],
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Row(
-                                children: [
-                                  const SizedBox(width: 50),
-                                  Lottie.asset(
-                                    "assets/lottie/upload_driving_licence.json",
-                                    width: 160,
-                                    height: 160,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ],
-                              ),
-                              Text18h500w(
-                                title: translate("qadam.tap_to_upload"),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                translate("qadam.supported_formats"),
-                                style: const TextStyle(
-                                  fontFamily: AppTheme.fontFamily,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.normal,
-                                  height: 1.5,
-                                  color: AppTheme.gray,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16, vertical: 8),
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.purple,
-                                      borderRadius: BorderRadius.circular(32),
-                                    ),
-                                    child: Row(
+                          child: frontImage.isEmpty
+                              ? Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Row(
                                       children: [
-                                        Text14h400w(
-                                          title: translate("qadam.select_file"),
-                                          color: Colors.white,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        const Icon(
-                                          Icons.file_upload_outlined,
-                                          color: Colors.white,
+                                        const SizedBox(width: 50),
+                                        Lottie.asset(
+                                          "assets/lottie/upload_driving_licence.json",
+                                          width: 160,
+                                          height: 160,
+                                          fit: BoxFit.cover,
                                         ),
                                       ],
                                     ),
+                                    Text18h500w(
+                                      title: translate("qadam.tap_to_upload"),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      translate("qadam.supported_formats"),
+                                      style: const TextStyle(
+                                        fontFamily: AppTheme.fontFamily,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.normal,
+                                        height: 1.5,
+                                        color: AppTheme.gray,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 16, vertical: 8),
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.purple,
+                                            borderRadius:
+                                                BorderRadius.circular(32),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Text14h400w(
+                                                title: translate(
+                                                    "qadam.select_file"),
+                                                color: Colors.white,
+                                              ),
+                                              const SizedBox(width: 8),
+                                              const Icon(
+                                                Icons.file_upload_outlined,
+                                                color: Colors.white,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                )
+                              : SizedBox(
+                                  height: 164,
+                                  width: MediaQuery.of(context).size.width - 64,
+                                  child: Stack(
+                                    children: [
+                                      SizedBox(
+                                        height: 164,
+                                        width:
+                                            MediaQuery.of(context).size.width -
+                                                64,
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(16),
+                                          child: Image.file(
+                                            frontImage.isEmpty
+                                                ? File(frontImage)
+                                                : File(frontImage),
+                                            height: 164,
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width -
+                                                64,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                      ),
+                                      Positioned(
+                                        bottom: 12,
+                                        right: 12,
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            BottomDialog.showUploadImage(
+                                              context,
+                                              onGallery: () async {
+                                                final pickedFile = await picker.pickImage(
+                                                  source: ImageSource.gallery,
+                                                );
+                                                if (pickedFile != null) {
+                                                  setState(() {
+                                                    isLoading = true;
+                                                  });
+                                                  var response =
+                                                  await Repository().fetchDrivingBackUpload(
+                                                    pickedFile.path,
+                                                  );
+                                                  if (response.isSuccess) {
+                                                    setState(() {
+                                                      isLoading = false;
+                                                    });
+                                                    var result =
+                                                    ImageUploadResponseModel.fromJson(
+                                                        response.result);
+                                                    if (result.status == "success") {
+                                                      setState(() {
+                                                        isLoading = false;
+                                                        frontImage = pickedFile.path;
+                                                      });
+                                                      SharedPreferences prefs =
+                                                      await SharedPreferences.getInstance();
+                                                      prefs.setString(
+                                                        "driving_front_image",
+                                                        pickedFile.path,
+                                                      );
+                                                    } else {
+                                                      setState(() {
+                                                        isLoading = false;
+                                                      });
+                                                      if (response.status == -1) {
+                                                        CenterDialog.showActionFailed(
+                                                          context,
+                                                          'Connection Failed',
+                                                          'You do not have internet connection, please try again',
+                                                        );
+                                                      } else {
+                                                        CenterDialog.showActionFailed(
+                                                          context,
+                                                          'Action Failed',
+                                                          'Uploading Image Failed, Please try again after sometime',
+                                                        );
+                                                      }
+                                                    }
+                                                  } else {
+                                                    CenterDialog.showActionFailed(
+                                                      context,
+                                                      'Action Failed',
+                                                      'Could not upload the image, please try again',
+                                                    );
+                                                    setState(() {
+                                                      isLoading = false;
+                                                    });
+                                                  }
+                                                }
+                                              },
+                                              onCamera: () async {
+                                                final pickedFile = await picker.pickImage(
+                                                  source: ImageSource.camera,
+                                                );
+                                                if (pickedFile != null) {
+                                                  setState(() {
+                                                    isLoading = true;
+                                                  });
+                                                  var response =
+                                                  await Repository().fetchDrivingFrontUpload(
+                                                    pickedFile.path,
+                                                  );
+                                                  if (response.isSuccess) {
+                                                    setState(() {
+                                                      isLoading = false;
+                                                    });
+                                                    var result =
+                                                    ImageUploadResponseModel.fromJson(
+                                                        response.result);
+                                                    if (result.status == "success") {
+                                                      setState(() {
+                                                        isLoading = false;
+                                                        frontImage = pickedFile.path;
+                                                      });
+                                                      SharedPreferences prefs =
+                                                      await SharedPreferences.getInstance();
+                                                      prefs.setString(
+                                                        "driving_front_image",
+                                                        pickedFile.path,
+                                                      );
+                                                    } else {
+                                                      setState(() {
+                                                        isLoading = false;
+                                                      });
+                                                      if (response.status == -1) {
+                                                        CenterDialog.showActionFailed(
+                                                          context,
+                                                          'Connection Failed',
+                                                          'You do not have internet connection, please try again',
+                                                        );
+                                                      } else {
+                                                        CenterDialog.showActionFailed(
+                                                          context,
+                                                          'Action Failed',
+                                                          'Uploading Image Failed, Please try again after sometime',
+                                                        );
+                                                      }
+                                                    }
+                                                  } else {
+                                                    CenterDialog.showActionFailed(
+                                                      context,
+                                                      'Action Failed',
+                                                      'Could not upload the image, please try again',
+                                                    );
+                                                    setState(() {
+                                                      isLoading = false;
+                                                    });
+                                                  }
+                                                }
+                                              },
+                                            );
+                                          },
+                                          child: Container(
+                                            padding: const EdgeInsets.all(12),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(24),
+                                            ),
+                                            child: Text14h400w(
+                                              title: translate("qadam.replace"),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                            ],
-                          ),
+                                ),
                         ),
                       ),
                       const SizedBox(height: 32),
@@ -498,6 +812,12 @@ class _AddDocsScreenState extends State<AddDocsScreen> {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 16),
+                      MainTextField(
+                        hintText: translate("profile.car_tech_passport"),
+                        icon: Icons.numbers,
+                        controller: techPassportController,
+                      ),
                       const SizedBox(height: 24),
                       Container(
                         padding: const EdgeInsets.all(16),
@@ -623,6 +943,7 @@ class _AddDocsScreenState extends State<AddDocsScreen> {
                           carModelController.text.isEmpty ||
                           carNumberController.text.isEmpty ||
                           colorController.text.isEmpty ||
+                          techPassportController.text.isEmpty ||
                           carImages.isEmpty) {
                         CenterDialog.showActionFailed(
                           context,
@@ -630,10 +951,80 @@ class _AddDocsScreenState extends State<AddDocsScreen> {
                           translate("qadam.missing_docs_msg"),
                         );
                       } else {
-                        SharedPreferences prefs = await SharedPreferences.getInstance();
-                        prefs.setBool('isDocsAdded', true);
-                        prefs.setBool('isDocsVerified', false);
-                        Navigator.pop(context, true);
+                        setState(() {
+                          isLoading = true;
+                        });
+                        var response = await _repository.fetchApplyDriver(
+                          licenseNumController.text,
+                          licenseExpiryDate,
+                          birthDate,
+                          carNumberController.text,
+                          selectedVehicle.vehicleName,
+                          selectedColor.id.toString(),
+                          "4",
+                          techPassportController.text,
+                        );
+
+                        var result =
+                            ApplyDriverResponseModel.fromJson(response.result);
+
+                        if (response.isSuccess) {
+                          setState(() {
+                            isLoading = false;
+                          });
+                          if (result.status == "success") {
+                            CustomSnackBar().showSnackBar(
+                              context,
+                              translate("qadam.documents_uploaded"),
+                              1,
+                            );
+
+                            SharedPreferences prefs =
+                                await SharedPreferences.getInstance();
+                            prefs.setBool('isDocsAdded', true);
+                            prefs.setBool('isDocsVerified', false);
+                            prefs.setString("vehicle_id", result.vehicleId.toString());
+
+                            setState(() {
+                              selectedIndex = 0;
+                            });
+
+                            Navigator.of(context).popUntil(
+                              (route) => route.isFirst,
+                            );
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return const MainScreen();
+                                },
+                              ),
+                            );
+                          } else {
+                            CenterDialog.showActionFailed(
+                              context,
+                              translate("qadam.booking_failed"),
+                              translate("qadam.booking_failed_msg"),
+                            );
+                          }
+                        } else {
+                          setState(() {
+                            isLoading = false;
+                          });
+                          if (response.status == -1) {
+                            CenterDialog.showActionFailed(
+                              context,
+                              translate("auth.connection_failed"),
+                              translate("auth.connection_failed_msg"),
+                            );
+                          } else {
+                            CenterDialog.showActionFailed(
+                              context,
+                              translate("auth.something_went_wrong"),
+                              translate("auth.failed_msg"),
+                            );
+                          }
+                        }
                       }
                     },
                     child: PrimaryButton(title: translate("qadam.submit")),
@@ -641,6 +1032,35 @@ class _AddDocsScreenState extends State<AddDocsScreen> {
                 ),
               ],
             ),
+            isLoading == true
+                ? Container(
+              color: AppTheme.black.withOpacity(0.45),
+              child: Center(
+                child: Container(
+                  height: 96,
+                  width: 96,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.9),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        offset: const Offset(0, 5),
+                        blurRadius: 25,
+                        spreadRadius: 0,
+                        color: AppTheme.dark.withOpacity(0.2),
+                      ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      valueColor:
+                      AlwaysStoppedAnimation<Color>(AppTheme.purple),
+                    ),
+                  ),
+                ),
+              ),
+            )
+                : Container()
           ],
         ),
       ),

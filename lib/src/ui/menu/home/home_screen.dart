@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_translate/flutter_translate.dart';
+import 'package:qadam/src/bloc/home_bloc.dart';
 import 'package:qadam/src/lan_localization/load_places.dart';
+import 'package:qadam/src/model/api/trip_list_model.dart';
 import 'package:qadam/src/model/location_model.dart';
 import 'package:qadam/src/ui/dialogs/bottom_dialog.dart';
 import 'package:qadam/src/ui/dialogs/center_dialog.dart';
@@ -10,7 +12,9 @@ import 'package:qadam/src/ui/menu/home/trip_details_screen.dart';
 import 'package:qadam/src/ui/widgets/containers/active_trips_container.dart';
 import 'package:qadam/src/utils/utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 
+import '../../../bloc/profile_bloc.dart';
 import '../../../defaults/defaults.dart';
 import '../../../model/trip_model.dart';
 import '../../../theme/app_theme.dart';
@@ -30,6 +34,9 @@ class _HomeScreenState extends State<HomeScreen> {
   TextEditingController toController = TextEditingController();
   TextEditingController departureController = TextEditingController();
   TextEditingController returnController = TextEditingController();
+
+  String activeTripId = "0";
+  String activeBookedId = "0";
 
   String from = "";
   String to = "";
@@ -51,7 +58,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   LocationModel fromRegion = LocationModel(id: "0", text: "", parentID: '');
   LocationModel fromCity = LocationModel(id: "0", text: "", parentID: '');
-  LocationModel fromNeighborhood = LocationModel(id: "0", text: "", parentID: '');
+  LocationModel fromNeighborhood =
+      LocationModel(id: "0", text: "", parentID: '');
 
   LocationModel toRegion = LocationModel(id: "0", text: "", parentID: '');
   LocationModel toCity = LocationModel(id: "0", text: "", parentID: '');
@@ -67,7 +75,16 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     // departureController.text = Utils.tripDateFormat(departureDate);
+    getActiveTripsId();
+    if(activeTripId!="0"){
+      blocHome.fetchOneDriverTrip(activeTripId);
+    }
+    if(activeBookedId!="0"){
+
+    }
     getDriverStatus();
+    blocHome.fetchTripList();
+    blocProfile.fetchMe();
     // LocationData.loadPlaces(context);
     super.initState();
   }
@@ -640,23 +657,48 @@ class _HomeScreenState extends State<HomeScreen> {
                                         MaterialPageRoute(
                                           builder: (context) =>
                                               SearchResultScreen(
-                                            trip: TripModel(
-                                              vehicleId: 0,
+                                            trip: TripListModel(
+                                              id: 1,
+                                              fromWhere: "Cho`ja Q.F.Y, , ",
+                                              toWhere: "Bodomzor MFY, , ",
+                                              fromRegionId: int.parse(fromRegion.id),
+                                              toRegionId: int.parse(toRegion.id),
+                                              fromCityId: int.parse(fromCity.id),
+                                              toCityId: int.parse(toCity.id),
+                                              fromVillageId: int.parse(fromNeighborhood.id),
+                                              toVillageId: int.parse(toNeighborhood.id),
                                               startTime: departureDate,
-                                              endTime: DateTime.now(),
-                                              pricePerSeat: '15',
+                                              endTime: returnDateTime,
+                                              pricePerSeat: "",
+                                              totalSeats: 0,
                                               availableSeats: 0,
-                                              startLocation: [
-                                                int.parse(toRegion.id),
-                                                int.parse(toCity.id),
-                                                int.parse(toNeighborhood.id),
-                                              ],
-                                              endLocation: [
-                                                int.parse(fromRegion.id),
-                                                int.parse(fromCity.id),
-                                                int.parse(fromNeighborhood.id),
-                                              ],
+                                              startLat: "",
+                                              startLong: "",
+                                              endLat: "",
+                                              endLong: "",
+                                              status: "",
+                                              createdAt: DateTime.now(),
+                                              updatedAt: DateTime.now(),
+                                              driver: Driver(
+                                                id: 0,
+                                                name: "",
+                                                role: "driver",
+                                              ),
+                                              vehicle: TripVehicle(
+                                                id: 0,
+                                                model: "",
+                                                seats: 0,
+                                                carNumber: "",
+                                                color: CarColor(
+                                                  id: 0,
+                                                  titleUz: "",
+                                                  titleRu: "",
+                                                  titleEn: "",
+                                                  code: "",
+                                                ),
+                                              ),
                                             ),
+                                                isRoundTrip: _isReturnToggled,
                                           ),
                                         ),
                                       );
@@ -696,7 +738,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
                 const SizedBox(height: 24),
-                isDocsAdded == true
+                activeBookedId!="0"
                     ? Column(
                         children: [
                           Row(
@@ -723,15 +765,15 @@ class _HomeScreenState extends State<HomeScreen> {
                             padding: const EdgeInsets.symmetric(horizontal: 24),
                             child: GestureDetector(
                               onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => TripDetailsScreen(
-                                      trip: Defaults().trips[0],
-                                      isDriver: true,
-                                    ),
-                                  ),
-                                );
+                                // Navigator.push(
+                                //   context,
+                                //   MaterialPageRoute(
+                                //     builder: (context) => TripDetailsScreen(
+                                //       trip: Defaults().trips[0],
+                                //       isDriver: true,
+                                //     ),
+                                //   ),
+                                // );
                               },
                               child: ActiveTripsContainer(
                                   trip: Defaults().trips[0]),
@@ -741,74 +783,224 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       )
                     : const SizedBox(),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const SizedBox(width: 24),
-                    Expanded(
-                      child: Text(
-                        translate("home.recommended_destinations"),
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: AppTheme.fontFamily,
-                          height: 1.5,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {},
-                      child: Container(
-                        color: Colors.transparent,
-                        child: Text(
-                          translate("home.view_all"),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: AppTheme.purple,
-                            fontFamily: AppTheme.fontFamily,
-                            fontWeight: FontWeight.normal,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 24),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: Defaults().trips.length,
-                  padding: const EdgeInsets.only(bottom: 92),
-                  itemBuilder: (context, index) {
-                    return Column(
-                      children: [
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width - 48,
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) {
-                                    return TripDetailsScreen(
-                                        trip: Defaults().trips[index]);
-                                  },
+                StreamBuilder(
+                  stream: blocHome.getTrips,
+                  builder:
+                      (context, AsyncSnapshot<List<TripListModel>> snapshot) {
+                    if (snapshot.hasData) {
+                      return Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const SizedBox(width: 24),
+                              Expanded(
+                                child: Text(
+                                  translate("home.recommended_destinations"),
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                    fontFamily: AppTheme.fontFamily,
+                                    height: 1.5,
+                                    letterSpacing: 0.5,
+                                  ),
                                 ),
+                              ),
+                              GestureDetector(
+                                onTap: () {},
+                                child: Container(
+                                  color: Colors.transparent,
+                                  child: Text(
+                                    translate("home.view_all"),
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: AppTheme.purple,
+                                      fontFamily: AppTheme.fontFamily,
+                                      fontWeight: FontWeight.normal,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 24),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: snapshot.data!.length,
+                            padding: const EdgeInsets.only(bottom: 92),
+                            itemBuilder: (context, index) {
+                              return Column(
+                                children: [
+                                  SizedBox(
+                                    width: MediaQuery.of(context).size.width - 48,
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) {
+                                              return TripDetailsScreen(
+                                                  trip: snapshot.data![index]);
+                                            },
+                                          ),
+                                        );
+                                      },
+                                      child: DestinationsContainer(
+                                          trip: snapshot.data![index]),
+                                    ),
+                                  ),
+                                  index == snapshot.data!.length - 1
+                                      ? Container()
+                                      : const SizedBox(height: 16),
+                                ],
                               );
                             },
-                            child: DestinationsContainer(
-                                trip: Defaults().trips[index]),
                           ),
+                        ],
+                      );
+                    } else {
+                      return Shimmer.fromColors(
+                        baseColor: AppTheme.baseColor,
+                        highlightColor: AppTheme.highlightColor,
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const SizedBox(width: 24),
+                                Container(
+                                  height: 22,
+                                  width: 180,
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.baseColor,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                Container(
+                                  height: 14,
+                                  width: 40,
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.baseColor,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                ),
+                                const SizedBox(width: 24),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            ListView.builder(
+                              itemCount: 10,
+                              physics: const NeverScrollableScrollPhysics(),
+                              shrinkWrap: true,
+                              padding: const EdgeInsets.only(
+                                left: 24,
+                                right: 24,
+                                bottom: 96,
+                              ),
+                              itemBuilder: (context, index) {
+                                return Column(
+                                  children: [
+                                    Container(
+                                      height: 80,
+                                      padding: const EdgeInsets.only(
+                                        left: 12,
+                                        top: 10,
+                                        bottom: 10,
+                                        right: 20,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(24),
+                                        border: Border.all(
+                                          color: AppTheme.baseColor,
+                                          width: 2,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        children: [
+                                          Container(
+                                            height: 60,
+                                            width: 60,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                              BorderRadius.circular(16),
+                                              color: AppTheme.baseColor,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 14),
+                                          Column(
+                                            crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                            children: [
+                                              Container(
+                                                height: 14,
+                                                width: 120,
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                  BorderRadius.circular(4),
+                                                  color: AppTheme.baseColor,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 8),
+                                              Container(
+                                                height: 10,
+                                                width: 88,
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                  BorderRadius.circular(4),
+                                                  color: AppTheme.baseColor,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 10),
+                                              Row(
+                                                mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                                children: [
+                                                  Container(
+                                                    height: 8,
+                                                    width: 56,
+                                                    decoration: BoxDecoration(
+                                                      borderRadius:
+                                                      BorderRadius.circular(4),
+                                                      color: AppTheme.baseColor,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 12),
+                                                  Container(
+                                                    height: 8,
+                                                    width: 60,
+                                                    decoration: BoxDecoration(
+                                                      borderRadius:
+                                                      BorderRadius.circular(4),
+                                                      color: AppTheme.baseColor,
+                                                    ),
+                                                  )
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          const Spacer(),
+                                          SvgPicture.asset(
+                                            'assets/icons/right.svg',
+                                            height: 20,
+                                            color: AppTheme.baseColor,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    index == 9 ? Container() : const SizedBox(height: 12),
+                                  ],
+                                );
+                              },
+                            ),
+                          ],
                         ),
-                        index == Defaults().trips.length - 1
-                            ? Container()
-                            : const SizedBox(height: 16),
-                      ],
-                    );
+                      );
+                    }
                   },
-                )
+                ),
               ],
             ),
             Column(
@@ -931,5 +1123,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> getActiveTripsId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      activeTripId = prefs.getString('active_trip_id') ?? "0";
+      activeBookedId = prefs.getString('active_booked_id') ?? "0";
+    });
   }
 }

@@ -10,8 +10,13 @@ import '../../../theme/map_style.dart';
 
 class MapSelectScreen extends StatefulWidget {
   final String place;
+  final Function(LatLng position) onSelected;
 
-  const MapSelectScreen({super.key, required this.place});
+  const MapSelectScreen({
+    super.key,
+    required this.place,
+    required this.onSelected,
+  });
 
   @override
   State<MapSelectScreen> createState() => _MapSelectScreenState();
@@ -69,6 +74,7 @@ class _MapSelectScreenState extends State<MapSelectScreen> {
 
   void _confirmSelection() {
     if (_selectedLocation != null) {
+      widget.onSelected(_selectedLocation!);
       Navigator.pop(context, _selectedLocation);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

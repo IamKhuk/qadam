@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:qadam/src/ui/auth/verification_screen.dart';
 import 'package:qadam/src/ui/widgets/texts/text_16h_500w.dart';
@@ -289,10 +290,85 @@ class _LoginScreenState extends State<LoginScreen> {
                                     controller: firstNameController,
                                   ),
                                   const SizedBox(height: 16),
-                                  MainTextField(
-                                    hintText: translate("auth.last_name"),
-                                    icon: Icons.person_outline_rounded,
-                                    controller: lastNameController,
+                                  Container(
+                                    height: 66,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(16),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          offset:
+                                          const Offset(0, 4),
+                                          blurRadius: 100,
+                                          spreadRadius: 0,
+                                          color: AppTheme.black
+                                              .withOpacity(0.05),
+                                        ),
+                                      ],
+                                    ),
+                                    child: TextFormField(
+                                      controller: lastNameController,
+                                      textAlignVertical: TextAlignVertical.center,
+                                      cursorColor: AppTheme.purple,
+                                      enableInteractiveSelection: true,
+                                      obscureText: false,
+                                      style: const TextStyle(
+                                        fontFamily: AppTheme.fontFamily,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.normal,
+                                        height: 1.5,
+                                        color: AppTheme.black,
+                                      ),
+                                      keyboardType: TextInputType.text,
+                                      autofocus: false,
+                                      decoration: InputDecoration(
+                                        border:
+                                        const OutlineInputBorder(),
+                                        enabledBorder:
+                                        OutlineInputBorder(
+                                          borderRadius:
+                                          BorderRadius
+                                              .circular(16),
+                                          borderSide:
+                                          const BorderSide(
+                                              color: AppTheme
+                                                  .border),
+                                        ),
+                                        focusedBorder:
+                                        OutlineInputBorder(
+                                          borderRadius:
+                                          BorderRadius
+                                              .circular(16),
+                                          borderSide:
+                                          const BorderSide(
+                                            color:
+                                            AppTheme.purple,
+                                          ),
+                                        ),
+                                        contentPadding:
+                                        const EdgeInsets
+                                            .symmetric(
+                                          vertical: 20,
+                                          horizontal: 16,
+                                        ),
+                                        labelText: translate("auth.last_name"),
+                                        labelStyle: TextStyle(
+                                          fontFamily: AppTheme.fontFamily,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.normal,
+                                          color: AppTheme.dark.withOpacity(0.6),
+                                        ),
+                                        prefixIcon: const Icon(Icons.person_outline_rounded),
+                                        prefixIconColor: MaterialStateColor.resolveWith(
+                                              (Set<MaterialState> states) {
+                                            if (states.contains(MaterialState.focused)) {
+                                              return AppTheme.black;
+                                            }
+                                            return AppTheme.dark;
+                                          },
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                   const SizedBox(height: 16),
                                   MainTextField(

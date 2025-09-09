@@ -15,6 +15,7 @@
   "edit": "Edit",
   "help": "Help",
   "delete": "Delete",
+  "currency": "UZS",
   "auth": {
     "login": "Log in",
     "hello": "Hello",
@@ -47,6 +48,7 @@
     "from": "From",
     "to": "To",
     "departure_date": "Departure date",
+    "arrival_date": "Arrival date",
     "return": "Return?",
     "return_date": "Return date",
     "find_transportation": "Find Transportation",
@@ -168,7 +170,19 @@
     "No_trip_found_msg": "Please add a trip to continue",
     "create_new_trip": "Create A New Trip",
     "create_trip": "Create Trip",
-    "end_date": "End Date"
+    "end_date": "End Date",
+    "booking_success": "Trip is booked successfully",
+    "booking_failed": "Booking Failed",
+    "booking_failed_msg": "Trip booking failed, please try again later",
+    "not_enough_balance": "Not Enough Balance",
+    "not_enough_balance_msg": "You don't have enough balance to book this trip, please top up your balance",
+    "time_is_up": "Time Is Up",
+    "time_is_up_msg": "Trip time is up, please try again later",
+    "documents_uploaded": "Documents are uploaded successfully, please wait while we verify your documents",
+    "replace": "Replace",
+    "trip_created": "Trip is created successfully",
+    "trip_creation_failed": "Trip Creation Failed",
+    "trip_creation_failed_msg": "Trip creation failed, please try again later"
   },
   "search": {
     "all": "All",
@@ -216,7 +230,14 @@
     "car_color": "Car Color",
     "car_images": "Car Images",
     "select_car_model": "Select Car Model",
-    "select_car_color": "Select Car Color"
+    "select_car_color": "Select Car Color",
+    "my_balance": "My Balance",
+    "top_up": "Top Up",
+    "enter_top_up_amount": "Enter Top Up Amount",
+    "top_up_success": "Balance is topped up successfully",
+    "top_up_failed": "Top Up Failed",
+    "logout": "Log Out",
+    "car_tech_passport": "Car Tech Passport"
   },
   "history": {
     "history": "History",
