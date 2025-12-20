@@ -8,7 +8,7 @@ import '../resources/repository.dart';
 class HomeBloc {
   final Repository _repository = Repository();
 
-  final _infoTripsFetcher = PublishSubject<List<TripListModel>>();
+  final _infoTripsFetcher = BehaviorSubject<List<TripListModel>>();
   final _infoTripSearchFetcher = PublishSubject<TripSearchModel>();
   final _infoOneDriverTripFetcher = PublishSubject<CreatedTripResponseModel>();
   final _errorFetcher = PublishSubject<String>();
@@ -22,7 +22,11 @@ class HomeBloc {
     try{
       var response = await _repository.fetchTripList();
       if (response.isSuccess) {
-        List<TripListModel> result = (response.result as List)
+        var data = response.result;
+        if (data is Map && data.containsKey('data')) {
+           data = data['data'];
+        }
+        List<TripListModel> result = (data as List)
             .map((item) => TripListModel.fromJson(item))
             .toList();
         _infoTripsFetcher.sink.add(result);

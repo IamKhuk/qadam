@@ -1,11 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
+
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
-import 'package:http/http.dart' as http;
+// import 'package:http/http.dart' as http; // Removed
 import 'package:image/image.dart' as img;
 import 'package:path/path.dart';
-import 'package:qadam/src/utils/utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
 import '../model/event_bus/http_result.dart';
@@ -13,112 +12,140 @@ import '../model/passenger_model.dart';
 
 class ApiProvider {
   static Duration durationTimeout = const Duration(seconds: 30);
-  static String baseUrl = "https://test.qadam.services/api/v1";
+  static String baseUrl = "https://qadam.services/api/v1";
 
-  static Future<HttpResult> postRequest(url, body, head) async {
-    debugPrint(url);
-    debugPrint("Post: ${body.toString()}");
-    dynamic headers = await _getReqHeader();
+  // --- Helpers ---
 
-    debugPrint(headers.toString());
-    try {
-      http.Response response = await http
-          .post(
-            Uri.parse(url),
-            headers: head ? headers : null,
-            body: body,
-          )
-          .timeout(durationTimeout);
-      debugPrint("Response: ${response.body.toString()}");
-      return _result(response);
-    } on TimeoutException catch (_) {
-      return HttpResult(
-        isSuccess: false,
-        status: -1,
-        result: {},
-      );
-    } on SocketException catch (_) {
-      return HttpResult(
-        isSuccess: false,
-        status: -1,
-        result: {},
-      );
+  static Future<Map<String, dynamic>> _getReqHeader() async {
+    final prefs = await SharedPreferences.getInstance();
+    // No Content-Type here by default, let Dio or specific request handle it
+    final headers = {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+    };
+
+    if (prefs.getString('token') != null) {
+      headers["Authorization"] = "Bearer ${prefs.getString('token') ?? ""}";
     }
+    return headers;
   }
 
-  static Future<HttpResult> getRequest(url) async {
-    debugPrint(url);
-    final dynamic headers = await _getReqHeader();
-    try {
-      http.Response response = await http
-          .get(
-            Uri.parse(url),
-            headers: headers,
-          )
-          .timeout(durationTimeout);
-      debugPrint("Get Request Response: ${response.body.toString()}");
-      return _result(response);
-    } on TimeoutException catch (_) {
+  static HttpResult _handleDioError(DioException e) {
+    debugPrint("DioError: ${e.message}");
+    debugPrint("DioError Response: ${e.response?.data}");
+    if (e.response != null) {
+      // Check if response data is usable map
+      final result = e.response?.data is Map
+          ? e.response?.data
+          : {"error": e.response?.data.toString()};
+      
       return HttpResult(
         isSuccess: false,
-        status: -1,
-        result: {},
-      );
-    } on SocketException catch (_) {
-      return HttpResult(
-        isSuccess: false,
-        status: -1,
-        result: {},
-      );
-    }
-  }
-
-  static HttpResult _result(response) {
-    int status = response.statusCode ?? 404;
-
-    if (response.statusCode >= 200 && response.statusCode <= 299) {
-      var result;
-      result = json.decode(utf8.decode(response.bodyBytes));
-      return HttpResult(
-        isSuccess: true,
-        status: status,
+        status: e.response?.statusCode ?? -1,
         result: result,
       );
     } else {
-      try {
-        var result;
-        result = json.decode(utf8.decode(response.bodyBytes));
-        return HttpResult(
-          isSuccess: false,
-          status: status,
-          result: result,
-        );
-      } catch (_) {
-        return HttpResult(
-          isSuccess: false,
-          status: status,
-          result: {
-            "msg": "Server error, please try again",
-          },
-        );
-      }
+      return HttpResult(
+        isSuccess: false,
+        status: -1,
+        result: {},
+      );
     }
   }
 
-  static _getReqHeader() async {
-    final prefs = await SharedPreferences.getInstance();
+  static HttpResult _handleGenericError(Object e) {
+    debugPrint("Error: $e");
+    return HttpResult(
+      isSuccess: false,
+      status: -1,
+      result: {"error": e.toString()},
+    );
+  }
 
-    if (prefs.getString('token') == null) {
-      return {
-        "Accept": "application/json",
-      };
+   static HttpResult _processResponse(Response response) {
+    debugPrint("Response Body: ${response.data}");
+    
+    // Check for success range
+    if (response.statusCode != null &&
+        response.statusCode! >= 200 &&
+        response.statusCode! <= 299) {
+      
+      return HttpResult(
+        isSuccess: true,
+        status: response.statusCode!,
+        result: response.data is Map ? response.data : {"data": response.data},
+      );
     } else {
-      return {
-        "Accept": "application/json",
-        "Authorization": "Bearer ${prefs.getString('token') ?? ""}",
-      };
+      return HttpResult(
+        isSuccess: false,
+        status: response.statusCode ?? -1,
+        result: response.data is Map
+            ? response.data
+            : {"error": response.data.toString()},
+      );
     }
   }
+
+  // --- Core Methods ---
+
+  /// GET Request using Dio
+  static Future<HttpResult> getRequest(String url) async {
+    debugPrint("GET: $url");
+    Dio dio = Dio();
+    final headers = await _getReqHeader();
+    debugPrint("Headers: $headers");
+
+    try {
+      Response response = await dio.get(
+        url,
+        options: Options(
+          headers: headers,
+          sendTimeout: durationTimeout,
+          receiveTimeout: durationTimeout,
+          validateStatus: (status) => true, // Handle status manually
+          followRedirects: false,
+        ),
+      );
+      return _processResponse(response);
+    } on DioException catch (e) {
+      return _handleDioError(e);
+    } catch (e) {
+      return _handleGenericError(e);
+    }
+  }
+
+  /// POST Request (JSON)
+  static Future<HttpResult> postRequest(String url, Map<String, dynamic> body) async {
+    debugPrint("POST: $url");
+    debugPrint("Body: $body");
+
+    Dio dio = Dio();
+    final headers = await _getReqHeader();
+    debugPrint("Headers: $headers");
+
+    try {
+      Response response = await dio.post(
+        url,
+        data: body,
+        options: Options(
+          headers: headers,
+          sendTimeout: durationTimeout,
+          receiveTimeout: durationTimeout,
+          validateStatus: (status) => true,
+        ),
+      );
+      return _processResponse(response);
+    } on DioException catch (e) {
+      return _handleDioError(e);
+    } catch (e) {
+      return _handleGenericError(e);
+    }
+  }
+
+  // Legacy postRequest shim (deprecating but keeping if internal usage exists, 
+  // though we will replace all calls)
+  // Replaced by postFormRequest or postJsonRequest usage below.
+
 
   /// Register Post
   Future<HttpResult> fetchRegister(
@@ -141,7 +168,7 @@ class ApiProvider {
       "password": password,
       "password_confirmation": passwordConfirm,
     };
-    return await postRequest(url, data, false);
+    return await postRequest(url, data);
   }
 
   /// Verification Resend Post
@@ -151,7 +178,7 @@ class ApiProvider {
     final data = {
       "phone": phone,
     };
-    return await postRequest(url, data, false);
+    return await postRequest(url, data);
   }
 
   /// Verify Code Post
@@ -162,17 +189,21 @@ class ApiProvider {
       "phone": phone,
       "code": code,
     };
-    return await postRequest(url, data, false);
+    return await postRequest(url, data);
   }
 
   /// Login Post
   Future<HttpResult> fetchLogin(String phone, String password) async {
     String url = '$baseUrl/auth/login';
+    if(phone.contains("+") == false){
+      phone = "+$phone";
+    }
+
     final data = {
       "phone": phone,
       "password": password,
     };
-    return await postRequest(url, data, false);
+    return await postRequest(url, data);
   }
 
   /// Get User Data
@@ -217,7 +248,7 @@ class ApiProvider {
       "expiry": expiry,
       "ccv": ccv,
     };
-    return await postRequest(url, data, true);
+    return await postRequest(url, data);
   }
 
   /// Top Up Balance Post
@@ -227,7 +258,7 @@ class ApiProvider {
     final data = {
       "amount": amount,
     };
-    return await postRequest(url, data, true);
+    return await postRequest(url, data);
   }
 
   /// Book A Trip Post
@@ -246,35 +277,8 @@ class ApiProvider {
     };
     debugPrint(url);
     debugPrint("Post: ${data.toString()}");
-    final prefs = await SharedPreferences.getInstance();
-
-    try {
-      http.Response response = await http
-          .post(
-        Uri.parse(url),
-        headers: {
-          "Accept": "application/json",
-          "Authorization": "Bearer ${prefs.getString('token') ?? ""}",
-          "Content-Type": "application/json",
-        },
-        body: jsonEncode(data),
-      )
-          .timeout(durationTimeout);
-      debugPrint("Response: ${response.body.toString()}");
-      return _result(response);
-    } on TimeoutException catch (_) {
-      return HttpResult(
-        isSuccess: false,
-        status: -1,
-        result: {},
-      );
-    } on SocketException catch (_) {
-      return HttpResult(
-        isSuccess: false,
-        status: -1,
-        result: {},
-      );
-    }
+    
+    return await postRequest(url, data);
   }
 
   /// Get Booked Trips List
@@ -316,7 +320,6 @@ class ApiProvider {
     final dynamic headers = {
       "Accept": "application/json",
       "Authorization": "Bearer ${prefs.getString('token') ?? ""}",
-      "Content-Type": "multipart/form-data",
     };
 
     File? fileToUpload;
@@ -368,7 +371,6 @@ class ApiProvider {
     final dynamic headers = {
       "Accept": "application/json",
       "Authorization": "Bearer ${prefs.getString('token') ?? ""}",
-      "Content-Type": "multipart/form-data",
     };
 
     File? fileToUpload;
@@ -439,7 +441,7 @@ class ApiProvider {
       "seats": seats,
       "tech_passport_number": techPassportNumber,
     };
-    return await postRequest(url, data, true);
+    return await postRequest(url, data);
   }
 
   /// Verify Driver Post
@@ -449,7 +451,7 @@ class ApiProvider {
     final data = {
       "user_id": userId,
     };
-    return await postRequest(url, data, true);
+    return await postRequest(url, data);
   }
 
   /// Create Trip Post
@@ -488,7 +490,7 @@ class ApiProvider {
       "end_lat": endLat,
       "end_long": endLong,
     };
-    return await postRequest(url, data, true);
+    return await postRequest(url, data);
   }
 
   /// Get One Driver Trip

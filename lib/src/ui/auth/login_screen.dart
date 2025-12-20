@@ -11,6 +11,7 @@ import '../../resources/repository.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/validators.dart';
 import '../dialogs/center_dialog.dart';
+import '../dialogs/response_popup.dart';
 import '../menu/main_screen.dart';
 import '../widgets/buttons/secondary_button.dart';
 import '../widgets/textfield/main_textfield.dart';
@@ -435,9 +436,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           passController.text,
                         );
 
-                        var result = LoginModel.fromJson(response.result);
-
                         if (response.isSuccess) {
+                          var result = LoginModel.fromJson(response.result);
                           setState(() {
                             isLoading = false;
                           });
@@ -450,6 +450,11 @@ class _LoginScreenState extends State<LoginScreen> {
                             prefs.setString(
                               "token_date",
                               "${result.user.createdAt.day}-${result.user.createdAt.month}-${result.user.createdAt.year}",
+                            );
+                            showResponsePopup(
+                              context,
+                              status: result.status,
+                              message: result.message,
                             );
                             await _repository.cacheLoginUser(result.user);
                             Navigator.of(context).popUntil(
@@ -464,10 +469,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             );
                           } else {
-                            CenterDialog.showActionFailed(
+                            showResponsePopup(
                               context,
-                              translate("auth.login_failed"),
-                              result.message,
+                              status: result.status,
+                              message: result.message,
                             );
                           }
                         } else {
@@ -475,16 +480,16 @@ class _LoginScreenState extends State<LoginScreen> {
                             isLoading = false;
                           });
                           if (response.status == -1) {
-                            CenterDialog.showActionFailed(
+                            showResponsePopup(
                               context,
-                              translate("auth.connection_failed"),
-                              translate("auth.connection_failed_msg"),
+                              status: 'error',
+                              message: translate("auth.connection_failed_msg"),
                             );
                           } else {
-                            CenterDialog.showActionFailed(
+                            showResponsePopup(
                               context,
-                              translate("auth.something_went_wrong"),
-                              translate("auth.failed_msg"),
+                              status: 'error',
+                              message: translate("auth.failed_msg"),
                             );
                           }
                         }
@@ -523,10 +528,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             passRegController.text,
                             passAgainController.text,
                           );
-                          var result = RegisterModel.fromJson(
-                            response.result,
-                          );
                           if (response.isSuccess) {
+                            var result = RegisterModel.fromJson(
+                              response.result,
+                            );
                             setState(() {
                               isLoading = false;
                             });
@@ -542,11 +547,16 @@ class _LoginScreenState extends State<LoginScreen> {
                                   },
                                 ),
                               );
-                            } else {
-                              CenterDialog.showActionFailed(
+                              showResponsePopup(
                                 context,
-                                translate("auth.register_failed"),
-                                result.message,
+                                status: result.status,
+                                message: result.message,
+                              );
+                            } else {
+                              showResponsePopup(
+                                context,
+                                status: result.status,
+                                message: result.message,
                               );
                             }
                           } else {
@@ -554,16 +564,16 @@ class _LoginScreenState extends State<LoginScreen> {
                               isLoading = false;
                             });
                             if (response.status == -1) {
-                              CenterDialog.showActionFailed(
+                              showResponsePopup(
                                 context,
-                                translate("auth.connection_failed"),
-                                translate("auth.connection_failed_msg"),
+                                status: 'error',
+                                message: translate("auth.connection_failed_msg"),
                               );
                             } else {
-                              CenterDialog.showActionFailed(
+                              showResponsePopup(
                                 context,
-                                translate("auth.something_went_wrong"),
-                                translate("auth.failed_msg"),
+                                status: 'error',
+                                message: translate("auth.failed_msg"),
                               );
                             }
                           }

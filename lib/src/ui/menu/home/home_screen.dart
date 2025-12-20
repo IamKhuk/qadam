@@ -13,6 +13,7 @@ import 'package:qadam/src/ui/widgets/containers/active_trips_container.dart';
 import 'package:qadam/src/utils/utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:lottie/lottie.dart';
 
 import '../../../bloc/profile_bloc.dart';
 import '../../../defaults/defaults.dart';
@@ -788,6 +789,50 @@ class _HomeScreenState extends State<HomeScreen> {
                   builder:
                       (context, AsyncSnapshot<List<TripListModel>> snapshot) {
                     if (snapshot.hasData) {
+                      if (snapshot.data!.isEmpty) {
+                        return Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const SizedBox(width: 24),
+                                Expanded(
+                                  child: Text(
+                                    translate("home.recommended_destinations"),
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                      fontFamily: AppTheme.fontFamily,
+                                      height: 1.5,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 24),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+                            SizedBox(
+                              height: 200,
+                              width: 200,
+                              child: Lottie.asset(
+                                "assets/lottie/empty.json",
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              translate("explore.nothing_found"), 
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontFamily: AppTheme.fontFamily,
+                                color: AppTheme.gray,
+                              ),
+                            ),
+                            const SizedBox(height: 104),
+                          ],
+                        );
+                      }
                       return Column(
                         children: [
                           Row(

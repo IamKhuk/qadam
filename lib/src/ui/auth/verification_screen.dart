@@ -11,6 +11,7 @@ import 'dart:io';
 import '../../resources/repository.dart';
 import '../../theme/app_theme.dart';
 import '../dialogs/center_dialog.dart';
+import '../dialogs/response_popup.dart';
 import '../widgets/containers/leading_back.dart';
 import 'login_screen.dart';
 
@@ -171,15 +172,19 @@ class _VerificationScreenState extends State<VerificationScreen> {
                                   var response = await _repository
                                       .fetchVerificationResend(widget.phone);
 
-                                  var result = VerificationResendModel.fromJson(
-                                      response.result);
-
                                   if (response.isSuccess) {
+                                    var result = VerificationResendModel.fromJson(
+                                        response.result);
                                     setState(() {
                                       _pinPutController.text =
                                           result.code.toString();
                                       _isLoading = false;
                                     });
+                                    showResponsePopup(
+                                      context,
+                                      status: result.status,
+                                      message: result.message,
+                                    );
                                     if (result.status == "success") {
                                       setState(() {
                                         timer = 120;
@@ -243,12 +248,16 @@ class _VerificationScreenState extends State<VerificationScreen> {
                           _pinPutController.text,
                         );
 
-                        var result = VerifyCodeModel.fromJson(response.result);
-
                         if (response.isSuccess) {
+                          var result = VerifyCodeModel.fromJson(response.result);
                           setState(() {
                             _isLoading = false;
                           });
+                          showResponsePopup(
+                            context,
+                            status: result.status,
+                            message: result.message,
+                          );
                           if (result.status == "success") {
                             _timer!.cancel();
                             Navigator.of(context).popUntil(

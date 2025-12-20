@@ -1,7 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_translate/flutter_translate.dart';
-import 'package:qadam/src/lan_localization/app_localization.dart';
+import 'package:qadam/src/resources/app_provider.dart';
 import 'package:qadam/src/ui/splash/splash_screen.dart';
 
 String language = 'en';
@@ -9,7 +11,10 @@ String language = 'en';
 final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  HttpOverrides.global = AppHttpOverrides();
   var delegate = await LocalizationDelegate.create(
+    basePath: 'assets/i18n',
     fallbackLocale: 'en',
     supportedLocales: ['en', 'ru', 'uz'],
   );
@@ -34,7 +39,6 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         localizationsDelegates: [
-          AppLocalizations.delegate,
           localizationDelegate
         ],
         supportedLocales: localizationDelegate.supportedLocales,
@@ -52,5 +56,20 @@ class MyApp extends StatelessWidget {
         home: const SplashScreen(),
       ),
     );
+  }
+}
+
+class AppHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    final allowedHost = Uri.parse(ApiProvider.baseUrl).host;
+    return super.createHttpClient(context)
+      ..badCertificateCallback = (
+        X509Certificate cert,
+        String host,
+        int port,
+      ) {
+        return host == allowedHost;
+      };
   }
 }

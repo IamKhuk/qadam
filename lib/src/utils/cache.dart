@@ -7,10 +7,14 @@ class AppCache {
   Future<void> saveLoginUser(UserModel user) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setInt("id", user.id);
-    prefs.setString("name", user.name);
+    prefs.setString("first_name", user.firstName);
+    prefs.setString("last_name", user.lastName);
+    prefs.setString("father_name", user.fatherName);
+    prefs.setString("email", user.email);
     prefs.setString("phone", user.phone);
     prefs.setString("role", user.role);
     prefs.setBool("is_verified", user.isVerified == 1 ? true : false);
+    prefs.setString("driving_verification_status", user.drivingVerificationStatus);
   }
 
   Future<void> saveUser(User user) async {
