@@ -3,7 +3,6 @@ import 'package:flutter_translate/flutter_translate.dart';
 import 'package:lottie/lottie.dart';
 import 'package:qadam/src/model/api/image_response_model.dart';
 import 'package:qadam/src/model/api/trip_list_model.dart';
-import 'package:qadam/src/model/trip_model.dart';
 import 'package:qadam/src/theme/app_theme.dart';
 import 'package:qadam/src/ui/menu/main_screen.dart';
 import 'package:qadam/src/ui/menu/new_qadam/create_new_qadam_screen.dart';
@@ -36,7 +35,10 @@ class _NewQadamState extends State<NewQadam> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       isDocsAdded = prefs.getBool('isDocsAdded') ?? false;
-      isDocsVerified = prefs.getBool('isDocsVerified') ?? false;
+      isDocsVerified =
+          prefs.getString('driving_verification_status') == "approved"
+              ? true
+              : false;
     });
   }
 
@@ -147,11 +149,14 @@ class _NewQadamState extends State<NewQadam> {
                           setState(() {
                             isLoading = true;
                           });
-                          SharedPreferences prefs = await SharedPreferences.getInstance();
+                          SharedPreferences prefs =
+                              await SharedPreferences.getInstance();
 
-                          var response = await _repository.fetchVerifyDriver(prefs.getInt('id').toString());
+                          var response = await _repository
+                              .fetchVerifyDriver(prefs.getInt('id').toString());
 
-                          var result = ImageUploadResponseModel.fromJson(response.result);
+                          var result = ImageUploadResponseModel.fromJson(
+                              response.result);
 
                           if (response.isSuccess) {
                             setState(() {

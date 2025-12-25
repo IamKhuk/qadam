@@ -83,8 +83,8 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
       id: 1,
       vehicleName: "Toyota Corolla",
       color: ColorModel(
-        name: "Navy Blue",
-        colorCode: AppTheme.blue.withOpacity(0.6),
+        titleEn: "Navy Blue",
+        colorCode: AppTheme.blue.withOpacity(0.6), id: 0, titleRu: '', titleUz: '',
       ),
       capacity: 4,
     ),
@@ -92,8 +92,8 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
       id: 1,
       vehicleName: "Malibu",
       color: ColorModel(
-        name: "Black",
-        colorCode: AppTheme.black,
+        titleEn: "Black",
+        colorCode: AppTheme.black, id: 0, titleRu: '', titleUz: '',
       ),
       capacity: 4,
     ),
@@ -101,8 +101,8 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
       id: 1,
       vehicleName: "Toyota Arius",
       color: ColorModel(
-        name: "Rosy Red",
-        colorCode: AppTheme.red.withOpacity(0.6),
+        titleEn: "Rosy Red",
+        colorCode: AppTheme.red.withOpacity(0.6), id: 0, titleRu: '', titleUz: '',
       ),
       capacity: 6,
     ),

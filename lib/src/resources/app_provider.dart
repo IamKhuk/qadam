@@ -348,6 +348,8 @@ class ApiProvider {
       },
     );
 
+    debugPrint("Response: ${response.data}");
+
     if (response.statusCode == 200) {
       return HttpResult(
         isSuccess: true,
@@ -399,6 +401,61 @@ class ApiProvider {
       },
     );
 
+    debugPrint("Response: ${response.data}");
+
+    if (response.statusCode == 200) {
+      return HttpResult(
+        isSuccess: true,
+        status: response.statusCode!,
+        result: response.data,
+      );
+    }
+    return HttpResult(
+      isSuccess: false,
+      status: -1,
+      result: {},
+    );
+  }
+
+  ///Passport Upload
+  Future<HttpResult> fetchPassportUpload(String path) async {
+    String url = '$baseUrl/auth/upload-driver-passport-driving-licence';
+
+    final prefs = await SharedPreferences.getInstance();
+    Dio dio = Dio();
+    final dynamic headers = {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${prefs.getString('token') ?? ""}",
+    };
+
+    File? fileToUpload;
+    if (path.isNotEmpty) {
+      final originalFile = File(path);
+      fileToUpload =
+          await _resizeImage(originalFile, maxWidth: 480, quality: 80);
+    }
+
+    FormData formData = FormData.fromMap({
+      "driver_passport_image": path.isEmpty
+          ? path
+          : await MultipartFile.fromFile(
+              fileToUpload!.path,
+              filename: basename(fileToUpload.path),
+            ),
+    });
+
+    Response response = await dio.post(
+      url,
+      data: formData,
+      options: Options(headers: headers),
+      onSendProgress: (int sent, int total) {
+        String percentage = (sent / total * 100).toStringAsFixed(2);
+        debugPrint("$sent Bytes of $total Bytes - $percentage % uploaded");
+      },
+    );
+
+    debugPrint("Response: ${response.data}");
+
     if (response.statusCode == 200) {
       return HttpResult(
         isSuccess: true,
@@ -418,11 +475,6 @@ class ApiProvider {
     String drivingLicenceNumber,
     DateTime expiryDate,
     DateTime birthDate,
-    String vehicleNumber,
-    String carModel,
-    String carColorID,
-    String seats,
-    String techPassportNumber,
   ) async {
     String url = '$baseUrl/auth/become-a-driver';
     String expiryDateStr = '${expiryDate.day},${expiryDate.month},${expiryDate.year}';
@@ -431,15 +483,25 @@ class ApiProvider {
       "driving_license_number": drivingLicenceNumber,
       "driving_license_expiration_date": expiryDateStr,
       "birthday": birthDateStr,
-      "region_id": "5",
-      "district_id": "44",
-      "quarter_id": "1333",
-      "home_address": "Samarkand Samarkand Samarkand",
+    };
+    return await postRequest(url, data);
+  }
+
+  /// Add Vehicle Info Post
+  Future<HttpResult> fetchAddVehicleInfo(
+      String vehicleNumber,
+      String vehicleModel,
+      int vehicleColorId,
+      String vehicleTechPassport,
+      int seats,
+      ) async {
+    String url = '$baseUrl/vehicles';
+    final data = {
       "vehicle_number": vehicleNumber,
-      "car_model": carModel,
-      "car_color_id": carColorID,
+      "car_model": vehicleModel,
+      "car_color_id": vehicleColorId,
+      "tech_passport_number": vehicleTechPassport,
       "seats": seats,
-      "tech_passport_number": techPassportNumber,
     };
     return await postRequest(url, data);
   }
@@ -452,6 +514,86 @@ class ApiProvider {
       "user_id": userId,
     };
     return await postRequest(url, data);
+  }
+
+  /// Upload Car Images
+  Future<HttpResult> fetchUploadCarImages(
+      String vehicleId,
+      String techPassportFront,
+      String techPassportBack,
+      List<String> carImages,
+      ) async {
+    String url = '$baseUrl/auth/upload-car-images';
+
+    final prefs = await SharedPreferences.getInstance();
+    Dio dio = Dio();
+    final dynamic headers = {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${prefs.getString('token') ?? ""}",
+    };
+
+    // Prepare files
+    Map<String, dynamic> bodyMap = {
+      'vehicle_id': vehicleId,
+    };
+
+    try {
+      // --- START: Image Compression Logic ---
+      if (techPassportFront.isNotEmpty) {
+        File resizedFront = await _resizeImage(File(techPassportFront));
+        bodyMap['tech_passport_front'] = await MultipartFile.fromFile(
+          resizedFront.path,
+          filename: basename(resizedFront.path),
+        );
+      }
+      if (techPassportBack.isNotEmpty) {
+        File resizedBack = await _resizeImage(File(techPassportBack));
+        bodyMap['tech_passport_back'] = await MultipartFile.fromFile(
+          resizedBack.path,
+          filename: basename(resizedBack.path),
+        );
+      }
+
+      if (carImages.isNotEmpty) {
+        List<MultipartFile> carFiles = [];
+        for (var path in carImages) {
+          File resizedCarImage = await _resizeImage(File(path));
+          carFiles.add(await MultipartFile.fromFile(
+              resizedCarImage.path,
+              filename: basename(resizedCarImage.path)
+          ));
+        }
+        bodyMap['car_images[]'] = carFiles;
+      }
+
+      FormData formData = FormData.fromMap(bodyMap);
+
+      debugPrint("POST Multipart: $url");
+      debugPrint("Body Keys: ${bodyMap.keys}");
+
+      Response response = await dio.post(
+        url,
+        data: formData,
+        options: Options(
+          headers: headers,
+          validateStatus: (status) => true, // Handle status manually
+        ),
+      );
+      return _processResponse(response);
+    } on DioException catch (e) {
+      // Specific handling for the 413 error if it still occurs
+      if (e.response?.statusCode == 413) {
+        debugPrint("DioError 413: Image(s) still too large after compression.");
+        return HttpResult(
+          isSuccess: false,
+          status: 413,
+          result: {"error": "Image file is too large."},
+        );
+      }
+      return _handleDioError(e);
+    } catch (e) {
+      return _handleGenericError(e);
+    }
   }
 
   /// Create Trip Post

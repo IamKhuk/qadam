@@ -14,7 +14,8 @@ class AppCache {
     prefs.setString("phone", user.phone);
     prefs.setString("role", user.role);
     prefs.setBool("is_verified", user.isVerified == 1 ? true : false);
-    prefs.setString("driving_verification_status", user.drivingVerificationStatus);
+    prefs.setString(
+        "driving_verification_status", user.drivingVerificationStatus);
   }
 
   Future<void> saveUser(User user) async {
@@ -29,6 +30,7 @@ class AppCache {
     prefs.setString(
         "driving_verification_status", user.drivingVerificationStatus);
     prefs.setString("balance", user.balance.balance);
+    prefs.setBool("isDocsAdded", user.role == "driver" ? true : false);
   }
 
   Future<User> cacheGetMe() async {

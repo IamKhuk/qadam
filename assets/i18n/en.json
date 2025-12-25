@@ -145,6 +145,17 @@
     "add_docs_msg": "Please add your driver license to continue",
     "add_docs_button": "Add Document",
     "add_docs": "Add Documents",
+    "driver_license_details": "Driver License Details",
+    "document_upload": "Document Upload",
+    "vehicle_details": "Vehicle Details",
+    "vehicle_photos": "Vehicle Photos",
+    "upload_driving_licence_front": "Upload Driving Licence Front",
+    "upload_driving_licence_back": "Upload Driving Licence Back",
+    "upload_passport": "Upload Passport",
+    "upload_all_docs": "Please upload all documents",
+    "upload_failed": "Upload Failed",
+    "error": "Error",
+    "vehicle_id_missing": "Vehicle ID was not returned. Please try again.",
     "submit": "Submit",
     "upload_driving_licence": "Upload Driving Licence",
     "tap_to_upload": "Tap to Upload Photo",
@@ -237,7 +248,8 @@
     "top_up_success": "Balance is topped up successfully",
     "top_up_failed": "Top Up Failed",
     "logout": "Log Out",
-    "car_tech_passport": "Car Tech Passport"
+    "car_tech_passport": "Car Tech Passport",
+    "seats": "Number of Seats"
   },
   "history": {
     "history": "History",

@@ -1,9 +1,17 @@
 import 'dart:ui';
 
 class ColorModel {
-  final id;
-  final String name;
+  final int id;
+  final String titleEn;
+  final String titleRu;
+  final String titleUz;
   final Color colorCode;
 
-  ColorModel({this.id = 2, required this.name, required this.colorCode});
+  ColorModel({
+    required this.id,
+    required this.titleEn,
+    required this.titleRu,
+    required this.titleUz,
+    required this.colorCode,
+  });
 }

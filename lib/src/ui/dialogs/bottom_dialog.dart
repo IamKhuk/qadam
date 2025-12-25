@@ -928,7 +928,7 @@ class BottomDialog {
     ColorModel color,
   ) {
     ColorModel selectedColor =
-        ColorModel(name: "", colorCode: Colors.transparent);
+        ColorModel(titleEn: "", colorCode: Colors.transparent, id: 0, titleRu: '', titleUz: '');
 
     showModalBottomSheet(
       barrierColor: AppTheme.black.withOpacity(0.45),
@@ -936,13 +936,13 @@ class BottomDialog {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        if (color.name != "") {
+        if (color.titleEn != "") {
           selectedColor = color;
         }
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             return Container(
-              height: selectedColor.name.isEmpty ? 524 : 256,
+              height: selectedColor.titleEn.isEmpty ? 524 : 256,
               decoration: const BoxDecoration(
                 borderRadius: BorderRadius.only(
                   topRight: Radius.circular(24),
@@ -981,7 +981,7 @@ class BottomDialog {
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 270),
                     curve: Curves.easeInOut,
-                    child: selectedColor.name.isEmpty
+                    child: selectedColor.titleEn.isEmpty
                         ? Expanded(
                             child: ListView.builder(
                               itemCount: Defaults().colors.length,
@@ -1005,9 +1005,9 @@ class BottomDialog {
                                           children: [
                                             Expanded(
                                               child: Text14h500w(
-                                                title: color.name,
-                                                color: color.name ==
-                                                        selectedColor.name
+                                                title: color.titleEn,
+                                                color: color.titleEn ==
+                                                        selectedColor.titleEn
                                                     ? AppTheme.purple
                                                     : AppTheme.black,
                                               ),
@@ -1045,8 +1045,8 @@ class BottomDialog {
                               onTap: () {
                                 setState(() {
                                   selectedColor = ColorModel(
-                                    name: "",
-                                    colorCode: Colors.transparent,
+                                    titleEn: "",
+                                    colorCode: Colors.transparent, id: 0, titleRu: '', titleUz: '',
                                   );
                                 });
                               },
@@ -1066,7 +1066,7 @@ class BottomDialog {
                                   children: [
                                     Expanded(
                                       child: Text16h500w(
-                                          title: selectedColor.name),
+                                          title: selectedColor.titleEn),
                                     ),
                                   ],
                                 ),
@@ -1083,7 +1083,7 @@ class BottomDialog {
                     ),
                     child: GestureDetector(
                       onTap: () {
-                        if (selectedColor.name.isNotEmpty) {
+                        if (selectedColor.titleEn.isNotEmpty) {
                           onChanged(selectedColor);
                           Navigator.pop(context);
                         }

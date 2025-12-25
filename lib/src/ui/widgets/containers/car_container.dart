@@ -55,7 +55,7 @@ class CarContainer extends StatelessWidget {
                     title: "${translate("profile.car_color")}:  ",
                     color: AppTheme.gray,
                   ),
-                  Text14h400w(title: "${car.color?.name}  "),
+                  Text14h400w(title: "${car.color?.titleEn}  "),
                   Container(
                     width: 16,
                     height: 16,

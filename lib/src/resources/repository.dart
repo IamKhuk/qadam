@@ -89,25 +89,46 @@ class Repository {
   Future<HttpResult> fetchDrivingBackUpload(String path) =>
       apiProvider.fetchDrivingBackUpload(path);
 
+  Future<HttpResult> fetchPassportUpload(String path) =>
+      apiProvider.fetchPassportUpload(path);
+
   Future<HttpResult> fetchApplyDriver(
     String drivingLicenceNumber,
     DateTime expiryDate,
     DateTime birthDate,
-    String vehicleNumber,
-    String carModel,
-    String carColorID,
-    String seats,
-    String techPassportNumber,
   ) =>
       apiProvider.fetchApplyDriver(
         drivingLicenceNumber,
         expiryDate,
         birthDate,
+      );
+
+  Future<HttpResult> fetchAddVehicleInfo(
+    String vehicleNumber,
+    String vehicleModel,
+    int vehicleColorId,
+    String vehicleTechPassport,
+    int seats,
+  ) =>
+      apiProvider.fetchAddVehicleInfo(
         vehicleNumber,
-        carModel,
-        carColorID,
+        vehicleModel,
+        vehicleColorId,
+        vehicleTechPassport,
         seats,
-        techPassportNumber,
+      );
+
+  Future<HttpResult> fetchUploadCarImages(
+    String vehicleId,
+    String techPassportFront,
+    String techPassportBack,
+    List<String> carImages,
+  ) =>
+      apiProvider.fetchUploadCarImages(
+        vehicleId,
+        techPassportFront,
+        techPassportBack,
+        carImages,
       );
 
   Future<HttpResult> fetchVerifyDriver(String userId) =>
@@ -148,7 +169,8 @@ class Repository {
         endQuarterId,
       );
 
-  Future<HttpResult> fetchOneDriverTrip(String tripId) => apiProvider.fetchOneDriverTrip(tripId);
+  Future<HttpResult> fetchOneDriverTrip(String tripId) =>
+      apiProvider.fetchOneDriverTrip(tripId);
 
   Future<void> cacheLoginUser(UserModel user) => appCache.saveLoginUser(user);
 

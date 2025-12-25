@@ -42,8 +42,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     vehicleName: "",
   );
   ColorModel selectedColor = ColorModel(
-    name: "",
-    colorCode: Colors.transparent,
+    titleEn: "",
+    colorCode: Colors.transparent, id: 0, titleRu: '', titleUz: '',
   );
 
   Future<void> getDriverStatus() async {
@@ -519,11 +519,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 BottomDialog.showSelectColor(
                                   context,
                                   (value) {
-                                    if (value.name.isNotEmpty) {
+                                    if (value.titleEn.isNotEmpty) {
                                       if (selectedColor != value) {
                                         setState(() {
                                           selectedColor = value;
-                                          colorController.text = value.name;
+                                          colorController.text = value.titleEn;
                                         });
                                       }
                                     }
