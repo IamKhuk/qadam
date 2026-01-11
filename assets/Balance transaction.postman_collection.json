@@ -1,0 +1,134 @@
+{
+	"info": {
+		"_postman_id": "9bc71409-b965-44d8-976f-ce78abcaa545",
+		"name": "Balance transaction",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "35381670",
+		"_collection_link": "https://dark-shuttle-184452.postman.co/workspace/get-fast~4b1728e3-dcec-478a-95b6-d18390c04263/collection/19384339-9bc71409-b965-44d8-976f-ce78abcaa545?action=share&source=collection_link&creator=35381670"
+	},
+	"item": [
+		{
+			"name": "Get my tractions",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{api}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{qardam_base_url}}/api/v1/user/balance-transactions",
+					"host": [
+						"{{qardam_base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"balance-transactions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get pdf transactions",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{api}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text",
+						"disabled": true
+					},
+					{
+						"key": "Accept",
+						"value": "application/pdf",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Language",
+						"value": "uz",
+						"description": "en,  uz",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{qardam_base_url}}/api/v1/user/balance-transactions/pdf",
+					"host": [
+						"{{qardam_base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"balance-transactions",
+						"pdf"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get one pdf tran",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{api}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Language",
+						"value": "en",
+						"description": "en, uz",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{qardam_base_url}}/api/v1/user/balance-transactions/pdf/83",
+					"host": [
+						"{{qardam_base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"user",
+						"balance-transactions",
+						"pdf",
+						"83"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

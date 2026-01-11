@@ -239,17 +239,6 @@ class ApiProvider {
     return await getRequest(url);
   }
 
-  /// Add Credit Card Post
-  Future<HttpResult> fetchAddCreditCard(
-      String cardNumber, String expiry, String ccv) async {
-    String url = '$baseUrl/add-card';
-    final data = {
-      "card_number": cardNumber,
-      "expiry": expiry,
-      "ccv": ccv,
-    };
-    return await postRequest(url, data);
-  }
 
   /// Top Up Balance Post
   Future<HttpResult> fetchTopUp(String amount) async {
@@ -638,6 +627,63 @@ class ApiProvider {
   /// Get One Driver Trip
   Future<HttpResult> fetchOneDriverTrip(String tripId) async {
     String url = '$baseUrl/driver/trips/$tripId';
+    return await getRequest(url);
+  }
+
+  /// Get Card List
+  Future<HttpResult> fetchCardList() async {
+    String url = '$baseUrl/bank/my-registered-cards/';
+    return await getRequest(url);
+  }
+
+  /// Add Credit Card Post (Updated)
+  Future<HttpResult> fetchAddCreditCard(
+      String cardNumber, String expiry, String phone, String holderName) async {
+    String url = '$baseUrl/bank/add-card';
+    final data = {
+      "number": cardNumber,
+      "expiry": expiry,
+      "phone": phone,
+      "holder_name": holderName,
+    };
+    return await postRequest(url, data);
+  }
+
+  /// Verify Card Post
+  Future<HttpResult> fetchVerifyCard(
+      int id, String cardKey, String confirmCode) async {
+    String url = '$baseUrl/bank/verify-card';
+    final data = {
+      "id": id.toString(),
+      "card_key": cardKey,
+      "confirm_code": confirmCode,
+    };
+    return await postRequest(url, data);
+  }
+  
+  /// Create Payment (Fill Balance)
+  Future<HttpResult> fetchCreatePayment(String amount, {String? cardId}) async {
+    String url = '$baseUrl/bank/create-payment';
+    final data = {
+      "amount": amount,
+      if (cardId != null) "card_id": cardId,
+    };
+    return await postRequest(url, data);
+  }
+
+  /// Confirm Payment
+  Future<HttpResult> fetchConfirmPayment(String payId, String confirmCode) async {
+    String url = '$baseUrl/bank/confirm-payment';
+    final data = {
+      "pay_id": payId,
+      "confirm_code": confirmCode,
+    };
+    return await postRequest(url, data);
+  }
+
+  /// Get Transaction List
+  Future<HttpResult> fetchTransactionList() async {
+    String url = '$baseUrl/user/balance-transactions';
     return await getRequest(url);
   }
 }

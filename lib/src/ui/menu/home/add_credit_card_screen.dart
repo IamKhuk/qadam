@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_translate/flutter_translate.dart';
+import 'package:qadam/src/model/api/add_card_model.dart';
+import 'package:qadam/src/model/api/verify_card_model.dart';
 import 'package:qadam/src/model/credit_card_model.dart';
+import 'package:qadam/src/resources/repository.dart';
+import 'package:qadam/src/ui/dialogs/center_dialog.dart';
+import 'package:qadam/src/ui/dialogs/verify_card_dialog.dart';
 import 'package:qadam/src/ui/widgets/buttons/primary_button.dart';
 import 'package:qadam/src/ui/widgets/containers/leading_back.dart';
 import 'package:qadam/src/ui/widgets/texts/text_12h_400w.dart';
@@ -13,7 +18,7 @@ import '../../widgets/textfield/main_textfield.dart';
 class AddCreditCardScreen extends StatefulWidget {
   const AddCreditCardScreen({super.key, required this.onAdded});
 
-  final Function(CreditCardModel) onAdded;
+  final Function(CreditCardModel, String) onAdded;
 
   @override
   State<AddCreditCardScreen> createState() => _AddCreditCardScreenState();
@@ -24,10 +29,13 @@ class _AddCreditCardScreenState extends State<AddCreditCardScreen>
   final _cardNumberController = TextEditingController();
   final _cardHolderController = TextEditingController();
   final _expiryDateController = TextEditingController();
-  final _cvvController = TextEditingController();
+  final _phoneController = TextEditingController();
   late AnimationController _animationController;
   late Animation<double> _cardFadeAnimation;
   late Animation<Offset> _cardSlideAnimation;
+
+  final Repository _repository = Repository();
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -46,6 +54,14 @@ class _AddCreditCardScreenState extends State<AddCreditCardScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
     _animationController.forward();
+    _loadUserInfo();
+  }
+
+  void _loadUserInfo() async {
+    final user = await _repository.cacheGetMe();
+    setState(() {
+      _phoneController.text = user.phone;
+    });
   }
 
   @override
@@ -53,9 +69,121 @@ class _AddCreditCardScreenState extends State<AddCreditCardScreen>
     _cardNumberController.dispose();
     _cardHolderController.dispose();
     _expiryDateController.dispose();
-    _cvvController.dispose();
+    _phoneController.dispose();
     _animationController.dispose();
     super.dispose();
+  }
+
+  Future<void> _addCard() async {
+    if (_cardNumberController.text.replaceAll(' ', '').length == 16 &&
+        _cardHolderController.text.isNotEmpty &&
+        _expiryDateController.text.length == 5 &&
+        _phoneController.text.isNotEmpty) {
+      
+      setState(() {
+        isLoading = true;
+      });
+
+      // 1. Send Add Card Request
+      final response = await _repository.fetchAddCreditCard(
+        _cardNumberController.text.replaceAll(' ', ''),
+        _expiryDateController.text.replaceAll("/", ""),
+        _phoneController.text,
+        _cardHolderController.text,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        isLoading = false;
+      });
+
+      if (response.isSuccess) {
+        final addCardModel = AddCardResponseModel.fromJson(response.result);
+        
+        if (addCardModel.status == "success") {
+          final id = addCardModel.card.id;
+          final cardKey = addCardModel.card.key;
+          
+          _showVerificationDialog(id, cardKey);
+        } else {
+             CenterDialog.showActionFailed(
+              context,
+              translate("home.card_added_error"),
+              addCardModel.message.isNotEmpty 
+                  ? addCardModel.message 
+                  : translate("home.card_added_error_msg"),
+            );
+        }
+      } else {
+        CenterDialog.showActionFailed(
+          context,
+          translate("home.card_added_error"),
+           response.result is Map && response.result['message'] != null ? response.result['message'] : translate("home.card_added_error_msg"),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(translate("home.fill_all_fields"))),
+      );
+    }
+  }
+
+  void _showVerificationDialog(int id, String cardKey) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return VerifyCardDialog(
+          onVerify: (code) async {
+            Navigator.pop(dialogContext); // Close dialog
+            
+            if (!mounted) return;
+            setState(() {
+              isLoading = true;
+            });
+
+            final response = await _repository.fetchVerifyCard(id, cardKey, code);
+
+            if (!mounted) return;
+            setState(() {
+              isLoading = false;
+            });
+
+            if (response.isSuccess) {
+                 final verifyModel = VerifyCardResponseModel.fromJson(response.result);
+
+                 if(verifyModel.status == "success") {
+                    widget.onAdded(
+                       CreditCardModel(
+                            id: id,
+                            cardNumber: _cardNumberController.text,
+                            cardHolderName: _cardHolderController.text,
+                            expiryDate: _expiryDateController.text,
+                            cvvCode: "", 
+                        ),
+                        verifyModel.message,
+                    );
+                    
+                    // Pop back to TopUpScreen with true to trigger refresh
+                    Navigator.pop(context, true);
+                 } else {
+                    CenterDialog.showActionFailed(
+                      context,
+                      translate("home.verification_failed"),
+                      verifyModel.message,
+                    );
+                 }
+            } else {
+               CenterDialog.showActionFailed(
+                context,
+                translate("home.verification_failed"),
+                response.result is Map && response.result['message'] != null ? response.result['message'] : translate("home.verification_failed_msg"),
+              );
+            }
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -182,7 +310,7 @@ class _AddCreditCardScreenState extends State<AddCreditCardScreen>
                         hintText: translate("home.card_number_hint"),
                         icon: Icons.credit_card,
                         controller: _cardNumberController,
-                        phone: false,
+                        phone: true,
                         inputFormatters: [
                           FilteringTextInputFormatter.digitsOnly,
                           CardNumberFormatter(),
@@ -195,6 +323,13 @@ class _AddCreditCardScreenState extends State<AddCreditCardScreen>
                         controller: _cardHolderController,
                         phone: false,
                       ),
+                       const SizedBox(height: 16),
+                      MainTextField(
+                        hintText: translate("auth.phone_number"),
+                        icon: Icons.phone,
+                        controller: _phoneController,
+                        phone: true,
+                      ),
                       const SizedBox(height: 16),
                       Row(
                         children: [
@@ -204,26 +339,14 @@ class _AddCreditCardScreenState extends State<AddCreditCardScreen>
                                   translate("home.expiry_date_placeholder"),
                               icon: Icons.calendar_today,
                               controller: _expiryDateController,
-                              phone: false,
+                              phone: true,
                               inputFormatters: [
                                 FilteringTextInputFormatter.digitsOnly,
                                 ExpiryDateFormatter(),
                               ],
                             ),
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: MainTextField(
-                              hintText: translate("home.cvv_hint"),
-                              icon: Icons.lock,
-                              controller: _cvvController,
-                              phone: false,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                                LengthLimitingTextInputFormatter(3),
-                              ],
-                            ),
-                          ),
+                         
                         ],
                       ),
                     ],
@@ -235,33 +358,7 @@ class _AddCreditCardScreenState extends State<AddCreditCardScreen>
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 GestureDetector(
-                  onTap: () {
-                    if (_cardNumberController.text.replaceAll(' ', '').length ==
-                            16 &&
-                        _cardHolderController.text.isNotEmpty &&
-                        _expiryDateController.text.length == 5 &&
-                        _cvvController.text.length == 3) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content:
-                                Text(translate("home.card_added_success"))),
-                      );
-                      widget.onAdded(
-                        CreditCardModel(
-                          cardNumber: _cardNumberController.text,
-                          cardHolderName: _cardHolderController.text,
-                          expiryDate: _expiryDateController.text,
-                          cvvCode: _cvvController.text,
-                        ),
-                      );
-                      Navigator.pop(context);
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content: Text(translate("home.fill_all_fields"))),
-                      );
-                    }
-                  },
+                  onTap: _addCard,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: PrimaryButton(
@@ -272,6 +369,34 @@ class _AddCreditCardScreenState extends State<AddCreditCardScreen>
                 const SizedBox(height: 32),
               ],
             ),
+             if(isLoading)
+                Container(
+              color: AppTheme.black.withOpacity(0.45),
+              child: Center(
+                child: Container(
+                  height: 96,
+                  width: 96,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.9),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        offset: const Offset(0, 5),
+                        blurRadius: 25,
+                        spreadRadius: 0,
+                        color: AppTheme.dark.withOpacity(0.2),
+                      ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      valueColor:
+                      AlwaysStoppedAnimation<Color>(AppTheme.purple),
+                    ),
+                  ),
+                ),
+              ),
+            )
           ],
         ),
       ),

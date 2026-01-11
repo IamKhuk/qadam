@@ -1,11 +1,10 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_translate/flutter_translate.dart';
-import 'package:qadam/src/model/api/top_up_model.dart';
+import 'package:qadam/src/model/api/my_registered_cards_model.dart' as model;
 import 'package:qadam/src/theme/app_theme.dart';
 import 'package:qadam/src/ui/dialogs/snack_bar.dart';
+import 'package:qadam/src/ui/dialogs/verify_card_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../model/credit_card_model.dart';
@@ -44,16 +43,147 @@ class _TopUpScreenState extends State<TopUpScreen> {
 
   @override
   void initState() {
-    if (cards.isNotEmpty) {
-      for (int i = 0; i < cards.length; i++) {
-        if (cards[i].isDefault == true) {
-          selectedCard = cards[i];
-          selectedCardNumber = cards[i].cardNumber;
-          break;
+    super.initState();
+    _fetchCards();
+  }
+
+  Future<void> _fetchCards() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    final response = await _repository.fetchCardList();
+
+    if (!mounted) return;
+    setState(() {
+      isLoading = false;
+    });
+
+    if (response.isSuccess) {
+      final myCardsModel = model.MyCardsResponseModel.fromJson(response.result);
+      if (myCardsModel.status == "success") {
+        cards = myCardsModel.cards
+            .map((e) => CreditCardModel(
+                  id: e.id,
+                  cardNumber: e.number,
+                  expiryDate: e.expiry,
+                  cardHolderName: e.label,
+                  cvvCode: "",
+                  isDefault: e.isDefault == 1,
+                ))
+            .toList();
+
+        // Auto-select default or first card if available
+        if (cards.isNotEmpty) {
+          selectedCard = cards.firstWhere((element) => element.isDefault,
+              orElse: () => cards.first);
+          selectedCard!.isDefault = true;
+          selectedCardNumber = selectedCard!.cardNumber;
         }
+        setState(() {});
       }
     }
-    super.initState();
+  }
+
+  Future<void> _createPayment() async {
+    if (amountController.text.isEmpty) {
+      CenterDialog.showActionFailed(
+        context,
+        translate("profile.top_up_failed"),
+        translate("profile.enter_amount_error"),
+      );
+      return;
+    }
+
+    if (selectedCard == null) {
+      CenterDialog.showActionFailed(
+        context,
+        translate("home.payment_method_error"),
+        translate("home.payment_method_error_msg"),
+      );
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    final response = await _repository.fetchCreatePayment(
+      Utils().stringToInt(amountController.text).toString(),
+      cardId: selectedCard!.id.toString(),
+    );
+
+    if (!mounted) return;
+    setState(() {
+      isLoading = false;
+    });
+
+    if (response.isSuccess) {
+      final result = response.result;
+      if (result['pay_id'] != null) {
+        final payId = result['pay_id'].toString();
+        _showConfirmDialog(
+          payId,
+          (message) {
+            CustomSnackBar().showSnackBar(
+              context,
+              message,
+              1,
+            );
+          },
+        );
+      } else {
+        CustomSnackBar().showSnackBar(
+          context,
+          translate("profile.top_up_success"),
+          1,
+        );
+        Navigator.pop(context);
+      }
+    } else {
+      CenterDialog.showActionFailed(
+        context,
+        translate("profile.top_up_failed"),
+        response.result is Map && response.result['message'] != null
+            ? response.result['message']
+            : translate("auth.something_went_wrong"),
+      );
+    }
+  }
+
+  void _showConfirmDialog(String payId, Function(String) onVerify) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return VerifyCardDialog(
+          onVerify: (code) async {
+            setState(() {
+              isLoading = true;
+            });
+
+            final response = await _repository.fetchConfirmPayment(payId, code);
+
+            setState(() {
+              isLoading = false;
+            });
+
+            if (response.isSuccess) {
+              final message = response.result['message'] ??
+                  translate("profile.top_up_success");
+              onVerify(message);
+              Navigator.pop(dialogContext);
+            } else {
+              onVerify(
+                  response.result is Map && response.result['message'] != null
+                      ? response.result['message']
+                      : translate("auth.something_went_wrong"));
+              Navigator.pop(dialogContext);
+            }
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -124,25 +254,33 @@ class _TopUpScreenState extends State<TopUpScreen> {
                                     ),
                                     const SizedBox(width: 12),
                                     GestureDetector(
-                                      onTap: () {
-                                        Navigator.push(
+                                      onTap: () async {
+                                        final result = await Navigator.push(
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) {
                                               return AddCreditCardScreen(
-                                                onAdded: (data) {
-                                                  setState(() {
-                                                    data.isDefault = true;
-                                                    selectedCard = data;
-                                                    selectedCardNumber =
-                                                        data.cardNumber;
-                                                    cards.add(data);
+                                                onAdded: (data, msg) {
+                                                  Future.delayed(
+                                                      const Duration(
+                                                          milliseconds: 100),
+                                                      () {
+                                                    CustomSnackBar()
+                                                        .showSnackBar(
+                                                      context,
+                                                      msg,
+                                                      1,
+                                                    );
                                                   });
                                                 },
                                               );
                                             },
                                           ),
                                         );
+
+                                        if (result == true) {
+                                          _fetchCards();
+                                        }
                                       },
                                       child: Container(
                                         padding: const EdgeInsets.symmetric(
@@ -286,30 +424,36 @@ class _TopUpScreenState extends State<TopUpScreen> {
                                               SecondaryButton(
                                                   title: translate(
                                                       "home.add_new_card"),
-                                                  onTap: () {
-                                                    Navigator.push(
+                                                  onTap: () async {
+                                                    final result =
+                                                        await Navigator.push(
                                                       context,
                                                       MaterialPageRoute(
                                                         builder: (context) {
                                                           return AddCreditCardScreen(
-                                                            onAdded: (data) {
-                                                              setState(() {
-                                                                if (cards
-                                                                    .isEmpty) {
-                                                                  data.isDefault =
-                                                                      true;
-                                                                  selectedCard =
-                                                                      data;
-                                                                  selectedCardNumber =
-                                                                      data.cardNumber;
-                                                                }
-                                                                cards.add(data);
+                                                            onAdded:
+                                                                (data, msg) {
+                                                              Future.delayed(
+                                                                  const Duration(
+                                                                      milliseconds:
+                                                                          100),
+                                                                  () {
+                                                                CustomSnackBar()
+                                                                    .showSnackBar(
+                                                                  context,
+                                                                  msg,
+                                                                  1,
+                                                                );
                                                               });
                                                             },
                                                           );
                                                         },
                                                       ),
                                                     );
+
+                                                    if (result == true) {
+                                                      _fetchCards();
+                                                    }
                                                   })
                                             ],
                                           )
@@ -333,69 +477,7 @@ class _TopUpScreenState extends State<TopUpScreen> {
                     bottom: 32,
                   ),
                   child: GestureDetector(
-                    onTap: () async {
-                      if (selectedCardNumber.isEmpty) {
-                        CenterDialog.showActionFailed(
-                          context,
-                          translate("home.payment_method_error"),
-                          translate("home.payment_method_error_msg"),
-                        );
-                      } else if (selectedCard!.cardNumber.isNotEmpty) {
-                        setState(() {
-                          isLoading = true;
-                        });
-                        var response = await _repository.fetchTopUp(Utils()
-                            .stringToInt(amountController.text)
-                            .toString());
-
-                        var result = TopUpModel.fromJson(response.result);
-
-                        if (response.isSuccess) {
-                          setState(() {
-                            isLoading = false;
-                          });
-                          if (result.status == "success") {
-                            SharedPreferences prefs =
-                                await SharedPreferences.getInstance();
-                            prefs.setString(
-                                "balance",
-                                Utils()
-                                    .stringToInt(
-                                        result.transaction!.balanceAfter)
-                                    .toString());
-                            CustomSnackBar().showSnackBar(
-                              context,
-                              translate("profile.top_up_success"),
-                              1,
-                            );
-                            Navigator.pop(context);
-                          } else {
-                            CenterDialog.showActionFailed(
-                              context,
-                              translate("profile.top_up_failed"),
-                              result.message,
-                            );
-                          }
-                        } else {
-                          setState(() {
-                            isLoading = false;
-                          });
-                          if (response.status == -1) {
-                            CenterDialog.showActionFailed(
-                              context,
-                              translate("auth.connection_failed"),
-                              translate("auth.connection_failed_msg"),
-                            );
-                          } else {
-                            CenterDialog.showActionFailed(
-                              context,
-                              translate("auth.something_went_wrong"),
-                              translate("auth.failed_msg"),
-                            );
-                          }
-                        }
-                      }
-                    },
+                    onTap: _createPayment,
                     child: PrimaryButton(
                       title: translate("home.confirm_payment"),
                     ),
@@ -405,32 +487,32 @@ class _TopUpScreenState extends State<TopUpScreen> {
             ),
             isLoading == true
                 ? Container(
-              color: AppTheme.black.withOpacity(0.45),
-              child: Center(
-                child: Container(
-                  height: 96,
-                  width: 96,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        offset: const Offset(0, 5),
-                        blurRadius: 25,
-                        spreadRadius: 0,
-                        color: AppTheme.dark.withOpacity(0.2),
+                    color: AppTheme.black.withOpacity(0.45),
+                    child: Center(
+                      child: Container(
+                        height: 96,
+                        width: 96,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.9),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              offset: const Offset(0, 5),
+                              blurRadius: 25,
+                              spreadRadius: 0,
+                              color: AppTheme.dark.withOpacity(0.2),
+                            ),
+                          ],
+                        ),
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(AppTheme.purple),
+                          ),
+                        ),
                       ),
-                    ],
-                  ),
-                  child: const Center(
-                    child: CircularProgressIndicator(
-                      valueColor:
-                      AlwaysStoppedAnimation<Color>(AppTheme.purple),
                     ),
-                  ),
-                ),
-              ),
-            )
+                  )
                 : Container()
           ],
         ),

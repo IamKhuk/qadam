@@ -57,16 +57,6 @@ class Repository {
         isRoundTrip,
       );
 
-  Future<HttpResult> fetchAddCreditCard(
-    String cardNumber,
-    String expiry,
-    String ccv,
-  ) =>
-      apiProvider.fetchAddCreditCard(
-        cardNumber,
-        expiry,
-        ccv,
-      );
 
   Future<HttpResult> fetchTopUp(String amount) =>
       apiProvider.fetchTopUp(amount);
@@ -171,6 +161,34 @@ class Repository {
 
   Future<HttpResult> fetchOneDriverTrip(String tripId) =>
       apiProvider.fetchOneDriverTrip(tripId);
+
+  Future<HttpResult> fetchCardList() => apiProvider.fetchCardList();
+  
+  Future<HttpResult> fetchAddCreditCard(
+    String cardNumber,
+    String expiry,
+    String phone,
+    String holderName,
+  ) =>
+      apiProvider.fetchAddCreditCard(
+        cardNumber,
+        expiry,
+        phone,
+        holderName,
+      );
+
+  Future<HttpResult> fetchVerifyCard(
+          int id, String cardKey, String confirmCode) =>
+      apiProvider.fetchVerifyCard(id, cardKey, confirmCode);
+
+  Future<HttpResult> fetchCreatePayment(String amount, {String? cardId}) =>
+      apiProvider.fetchCreatePayment(amount, cardId: cardId);
+
+  Future<HttpResult> fetchConfirmPayment(String payId, String confirmCode) =>
+      apiProvider.fetchConfirmPayment(payId, confirmCode);
+
+  Future<HttpResult> fetchTransactionList() =>
+      apiProvider.fetchTransactionList();
 
   Future<void> cacheLoginUser(UserModel user) => appCache.saveLoginUser(user);
 
