@@ -51,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       isDocsAdded = prefs.getBool('isDocsAdded') ?? false;
-      isDocsVerified = prefs.getBool('driving_verification_status') ?? false;
+      isDocsVerified = prefs.getString('driving_verification_status') == "approved" ? true: false;
     });
   }
 

@@ -25,7 +25,7 @@ class MapSelectScreen extends StatefulWidget {
 class _MapSelectScreenState extends State<MapSelectScreen> {
   GoogleMapController? _controller;
   LatLng? _selectedLocation;
-  LatLng _initialPosition = const LatLng(41.2995, 69.2401);
+  LatLng _initialPosition = const LatLng(41.2995, 69.2401); // Default to Tashkent
   bool _isLoading = true;
   MapType _currentMapType = MapType.normal;
 
@@ -36,24 +36,67 @@ class _MapSelectScreenState extends State<MapSelectScreen> {
   }
 
   Future<void> _initializeMap() async {
-    try {
-      // Format place string (e.g., "Chilanzar, Tashkent, Tashkent Region")
-      String formattedPlace = '${widget.place}, Uzbekistan';
-      List<Location> locations = await locationFromAddress(formattedPlace);
-      if (locations.isNotEmpty) {
-        print('Geocoding result: $locations');
-        _initialPosition =
-            LatLng(locations.first.latitude, locations.first.longitude);
-      } else {
-        print('No locations found for the given address.');
-      }
-    } catch (e) {
-      // Fallback to default if geocoding fails
-      print('Geocoding error: $e');
+    String place = widget.place.trim();
+    if (place.isEmpty) {
+      if (mounted) setState(() => _isLoading = false);
+      return;
     }
-    setState(() {
-      _isLoading = false;
-    });
+
+    // List of address variants to try, from most specific to least specific
+    List<String> variants = [];
+    
+    // 1. Original place with Uzbekistan suffix
+    if (!place.toLowerCase().contains('uzbekistan')) {
+      variants.add('$place, Uzbekistan');
+    }
+    
+    // 2. Original place as is
+    variants.add(place);
+
+    // 3. Shorter version if it's a comma-separated address
+    List<String> parts = place.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+    if (parts.length > 2) {
+      // Try last two parts (e.g., "City, Region")
+      String shorter = '${parts[parts.length - 2]}, ${parts.last}';
+      if (!shorter.toLowerCase().contains('uzbekistan')) {
+        variants.add('$shorter, Uzbekistan');
+      }
+      variants.add(shorter);
+    }
+    
+    if (parts.isNotEmpty) {
+      // Try just the last part (usually the city or region)
+      String last = parts.last;
+      if (!last.toLowerCase().contains('uzbekistan')) {
+        variants.add('$last, Uzbekistan');
+      }
+      variants.add(last);
+    }
+
+    bool found = false;
+    for (String variant in variants.toSet()) {
+      try {
+        List<Location> locations = await locationFromAddress(variant);
+        if (locations.isNotEmpty) {
+          _initialPosition = LatLng(locations.first.latitude, locations.first.longitude);
+          found = true;
+          debugPrint('Geocoding success for: $variant');
+          break;
+        }
+      } catch (e) {
+        debugPrint('Geocoding attempt failed for "$variant": $e');
+      }
+    }
+
+    if (!found) {
+      debugPrint('No geocoding results for: ${widget.place}. Using default position.');
+    }
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   void _onMapTap(LatLng position) {

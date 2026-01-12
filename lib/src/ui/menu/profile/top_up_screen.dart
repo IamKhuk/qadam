@@ -279,7 +279,9 @@ class _TopUpScreenState extends State<TopUpScreen> {
                                         );
 
                                         if (result == true) {
-                                          _fetchCards();
+                                          setState(() {
+                                            _fetchCards();
+                                          });
                                         }
                                       },
                                       child: Container(

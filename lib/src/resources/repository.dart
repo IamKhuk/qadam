@@ -57,7 +57,6 @@ class Repository {
         isRoundTrip,
       );
 
-
   Future<HttpResult> fetchTopUp(String amount) =>
       apiProvider.fetchTopUp(amount);
 
@@ -163,7 +162,7 @@ class Repository {
       apiProvider.fetchOneDriverTrip(tripId);
 
   Future<HttpResult> fetchCardList() => apiProvider.fetchCardList();
-  
+
   Future<HttpResult> fetchAddCreditCard(
     String cardNumber,
     String expiry,
@@ -189,6 +188,8 @@ class Repository {
 
   Future<HttpResult> fetchTransactionList() =>
       apiProvider.fetchTransactionList();
+
+  Future<HttpResult> fetchVehiclesList() => apiProvider.fetchVehiclesList();
 
   Future<void> cacheLoginUser(UserModel user) => appCache.saveLoginUser(user);
 

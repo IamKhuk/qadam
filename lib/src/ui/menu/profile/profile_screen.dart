@@ -182,7 +182,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         builder: (context) => const TopUpScreen(),
                       ),
                     ).then((_) {
-                      getBalance();
+                      setState(() {
+                        blocProfile.fetchMe();
+                        getBalance();
+                      });
                     });
                   },
                   child: Container(

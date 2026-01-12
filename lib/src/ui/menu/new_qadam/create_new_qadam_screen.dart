@@ -7,6 +7,7 @@ import 'package:qadam/src/ui/widgets/buttons/primary_button.dart';
 import 'package:qadam/src/ui/widgets/containers/leading_back.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../model/api/trip_list_model.dart';
+import '../../../model/api/vehicles_list_model.dart';
 import '../../../model/color_model.dart';
 import '../../../model/location_model.dart';
 import '../../../model/vehicle_model.dart';
@@ -47,17 +48,10 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
   String endLat = "";
   String endLong = "";
 
-  late TripListModel currentTrip;
-
   final Repository _repository = Repository();
 
   String vehicleId = "2";
   bool isLoading = false;
-
-  String from = "";
-  String to = "";
-  String departure = "";
-  String end = "";
 
   LocationModel fromRegion = LocationModel(id: "0", text: "", parentID: '0');
   LocationModel fromCity = LocationModel(id: "0", text: "", parentID: '0');
@@ -70,7 +64,7 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
       LocationModel(id: "0", text: "", parentID: '0');
 
   DateTime departureDate = DateTime.now();
-  DateTime endDate = DateTime.now();
+  DateTime endDate = DateTime.now().add(const Duration(hours: 3));
 
   VehicleModel selectedVehicle = VehicleModel(id: 0, vehicleName: '');
 
@@ -78,35 +72,7 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
 
   int passengersNum = 1;
 
-  List<VehicleModel> myVehicles = [
-    VehicleModel(
-      id: 1,
-      vehicleName: "Toyota Corolla",
-      color: ColorModel(
-        titleEn: "Navy Blue",
-        colorCode: AppTheme.blue.withOpacity(0.6), id: 0, titleRu: '', titleUz: '',
-      ),
-      capacity: 4,
-    ),
-    VehicleModel(
-      id: 1,
-      vehicleName: "Malibu",
-      color: ColorModel(
-        titleEn: "Black",
-        colorCode: AppTheme.black, id: 0, titleRu: '', titleUz: '',
-      ),
-      capacity: 4,
-    ),
-    VehicleModel(
-      id: 1,
-      vehicleName: "Toyota Arius",
-      color: ColorModel(
-        titleEn: "Rosy Red",
-        colorCode: AppTheme.red.withOpacity(0.6), id: 0, titleRu: '', titleUz: '',
-      ),
-      capacity: 6,
-    ),
-  ];
+  List<VehicleModel> myVehicles = [];
 
   @override
   void dispose() {
@@ -114,13 +80,162 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
     toController.dispose();
     departureController.dispose();
     endController.dispose();
+    priceController.dispose();
     super.dispose();
   }
 
   @override
   void initState() {
     getVehicleId();
+    getVehicles();
     super.initState();
+  }
+
+  Future<void> getVehicles() async {
+    var response = await _repository.fetchVehiclesList();
+    if (response.isSuccess) {
+      List<dynamic> data = [];
+      if (response.result is List) {
+        data = response.result;
+      } else if (response.result is Map && response.result.containsKey('data')) {
+        data = response.result['data'];
+      }
+
+      setState(() {
+        myVehicles = data.map((e) {
+          MyVehiclesModel m = MyVehiclesModel.fromJson(e);
+          return VehicleModel(
+            id: m.id,
+            vehicleName: m.model,
+            color: ColorModel(
+              id: 0,
+              titleEn: m.color.titleEn,
+              titleRu: m.color.titleRu,
+              titleUz: m.color.titleUz,
+              colorCode: Color(
+                int.parse(m.color.code.replaceFirst('#', '0xff')),
+              ),
+            ),
+            capacity: m.seats,
+          );
+        }).toList();
+
+        if (myVehicles.isNotEmpty) {
+          bool found = false;
+          for (var v in myVehicles) {
+            if (v.id.toString() == vehicleId) {
+              selectedVehicle = v;
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            selectedVehicle = myVehicles.first;
+          }
+          passengersNum = selectedVehicle.capacity;
+        }
+      });
+    }
+  }
+
+  Future<void> _onCreateTrip() async {
+    if (fromController.text.isEmpty ||
+        toController.text.isEmpty ||
+        departureController.text.isEmpty ||
+        endController.text.isEmpty ||
+        selectedVehicle.id == 0 ||
+        priceController.text.isEmpty) {
+      CustomSnackBar().showSnackBar(
+        context,
+        translate("qadam.fill_all_fields"),
+        2,
+      );
+      return;
+    }
+
+    if (startLat.isEmpty || startLong.isEmpty || endLat.isEmpty || endLong.isEmpty) {
+      CustomSnackBar().showSnackBar(
+        context,
+        translate("qadam.select_location_on_map"),
+        2,
+      );
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      var response = await _repository.fetchCreateTrip(
+        selectedVehicle.id.toString(),
+        departureDate,
+        endDate,
+        Utils().stringToInt(priceController.text).toString(),
+        passengersNum.toString(),
+        startLat,
+        startLong,
+        endLat,
+        endLong,
+        fromRegion.id,
+        fromCity.id,
+        fromNeighborhood.id,
+        toRegion.id,
+        toCity.id,
+        toNeighborhood.id,
+      );
+
+      if (response.isSuccess) {
+        final dataMap = response.result is Map && response.result.containsKey('data') 
+            ? response.result['data'] 
+            : response.result;
+        
+        var result = CreatedTripResponseModel.fromJson(dataMap);
+
+        if (result.id != 0) {
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString("active_trip_id", result.id.toString());
+          
+          if (mounted) {
+            CustomSnackBar().showSnackBar(
+              context,
+              translate("qadam.trip_created"),
+              1,
+            );
+            widget.onCreated(result.toTripListModel());
+            Navigator.pop(context);
+          }
+        } else {
+          _showError(translate("qadam.trip_creation_failed_msg"));
+        }
+      } else {
+        if (response.status == -1) {
+          _showError(translate("auth.connection_failed_msg"));
+        } else {
+          String errorMessage = response.result is Map && response.result.containsKey('message')
+              ? response.result['message']
+              : translate("auth.failed_msg");
+          _showError(errorMessage);
+        }
+      }
+    } catch (e) {
+      debugPrint("Error creating trip: $e");
+      _showError(translate("auth.something_went_wrong"));
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _showError(String message) {
+    CenterDialog.showActionFailed(
+      context,
+      translate("auth.something_went_wrong"),
+      message,
+    );
   }
 
   @override
@@ -152,70 +267,71 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
                       children: [
                         Row(
                           children: [
-                            Container(
-                              height: 66,
-                              width: MediaQuery.of(context).size.width - 84,
-                              decoration: BoxDecoration(
-                                color: Colors.transparent,
-                                boxShadow: [
-                                  BoxShadow(
-                                    offset: const Offset(0, 4),
-                                    blurRadius: 100,
-                                    spreadRadius: 0,
-                                    color: AppTheme.black.withOpacity(0.05),
-                                  ),
-                                ],
-                              ),
-                              child: TextField(
-                                onTap: () {
-                                  BottomDialog.showSelectLocation(
-                                    context,
-                                    fromRegion,
-                                    fromCity,
-                                    fromNeighborhood,
-                                    (r, c, n) {
-                                      setState(() {
-                                        fromRegion = r;
-                                        fromCity = c;
-                                        fromNeighborhood = n;
-                                        fromController.text =
-                                            "${fromNeighborhood.text}, ${fromCity.text}, ${fromRegion.text}";
-                                      });
-                                    },
-                                  );
-                                },
-                                readOnly: true,
-                                controller: fromController,
-                                cursorColor: AppTheme.purple,
-                                style: const TextStyle(
-                                  color: AppTheme.black,
-                                  fontFamily: AppTheme.fontFamily,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                  letterSpacing: 1,
-                                  height: 1.5,
+                            Expanded(
+                              child: Container(
+                                height: 66,
+                                decoration: BoxDecoration(
+                                  color: Colors.transparent,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      offset: const Offset(0, 4),
+                                      blurRadius: 100,
+                                      spreadRadius: 0,
+                                      color: AppTheme.black.withOpacity(0.05),
+                                    ),
+                                  ],
                                 ),
-                                decoration: InputDecoration(
-                                  labelText: translate("home.from"),
-                                  labelStyle: const TextStyle(
-                                    color: AppTheme.text,
+                                child: TextField(
+                                  onTap: () {
+                                    BottomDialog.showSelectLocation(
+                                      context,
+                                      fromRegion,
+                                      fromCity,
+                                      fromNeighborhood,
+                                      (r, c, n) {
+                                        setState(() {
+                                          fromRegion = r;
+                                          fromCity = c;
+                                          fromNeighborhood = n;
+                                          fromController.text =
+                                              "${fromNeighborhood.text}, ${fromCity.text}, ${fromRegion.text}";
+                                        });
+                                      },
+                                    );
+                                  },
+                                  readOnly: true,
+                                  controller: fromController,
+                                  cursorColor: AppTheme.purple,
+                                  style: const TextStyle(
+                                    color: AppTheme.black,
                                     fontFamily: AppTheme.fontFamily,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    letterSpacing: 1,
+                                    height: 1.5,
                                   ),
-                                  filled: true,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 20,
-                                    horizontal: 16,
-                                  ),
-                                  border: const OutlineInputBorder(),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                    borderSide: const BorderSide(
-                                        color: AppTheme.border),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                    borderSide: const BorderSide(
-                                      color: AppTheme.purple,
+                                  decoration: InputDecoration(
+                                    labelText: translate("home.from"),
+                                    labelStyle: const TextStyle(
+                                      color: AppTheme.text,
+                                      fontFamily: AppTheme.fontFamily,
+                                    ),
+                                    filled: true,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 20,
+                                      horizontal: 16,
+                                    ),
+                                    border: const OutlineInputBorder(),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                      borderSide: const BorderSide(
+                                          color: AppTheme.border),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                      borderSide: const BorderSide(
+                                        color: AppTheme.purple,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -241,12 +357,9 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
                                         },
                                       ),
                                     ),
-                                  ).then((value) {
-                                    if (value != null) {
-                                      print(
-                                          'Selected coordinates: $value'); // LatLng object
-                                    }
-                                  });
+                                  );
+                                } else {
+                                  CustomSnackBar().showSnackBar(context, translate("qadam.select_location_first"), 2);
                                 }
                               },
                               child: Container(
@@ -273,65 +386,66 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
                         const SizedBox(height: 12),
                         Row(
                           children: [
-                            Container(
-                              height: 66,
-                              width: MediaQuery.of(context).size.width - 84,
-                              decoration: BoxDecoration(
-                                boxShadow: [
-                                  BoxShadow(
-                                    offset: const Offset(0, 4),
-                                    blurRadius: 100,
-                                    spreadRadius: 0,
-                                    color: AppTheme.black.withOpacity(0.05),
-                                  ),
-                                ],
-                              ),
-                              child: TextField(
-                                onTap: () {
-                                  BottomDialog.showSelectLocation(
-                                      context, toRegion, toCity, toNeighborhood,
-                                      (r, c, n) {
-                                    setState(() {
-                                      toRegion = r;
-                                      toCity = c;
-                                      toNeighborhood = n;
-                                      toController.text =
-                                          "${toNeighborhood.text}, ${toCity.text}, ${toRegion.text}";
-                                    });
-                                  });
-                                },
-                                readOnly: true,
-                                controller: toController,
-                                cursorColor: AppTheme.purple,
-                                style: const TextStyle(
-                                  color: AppTheme.black,
-                                  fontFamily: AppTheme.fontFamily,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                  letterSpacing: 1,
-                                  height: 1.5,
+                            Expanded(
+                              child: Container(
+                                height: 66,
+                                decoration: BoxDecoration(
+                                  boxShadow: [
+                                    BoxShadow(
+                                      offset: const Offset(0, 4),
+                                      blurRadius: 100,
+                                      spreadRadius: 0,
+                                      color: AppTheme.black.withOpacity(0.05),
+                                    ),
+                                  ],
                                 ),
-                                decoration: InputDecoration(
-                                  labelText: translate("home.to"),
-                                  labelStyle: const TextStyle(
-                                    color: AppTheme.text,
+                                child: TextField(
+                                  onTap: () {
+                                    BottomDialog.showSelectLocation(
+                                        context, toRegion, toCity, toNeighborhood,
+                                        (r, c, n) {
+                                      setState(() {
+                                        toRegion = r;
+                                        toCity = c;
+                                        toNeighborhood = n;
+                                        toController.text =
+                                            "${toNeighborhood.text}, ${toCity.text}, ${toRegion.text}";
+                                      });
+                                    });
+                                  },
+                                  readOnly: true,
+                                  controller: toController,
+                                  cursorColor: AppTheme.purple,
+                                  style: const TextStyle(
+                                    color: AppTheme.black,
                                     fontFamily: AppTheme.fontFamily,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    letterSpacing: 1,
+                                    height: 1.5,
                                   ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 20,
-                                    horizontal: 16,
-                                  ),
-                                  filled: true,
-                                  border: const OutlineInputBorder(),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                    borderSide: const BorderSide(
-                                        color: AppTheme.border),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                    borderSide: const BorderSide(
-                                      color: AppTheme.purple,
+                                  decoration: InputDecoration(
+                                    labelText: translate("home.to"),
+                                    labelStyle: const TextStyle(
+                                      color: AppTheme.text,
+                                      fontFamily: AppTheme.fontFamily,
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 20,
+                                      horizontal: 16,
+                                    ),
+                                    filled: true,
+                                    border: const OutlineInputBorder(),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                      borderSide: const BorderSide(
+                                          color: AppTheme.border),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                      borderSide: const BorderSide(
+                                        color: AppTheme.purple,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -356,12 +470,9 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
                                         },
                                       ),
                                     ),
-                                  ).then((value) {
-                                    if (value != null) {
-                                      print(
-                                          'Selected coordinates: $value'); // LatLng object
-                                    }
-                                  });
+                                  );
+                                } else {
+                                  CustomSnackBar().showSnackBar(context, translate("qadam.select_location_first"), 2);
                                 }
                               },
                               child: Container(
@@ -387,56 +498,58 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
                         ),
                       ],
                     ),
-                    SizedBox(
-                      height: 66,
-                      child: Row(
-                        children: [
-                          const Spacer(),
-                          GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                /// Swap from and to fields
-                                TextEditingController temp = fromController;
-                                fromController = toController;
-                                toController = temp;
+                    Positioned(
+                      right: 68,
+                      top: 48,
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            /// Swap from and to fields
+                            String tempText = fromController.text;
+                            fromController.text = toController.text;
+                            toController.text = tempText;
 
-                                /// Swap from and to regions
-                                LocationModel tempRegion = fromRegion;
-                                fromRegion = toRegion;
-                                toRegion = tempRegion;
+                            /// Swap from and to regions
+                            LocationModel tempRegion = fromRegion;
+                            fromRegion = toRegion;
+                            toRegion = tempRegion;
 
-                                /// Swap from and to cities
-                                LocationModel tempCity = fromCity;
-                                fromCity = toCity;
-                                toCity = tempCity;
+                            /// Swap from and to cities
+                            LocationModel tempCity = fromCity;
+                            fromCity = toCity;
+                            toCity = tempCity;
 
-                                /// Swap from and to neighborhoods
-                                LocationModel tempNeighbourhood =
-                                    fromNeighborhood;
-                                fromNeighborhood = toNeighborhood;
-                                toNeighborhood = tempNeighbourhood;
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: const BoxDecoration(
-                                color: AppTheme.purple,
-                                shape: BoxShape.circle,
-                              ),
-                              child: SvgPicture.asset(
-                                height: 20,
-                                'assets/icons/swap_vertical.svg',
-                                colorFilter: const ColorFilter.mode(
-                                  Colors.white,
-                                  BlendMode.srcIn,
-                                ),
-                              ),
+                            /// Swap from and to neighborhoods
+                            LocationModel tempNeighbourhood =
+                                fromNeighborhood;
+                            fromNeighborhood = toNeighborhood;
+                            toNeighborhood = tempNeighbourhood;
+                            
+                            /// Swap coordinates
+                            String tempLat = startLat;
+                            startLat = endLat;
+                            endLat = tempLat;
+                            
+                            String tempLong = startLong;
+                            startLong = endLong;
+                            endLong = tempLong;
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: const BoxDecoration(
+                            color: AppTheme.purple,
+                            shape: BoxShape.circle,
+                          ),
+                          child: SvgPicture.asset(
+                            height: 20,
+                            'assets/icons/swap_vertical.svg',
+                            colorFilter: const ColorFilter.mode(
+                              Colors.white,
+                              BlendMode.srcIn,
                             ),
                           ),
-                          const Spacer(),
-                          const Spacer(),
-                          const Spacer(),
-                        ],
+                        ),
                       ),
                     )
                   ],
@@ -475,6 +588,10 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
                           departureDate = date;
                           departureController.text =
                               Utils.tripDateFormat(departureDate);
+                          if (endDate.isBefore(departureDate)) {
+                             endDate = departureDate.add(const Duration(hours: 3));
+                             endController.text = Utils.tripDateFormat(endDate);
+                          }
                         });
                       },
                       departureDate,
@@ -537,7 +654,7 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
                         setState(() {
                           endDate = date;
                           endController.text =
-                              Utils.tripDateFormat(departureDate);
+                              Utils.tripDateFormat(endDate);
                         });
                       },
                       endDate,
@@ -572,7 +689,7 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
               Text16h500w(title: translate("qadam.select_car_title")),
               const SizedBox(height: 16),
               AnimatedContainer(
-                duration: const Duration(milliseconds: 1070),
+                duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -623,39 +740,39 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
                         )
                       ],
                     ),
-                    isCarOpen
-                        ? Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 12),
-                              ListView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: myVehicles.length,
-                                padding: EdgeInsets.zero,
-                                itemBuilder: (BuildContext context, int index) {
-                                  return Column(
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          setState(() {
-                                            selectedVehicle = myVehicles[index];
-                                            isCarOpen = false;
-                                          });
-                                        },
-                                        child: CarContainer(
-                                            car: myVehicles[index]),
-                                      ),
-                                      index == myVehicles.length - 1
-                                          ? const SizedBox()
-                                          : const Divider(),
-                                    ],
-                                  );
-                                },
-                              ),
-                            ],
-                          )
-                        : const SizedBox(),
+                    if (isCarOpen)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 12),
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: myVehicles.length,
+                            padding: EdgeInsets.zero,
+                            itemBuilder: (BuildContext context, int index) {
+                              return Column(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        selectedVehicle = myVehicles[index];
+                                        passengersNum = selectedVehicle.capacity;
+                                        isCarOpen = false;
+                                      });
+                                    },
+                                    child: CarContainer(
+                                        car: myVehicles[index]),
+                                  ),
+                                  index == myVehicles.length - 1
+                                      ? const SizedBox()
+                                      : const Divider(),
+                                ],
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               ),
@@ -757,105 +874,15 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
               ),
             ],
           ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: 16,
-                  right: 16,
-                  bottom: 32,
-                ),
-                child: GestureDetector(
-                  onTap: () async {
-                    if (fromController.text.isNotEmpty &&
-                        toController.text.isNotEmpty &&
-                        departureController.text.isNotEmpty &&
-                        selectedVehicle.vehicleName.isNotEmpty &&
-                        priceController.text.isNotEmpty &&
-                        startLat.isNotEmpty &&
-                        startLong.isNotEmpty &&
-                        endLat.isNotEmpty &&
-                        endLong.isNotEmpty) {
-                      // setState(() {
-                      //   currentTrip = TripModel(
-                      //     vehicleId: selectedVehicle.id,
-                      //     startTime: departureDate,
-                      //     endTime: endDate,
-                      //     pricePerSeat: priceController.text,
-                      //     availableSeats: passengersNum,
-                      //   );
-                      // });
-                      setState(() {
-                        isLoading = true;
-                      });
-                      var response = await _repository.fetchCreateTrip(
-                        vehicleId,
-                        departureDate,
-                        endDate,
-                        Utils().stringToInt(priceController.text).toString(),
-                        passengersNum.toString(),
-                        startLat,
-                        startLong,
-                        endLat,
-                        endLong,
-                        fromRegion.id,
-                        fromCity.id,
-                        fromNeighborhood.id,
-                        toRegion.id,
-                        toCity.id,
-                        toNeighborhood.id,
-                      );
-
-                      var result =
-                          CreatedTripResponseModel.fromJson(response.result);
-
-                      if (response.isSuccess) {
-                        setState(() {
-                          isLoading = false;
-                        });
-                        if (result.id.toString().isNotEmpty && result.id != 0) {
-                          SharedPreferences prefs =
-                              await SharedPreferences.getInstance();
-                          prefs.setString(
-                              "active_trip_id", result.id.toString());
-                          CustomSnackBar().showSnackBar(
-                            context,
-                            translate("qadam.trip_created"),
-                            1,
-                          );
-                          Navigator.pop(context);
-                        } else {
-                          CenterDialog.showActionFailed(
-                            context,
-                            translate("qadam.trip_creation_failed"),
-                            translate("qadam.trip_creation_failed_msg"),
-                          );
-                        }
-                      } else {
-                        setState(() {
-                          isLoading = false;
-                        });
-                        if (response.status == -1) {
-                          CenterDialog.showActionFailed(
-                            context,
-                            translate("auth.connection_failed"),
-                            translate("auth.connection_failed_msg"),
-                          );
-                        } else {
-                          CenterDialog.showActionFailed(
-                            context,
-                            translate("auth.something_went_wrong"),
-                            translate("auth.failed_msg"),
-                          );
-                        }
-                      }
-                    }
-                  },
-                  child: PrimaryButton(title: translate("qadam.create_trip")),
-                ),
-              )
-            ],
+          Positioned(
+            left: 16,
+            right: 16,
+            bottom: 32,
+            child: PrimaryButton(
+              title: translate("qadam.create_trip"),
+              isLoading: isLoading,
+              onTap: _onCreateTrip,
+            ),
           ),
         ],
       ),

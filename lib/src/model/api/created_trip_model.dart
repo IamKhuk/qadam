@@ -1,6 +1,5 @@
 import 'dart:convert';
-
-import 'package:qadam/src/model/api/trip_list_model.dart';
+import 'package:qadam/src/model/api/trip_list_model.dart' as trip_list;
 
 CreatedTripResponseModel createdTripResponseModelFromJson(String str) => CreatedTripResponseModel.fromJson(json.decode(str));
 
@@ -8,20 +7,20 @@ String createdTripResponseModelToJson(CreatedTripResponseModel data) => json.enc
 
 class CreatedTripResponseModel {
   int id;
-  String fromWhere;
-  String toWhere;
-  String fromRegionId;
-  String toRegionId;
-  String fromDistrictId;
-  String toDistrictId;
-  String fromQuarterId;
-  String toQuarterId;
+  String? fromWhere;
+  String? toWhere;
+  int fromRegionId;
+  int toRegionId;
+  int fromDistrictId;
+  int toDistrictId;
+  int fromQuarterId;
+  int toQuarterId;
   DateTime startTime;
   DateTime endTime;
-  String duration;
-  String pricePerSeat;
+  String? duration;
+  int pricePerSeat;
   dynamic totalSeats;
-  String availableSeats;
+  int availableSeats;
   String startLat;
   String startLong;
   String endLat;
@@ -29,16 +28,16 @@ class CreatedTripResponseModel {
   dynamic status;
   DateTime createdAt;
   DateTime updatedAt;
-  Driver driver;
-  TripVehicle vehicle;
-  IngPoint startingPoint;
-  IngPoint endingPoint;
+  Driver? driver;
+  trip_list.TripVehicle? vehicle;
+  IngPoint? startingPoint;
+  IngPoint? endingPoint;
   List<dynamic> bookings;
 
   CreatedTripResponseModel({
     required this.id,
-    required this.fromWhere,
-    required this.toWhere,
+    this.fromWhere,
+    this.toWhere,
     required this.fromRegionId,
     required this.toRegionId,
     required this.fromDistrictId,
@@ -47,53 +46,60 @@ class CreatedTripResponseModel {
     required this.toQuarterId,
     required this.startTime,
     required this.endTime,
-    required this.duration,
+    this.duration,
     required this.pricePerSeat,
-    required this.totalSeats,
+    this.totalSeats,
     required this.availableSeats,
     required this.startLat,
     required this.startLong,
     required this.endLat,
     required this.endLong,
-    required this.status,
+    this.status,
     required this.createdAt,
     required this.updatedAt,
-    required this.driver,
-    required this.vehicle,
-    required this.startingPoint,
-    required this.endingPoint,
+    this.driver,
+    this.vehicle,
+    this.startingPoint,
+    this.endingPoint,
     required this.bookings,
   });
 
   factory CreatedTripResponseModel.fromJson(Map<String, dynamic> json) => CreatedTripResponseModel(
-    id: json["id"]??0,
+    id: json["id"] ?? 0,
     fromWhere: json["from_where"],
     toWhere: json["to_where"],
-    fromRegionId: json["from_region_id"],
-    toRegionId: json["to_region_id"],
-    fromDistrictId: json["from_district_id"],
-    toDistrictId: json["to_district_id"],
-    fromQuarterId: json["from_quarter_id"],
-    toQuarterId: json["to_quarter_id"],
-    startTime: DateTime.parse(json["start_time"]),
-    endTime: DateTime.parse(json["end_time"]),
+    fromRegionId: _toInt(json["from_region_id"]),
+    toRegionId: _toInt(json["to_region_id"]),
+    fromDistrictId: _toInt(json["from_district_id"]),
+    toDistrictId: _toInt(json["to_district_id"]),
+    fromQuarterId: _toInt(json["from_quarter_id"]),
+    toQuarterId: _toInt(json["to_quarter_id"]),
+    startTime: json["start_time"] != null ? DateTime.parse(json["start_time"]) : DateTime.now(),
+    endTime: json["end_time"] != null ? DateTime.parse(json["end_time"]) : DateTime.now(),
     duration: json["duration"],
-    pricePerSeat: json["price_per_seat"],
+    pricePerSeat: _toInt(json["price_per_seat"]),
     totalSeats: json["total_seats"],
-    availableSeats: json["available_seats"],
-    startLat: json["start_lat"],
-    startLong: json["start_long"],
-    endLat: json["end_lat"],
-    endLong: json["end_long"],
+    availableSeats: _toInt(json["available_seats"]),
+    startLat: json["start_lat"]?.toString() ?? "",
+    startLong: json["start_long"]?.toString() ?? "",
+    endLat: json["end_lat"]?.toString() ?? "",
+    endLong: json["end_long"]?.toString() ?? "",
     status: json["status"],
-    createdAt: DateTime.parse(json["created_at"]),
-    updatedAt: DateTime.parse(json["updated_at"]),
-    driver: Driver.fromJson(json["driver"]),
-    vehicle: TripVehicle.fromJson(json["vehicle"]),
-    startingPoint: IngPoint.fromJson(json["starting_point"]),
-    endingPoint: IngPoint.fromJson(json["ending_point"]),
-    bookings: List<dynamic>.from(json["bookings"].map((x) => x)),
+    createdAt: json["created_at"] != null ? DateTime.parse(json["created_at"]) : DateTime.now(),
+    updatedAt: json["updated_at"] != null ? DateTime.parse(json["updated_at"]) : DateTime.now(),
+    driver: json["driver"] != null ? Driver.fromJson(json["driver"]) : null,
+    vehicle: json["vehicle"] != null ? trip_list.TripVehicle.fromJson(json["vehicle"]) : null,
+    startingPoint: json["starting_point"] != null ? IngPoint.fromJson(json["starting_point"]) : null,
+    endingPoint: json["ending_point"] != null ? IngPoint.fromJson(json["ending_point"]) : null,
+    bookings: json["bookings"] != null ? List<dynamic>.from(json["bookings"].map((x) => x)) : [],
   );
+
+  static int _toInt(dynamic value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
 
   Map<String, dynamic> toJson() => {
     "id": id,
@@ -118,12 +124,42 @@ class CreatedTripResponseModel {
     "status": status,
     "created_at": createdAt.toIso8601String(),
     "updated_at": updatedAt.toIso8601String(),
-    "driver": driver.toJson(),
-    "vehicle": vehicle.toJson(),
-    "starting_point": startingPoint.toJson(),
-    "ending_point": endingPoint.toJson(),
+    "driver": driver?.toJson(),
+    "vehicle": vehicle?.toJson(),
+    "starting_point": startingPoint?.toJson(),
+    "ending_point": endingPoint?.toJson(),
     "bookings": List<dynamic>.from(bookings.map((x) => x)),
   };
+
+  trip_list.TripListModel toTripListModel() {
+    return trip_list.TripListModel(
+      id: id,
+      fromWhere: fromWhere ?? "",
+      toWhere: toWhere ?? "",
+      fromRegionId: fromRegionId,
+      toRegionId: toRegionId,
+      fromCityId: fromDistrictId,
+      toCityId: toDistrictId,
+      fromVillageId: fromQuarterId,
+      toVillageId: toQuarterId,
+      startTime: startTime,
+      endTime: endTime,
+      pricePerSeat: pricePerSeat.toString(),
+      totalSeats: totalSeats is int ? totalSeats : (int.tryParse(totalSeats?.toString() ?? "0") ?? 0),
+      availableSeats: availableSeats,
+      startLat: startLat,
+      startLong: startLong,
+      endLat: endLat,
+      endLong: endLong,
+      status: status?.toString() ?? "",
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      driver: driver != null 
+          ? trip_list.Driver(id: driver!.id, name: "${driver!.firstName} ${driver!.lastName}", role: driver!.role)
+          : trip_list.Driver(id: 0, name: "", role: ""),
+      vehicle: vehicle ?? trip_list.TripVehicle(id: 0, model: "", seats: 0, carNumber: "", color: trip_list.CarColor(id: 0, titleUz: "", titleRu: "", titleEn: "", code: "")),
+    );
+  }
 }
 
 class Driver {
@@ -144,12 +180,12 @@ class Driver {
   });
 
   factory Driver.fromJson(Map<String, dynamic> json) => Driver(
-    id: json["id"],
-    firstName: json["first_name"],
-    lastName: json["last_name"],
-    email: json["email"],
-    phone: json["phone"],
-    role: json["role"],
+    id: json["id"] ?? 0,
+    firstName: json["first_name"] ?? "",
+    lastName: json["last_name"] ?? "",
+    email: json["email"] ?? "",
+    phone: json["phone"] ?? "",
+    role: json["role"] ?? "",
   );
 
   Map<String, dynamic> toJson() => {
@@ -174,9 +210,9 @@ class IngPoint {
   });
 
   factory IngPoint.fromJson(Map<String, dynamic> json) => IngPoint(
-    id: json["id"],
-    lat: json["lat"],
-    long: json["long"],
+    id: json["id"] ?? 0,
+    lat: json["lat"]?.toString() ?? "",
+    long: json["long"]?.toString() ?? "",
   );
 
   Map<String, dynamic> toJson() => {

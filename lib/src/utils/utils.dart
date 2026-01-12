@@ -134,4 +134,6 @@ class Utils {
     double parsed = double.parse(cleaned);
     return parsed.toInt();
   }
+
+
 }

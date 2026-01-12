@@ -686,4 +686,10 @@ class ApiProvider {
     String url = '$baseUrl/user/balance-transactions';
     return await getRequest(url);
   }
+
+  /// Get My Vehicles
+  Future<HttpResult> fetchVehiclesList() async {
+    String url = '$baseUrl/vehicles';
+    return await getRequest(url);
+  }
 }
