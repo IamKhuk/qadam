@@ -4,10 +4,11 @@ import 'package:flutter_svg/svg.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:lottie/lottie.dart';
+import 'package:qadam/src/model/api/driver_trips_list_model.dart';
+import 'package:qadam/src/model/passenger_info_model.dart';
 import 'package:qadam/src/ui/dialogs/bottom_dialog.dart';
 import 'package:qadam/src/ui/dialogs/center_dialog.dart';
 import 'package:qadam/src/ui/menu/home/map_single_screen.dart';
-import 'package:qadam/src/ui/menu/home/payment_screen.dart';
 import 'package:qadam/src/ui/widgets/buttons/secondary_button.dart';
 import 'package:qadam/src/ui/widgets/containers/leading_back.dart';
 import 'package:qadam/src/ui/widgets/containers/passengers_container.dart';
@@ -15,25 +16,25 @@ import 'package:qadam/src/ui/widgets/texts/text_14h_400w.dart';
 import 'package:qadam/src/ui/widgets/texts/text_16h_500w.dart';
 import 'package:qadam/src/utils/utils.dart';
 import '../../../lan_localization/load_places.dart';
-import '../../../model/api/trip_list_model.dart';
 import '../../../model/passenger_model.dart';
 import '../../../theme/app_theme.dart';
 import '../../widgets/texts/text_12h_400w.dart';
-import 'map_route_screen.dart';
+import '../home/map_route_screen.dart';
 
-class TripDetailsScreen extends StatefulWidget {
-  const TripDetailsScreen({
+class DriverTripDetailsScreen extends StatefulWidget {
+  const DriverTripDetailsScreen({
     super.key,
     required this.trip,
   });
 
-  final TripListModel trip;
+  final DriverTripModel trip;
 
   @override
-  State<TripDetailsScreen> createState() => _TripDetailsScreenState();
+  State<DriverTripDetailsScreen> createState() =>
+      _DriverTripDetailsScreenState();
 }
 
-class _TripDetailsScreenState extends State<TripDetailsScreen> {
+class _DriverTripDetailsScreenState extends State<DriverTripDetailsScreen> {
   String pricePerSeat = "";
   int passengersNum = 1;
 
@@ -52,14 +53,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
   String toRegion = "";
   String toCity = "";
   String toNeighborhood = "";
-
-  List<PassengerModel> passengers = [
-    PassengerModel(
-      fullName: "Khusan Khukumov",
-      email: "khukumovkhusan@gmail.com",
-      phoneNumber: "+48579334461",
-    ),
-  ];
 
   @override
   void initState() {
@@ -97,6 +90,15 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     from = "$fromNeighborhood, $fromCity, $fromRegion";
     to = "$toNeighborhood, $toCity, $toRegion";
   }
+
+  List<PassengerInfoModel> passengersList = [
+    PassengerInfoModel(fullName: "John Smith", phone: "998970010707"),
+    PassengerInfoModel(
+      fullName: "Bob Johnson",
+      phone: "998931234567",
+      numberOfSeats: 2,
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -549,9 +551,10 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                               builder: (context) {
                                 return MapRouteScreen(
                                   start: LatLng(
-                                      double.parse(widget.trip.startLat), double.parse(widget.trip.startLong)),
-                                  end: LatLng(
-                                      double.parse(widget.trip.endLat), double.parse(widget.trip.endLong)),
+                                      double.parse(widget.trip.startLat),
+                                      double.parse(widget.trip.startLong)),
+                                  end: LatLng(double.parse(widget.trip.endLat),
+                                      double.parse(widget.trip.endLong)),
                                   startText: from,
                                   endText: to,
                                 );
@@ -567,121 +570,83 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                 Text16h500w(title: translate("home.passenger_info")),
                 const SizedBox(height: 16),
                 Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppTheme.dark.withOpacity(0.1),
-                              spreadRadius: 15,
-                              blurRadius: 25,
-                              offset: const Offset(0, 5),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.dark.withOpacity(0.1),
+                        spreadRadius: 15,
+                        blurRadius: 25,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text14h400w(
+                              title: translate("home.number_passenger"),
+                              color: AppTheme.gray,
                             ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text14h400w(
-                                    title: translate("home.number_passenger"),
-                                    color: AppTheme.gray,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Text16h500w(title: passengersNum.toString()),
-                                const SizedBox(width: 12),
-                                GestureDetector(
-                                  onTap: () {
-                                    if (passengersNum <
-                                        widget.trip.availableSeats) {
-                                      BottomDialog.showAddPassenger(
-                                        context,
-                                        PassengerModel(fullName: ""),
-                                        (data) {
-                                          bool isExist = false;
-                                          for (int i = 0;
-                                              i < passengers.length;
-                                              i++) {
-                                            if (passengers[i].fullName ==
-                                                data.fullName) {
-                                              isExist = true;
-                                              break;
-                                            }
-                                          }
-                                          if (isExist == false &&
-                                              data.fullName != "") {
-                                            setState(() {
-                                              passengers.add(data);
-                                              passengersNum++;
-                                            });
-                                          } else {
-                                            CenterDialog.showActionFailed(
-                                              context,
-                                              translate("home.passenger_exist"),
-                                              translate(
-                                                  "home.passenger_exist_error"),
-                                            );
-                                          }
-                                        },
-                                      );
-                                    }
-                                  },
-                                  child: Container(
+                          ),
+                          const SizedBox(width: 12),
+                          Text16h500w(title: passengersNum.toString()),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: passengersList.length,
+                        padding: EdgeInsets.zero,
+                        itemBuilder: (context, index) {
+                          return Column(
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Container(
                                     padding: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
-                                      color: AppTheme.light,
+                                      color: Colors.white,
                                       borderRadius: BorderRadius.circular(24),
                                     ),
                                     child: const Icon(
-                                      Icons.add,
-                                      color: AppTheme.black,
+                                      Icons.person,
                                       size: 24,
+                                      color: AppTheme.black,
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            ListView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: passengers.length,
-                                padding: EdgeInsets.zero,
-                                itemBuilder: (context, index) {
-                                  return Column(
+                                  const SizedBox(width: 12),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      PassengersContainer(
-                                        passenger: passengers[index],
-                                        onEdit: (data) {
-                                          if (data.fullName != "" &&
-                                              data != passengers[index]) {
-                                            setState(() {
-                                              passengers[index] = data;
-                                            });
-                                          }
-                                        },
-                                        onDelete: () {
-                                          if (passengers.length > 1) {
-                                            setState(() {
-                                              passengers
-                                                  .remove(passengers[index]);
-                                              passengersNum--;
-                                            });
-                                          }
-                                        },
+                                      Text14h400w(
+                                        title: passengersList[index].fullName,
+                                        color: AppTheme.black,
                                       ),
-                                      index == passengers.length - 1
-                                          ? const SizedBox()
-                                          : const Divider(),
+                                      const SizedBox(height: 4),
+                                      Text14h400w(
+                                        title: passengersList[index].phone,
+                                        color: AppTheme.gray,
+                                      ),
                                     ],
-                                  );
-                                })
-                          ],
-                        ),
+                                  ),
+                                ],
+                              ),
+                              index == passengersList.length - 1? const SizedBox(): const Divider(),
+                            ],
+                          );
+                        },
                       ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -726,19 +691,8 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                 ),
                 const SizedBox(height: 16),
                 SecondaryButton(
-                  title: translate("home.book_now"),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PaymentScreen(
-                          trip: widget.trip,
-                          passengersNum: passengersNum,
-                          passengers: passengers,
-                        ),
-                      ),
-                    );
-                  },
+                  title: translate("qadam.edit_trip"),
+                  onTap: () {},
                 ),
               ],
             ),

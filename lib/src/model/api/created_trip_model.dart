@@ -155,8 +155,8 @@ class CreatedTripResponseModel {
       createdAt: createdAt,
       updatedAt: updatedAt,
       driver: driver != null 
-          ? trip_list.Driver(id: driver!.id, name: "${driver!.firstName} ${driver!.lastName}", role: driver!.role)
-          : trip_list.Driver(id: 0, name: "", role: ""),
+          ? trip_list.TripDriver(id: driver!.id, name: "${driver!.firstName} ${driver!.lastName}", role: driver!.role)
+          : trip_list.TripDriver(id: 0, name: "", role: ""),
       vehicle: vehicle ?? trip_list.TripVehicle(id: 0, model: "", seats: 0, carNumber: "", color: trip_list.CarColor(id: 0, titleUz: "", titleRu: "", titleEn: "", code: "")),
     );
   }

@@ -1,0 +1,303 @@
+{
+	"info": {
+		"_postman_id": "82b4cacc-b1bb-410d-8c04-2d87b8c7087f",
+		"name": "Driver trips",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "35381670",
+		"_collection_link": "https://dark-shuttle-184452.postman.co/workspace/get-fast~4b1728e3-dcec-478a-95b6-d18390c04263/collection/19384339-82b4cacc-b1bb-410d-8c04-2d87b8c7087f?action=share&source=collection_link&creator=35381670"
+	},
+	"item": [
+		{
+			"name": "create a trip",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{api}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "vehicle_id",
+							"value": "3",
+							"description": "it should be exist on users table",
+							"type": "text"
+						},
+						{
+							"key": "start_quarter_id",
+							"value": "1355",
+							"description": "Samarqand is example",
+							"type": "text"
+						},
+						{
+							"key": "end_quarter_id",
+							"value": "233",
+							"description": "Toshkent is example",
+							"type": "text"
+						},
+						{
+							"key": "start_time",
+							"value": "2025-12-25 19:30:00",
+							"description": "date_format:Y-m-d H:i:s, 2025-01-02 00:30:00",
+							"type": "text"
+						},
+						{
+							"key": "end_time",
+							"value": "2025-12-26 22:00:00",
+							"description": "date_format:Y-m-d H:i:s, 2025-01-02 00:30:00",
+							"type": "text"
+						},
+						{
+							"key": "price_per_seat",
+							"value": "10000",
+							"description": "50000 uzb sum",
+							"type": "text"
+						},
+						{
+							"key": "available_seats",
+							"value": "4",
+							"description": "a number of seats is avialable now",
+							"type": "text"
+						},
+						{
+							"key": "start_lat",
+							"value": "41.3111",
+							"description": "'nullable|numeric|between:-180,180'",
+							"type": "text"
+						},
+						{
+							"key": "start_long",
+							"value": "69.2797",
+							"description": "'nullable|numeric|between:-180,180'",
+							"type": "text"
+						},
+						{
+							"key": "end_lat",
+							"value": "40.7128",
+							"description": "'nullable|numeric|between:-180,180'",
+							"type": "text"
+						},
+						{
+							"key": "end_long",
+							"value": "-74.0060",
+							"description": "'nullable|numeric|between:-180,180'",
+							"type": "text"
+						},
+						{
+							"key": "start_region_id",
+							"value": "2",
+							"description": "required|string|exists:regions,id",
+							"type": "text"
+						},
+						{
+							"key": "end_region_id",
+							"value": "1",
+							"description": "required|string|exists:regions,id",
+							"type": "text"
+						},
+						{
+							"key": "start_district_id",
+							"value": "25",
+							"description": "required|string|exists:district,id",
+							"type": "text"
+						},
+						{
+							"key": "end_district_id",
+							"value": "44",
+							"description": "required|string|exists:district,id",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{qardam_base_url}}/api/v1/driver/trips",
+					"host": [
+						"{{qardam_base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"driver",
+						"trips"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get driver's one  trip",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{api}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{qardam_base_url}}/api/v1/driver/trips/1",
+					"host": [
+						"{{qardam_base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"driver",
+						"trips",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "driver canceled trips",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{api}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{qardam_base_url}}/api/v1/driver/trips/get-completed-trips/driver",
+					"host": [
+						"{{qardam_base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"driver",
+						"trips",
+						"get-completed-trips",
+						"driver"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "driver active trips",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{api}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{qardam_base_url}}/api/v1/driver/trips/2",
+					"host": [
+						"{{qardam_base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"driver",
+						"trips",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cancel  a driver's trip",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{api}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/v1/driver/trips/cancel-trip/9",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"driver",
+						"trips",
+						"cancel-trip",
+						"9"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get all driver  trips",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{api}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{qardam_base_url}}/api/v1/driver/trips",
+					"host": [
+						"{{qardam_base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"driver",
+						"trips"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

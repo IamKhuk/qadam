@@ -3,10 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:qadam/src/model/api/created_trip_model.dart';
+import 'package:qadam/src/model/api/driver_trips_list_model.dart';
 import 'package:qadam/src/ui/widgets/buttons/primary_button.dart';
 import 'package:qadam/src/ui/widgets/containers/leading_back.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../model/api/trip_list_model.dart';
+import '../../../lan_localization/load_places.dart';
 import '../../../model/api/vehicles_list_model.dart';
 import '../../../model/color_model.dart';
 import '../../../model/location_model.dart';
@@ -27,10 +28,10 @@ import 'map_select_screen.dart';
 class CreateNewQadamScreen extends StatefulWidget {
   const CreateNewQadamScreen({
     super.key,
-    required this.onCreated,
+    required this.driverTrip,
   });
 
-  final Function(TripListModel data) onCreated;
+  final DriverTripModel driverTrip;
 
   @override
   State<CreateNewQadamScreen> createState() => _CreateNewQadamScreenState();
@@ -84,10 +85,49 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
     super.dispose();
   }
 
+  void setLocations() {
+    fromRegion = LocationData.regions
+        .firstWhere((r) => r.id == widget.driverTrip.fromRegionId.toString());
+    fromCity = LocationData.cities
+        .firstWhere((c) => c.id == widget.driverTrip.fromCityId.toString());
+    fromNeighborhood = LocationData.villages
+        .firstWhere((n) => n.id == widget.driverTrip.fromVillageId.toString());
+
+    toRegion = LocationData.regions
+        .firstWhere((r) => r.id == widget.driverTrip.toRegionId.toString());
+    toCity = LocationData.cities
+        .firstWhere((c) => c.id == widget.driverTrip.toCityId.toString());
+    toNeighborhood = LocationData.villages
+        .firstWhere((n) => n.id == widget.driverTrip.toVillageId.toString());
+
+    fromController.text = "$fromNeighborhood, $fromCity, $fromRegion";
+    toController.text = "$toNeighborhood, $toCity, $toRegion";
+  }
+
   @override
   void initState() {
     getVehicleId();
     getVehicles();
+    if (widget.driverTrip.id != 0) {
+      setLocations();
+      departureDate = widget.driverTrip.startTime;
+      endDate = widget.driverTrip.endTime;
+      departureController.text = Utils.tripDateFormat(departureDate);
+      endController.text = Utils.tripDateFormat(endDate);
+      priceController.text = widget.driverTrip.pricePerSeat;
+      selectedVehicle = VehicleModel(
+        id: widget.driverTrip.vehicle.id,
+        vehicleName: widget.driverTrip.vehicle.model,
+        color: ColorModel(
+            id: widget.driverTrip.vehicle.color.id,
+            titleEn: "",
+            titleRu: "",
+            titleUz: "",
+            colorCode: AppTheme.black),
+        capacity: widget.driverTrip.vehicle.seats,
+      );
+      passengersNum = selectedVehicle.capacity;
+    }
     super.initState();
   }
 
@@ -97,7 +137,8 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
       List<dynamic> data = [];
       if (response.result is List) {
         data = response.result;
-      } else if (response.result is Map && response.result.containsKey('data')) {
+      } else if (response.result is Map &&
+          response.result.containsKey('data')) {
         data = response.result['data'];
       }
 
@@ -153,7 +194,10 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
       return;
     }
 
-    if (startLat.isEmpty || startLong.isEmpty || endLat.isEmpty || endLong.isEmpty) {
+    if (startLat.isEmpty ||
+        startLong.isEmpty ||
+        endLat.isEmpty ||
+        endLong.isEmpty) {
       CustomSnackBar().showSnackBar(
         context,
         translate("qadam.select_location_on_map"),
@@ -186,23 +230,23 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
       );
 
       if (response.isSuccess) {
-        final dataMap = response.result is Map && response.result.containsKey('data') 
-            ? response.result['data'] 
-            : response.result;
-        
+        final dataMap =
+            response.result is Map && response.result.containsKey('data')
+                ? response.result['data']
+                : response.result;
+
         var result = CreatedTripResponseModel.fromJson(dataMap);
 
         if (result.id != 0) {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setString("active_trip_id", result.id.toString());
-          
+
           if (mounted) {
             CustomSnackBar().showSnackBar(
               context,
               translate("qadam.trip_created"),
               1,
             );
-            widget.onCreated(result.toTripListModel());
             Navigator.pop(context);
           }
         } else {
@@ -212,9 +256,10 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
         if (response.status == -1) {
           _showError(translate("auth.connection_failed_msg"));
         } else {
-          String errorMessage = response.result is Map && response.result.containsKey('message')
-              ? response.result['message']
-              : translate("auth.failed_msg");
+          String errorMessage =
+              response.result is Map && response.result.containsKey('message')
+                  ? response.result['message']
+                  : translate("auth.failed_msg");
           _showError(errorMessage);
         }
       }
@@ -359,7 +404,10 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
                                     ),
                                   );
                                 } else {
-                                  CustomSnackBar().showSnackBar(context, translate("qadam.select_location_first"), 2);
+                                  CustomSnackBar().showSnackBar(
+                                      context,
+                                      translate("qadam.select_location_first"),
+                                      2);
                                 }
                               },
                               child: Container(
@@ -402,8 +450,10 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
                                 child: TextField(
                                   onTap: () {
                                     BottomDialog.showSelectLocation(
-                                        context, toRegion, toCity, toNeighborhood,
-                                        (r, c, n) {
+                                        context,
+                                        toRegion,
+                                        toCity,
+                                        toNeighborhood, (r, c, n) {
                                       setState(() {
                                         toRegion = r;
                                         toCity = c;
@@ -472,7 +522,10 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
                                     ),
                                   );
                                 } else {
-                                  CustomSnackBar().showSnackBar(context, translate("qadam.select_location_first"), 2);
+                                  CustomSnackBar().showSnackBar(
+                                      context,
+                                      translate("qadam.select_location_first"),
+                                      2);
                                 }
                               },
                               child: Container(
@@ -520,16 +573,15 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
                             toCity = tempCity;
 
                             /// Swap from and to neighborhoods
-                            LocationModel tempNeighbourhood =
-                                fromNeighborhood;
+                            LocationModel tempNeighbourhood = fromNeighborhood;
                             fromNeighborhood = toNeighborhood;
                             toNeighborhood = tempNeighbourhood;
-                            
+
                             /// Swap coordinates
                             String tempLat = startLat;
                             startLat = endLat;
                             endLat = tempLat;
-                            
+
                             String tempLong = startLong;
                             startLong = endLong;
                             endLong = tempLong;
@@ -589,8 +641,9 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
                           departureController.text =
                               Utils.tripDateFormat(departureDate);
                           if (endDate.isBefore(departureDate)) {
-                             endDate = departureDate.add(const Duration(hours: 3));
-                             endController.text = Utils.tripDateFormat(endDate);
+                            endDate =
+                                departureDate.add(const Duration(hours: 3));
+                            endController.text = Utils.tripDateFormat(endDate);
                           }
                         });
                       },
@@ -653,8 +706,7 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
                       (date) {
                         setState(() {
                           endDate = date;
-                          endController.text =
-                              Utils.tripDateFormat(endDate);
+                          endController.text = Utils.tripDateFormat(endDate);
                         });
                       },
                       endDate,
@@ -757,12 +809,12 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
                                     onTap: () {
                                       setState(() {
                                         selectedVehicle = myVehicles[index];
-                                        passengersNum = selectedVehicle.capacity;
+                                        passengersNum =
+                                            selectedVehicle.capacity;
                                         isCarOpen = false;
                                       });
                                     },
-                                    child: CarContainer(
-                                        car: myVehicles[index]),
+                                    child: CarContainer(car: myVehicles[index]),
                                   ),
                                   index == myVehicles.length - 1
                                       ? const SizedBox()
@@ -874,15 +926,22 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
               ),
             ],
           ),
-          Positioned(
-            left: 16,
-            right: 16,
-            bottom: 32,
-            child: PrimaryButton(
-              title: translate("qadam.create_trip"),
-              isLoading: isLoading,
-              onTap: _onCreateTrip,
-            ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Container(
+                margin: EdgeInsets.only(
+                  left: 16,
+                  right: 16,
+                  bottom: 32,
+                ),
+                child: PrimaryButton(
+                  title: translate("qadam.create_trip"),
+                  isLoading: isLoading,
+                  onTap: _onCreateTrip,
+                ),
+              ),
+            ],
           ),
         ],
       ),

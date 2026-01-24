@@ -680,7 +680,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               status: "",
                                               createdAt: DateTime.now(),
                                               updatedAt: DateTime.now(),
-                                              driver: Driver(
+                                              driver: TripDriver(
                                                 id: 0,
                                                 name: "",
                                                 role: "driver",

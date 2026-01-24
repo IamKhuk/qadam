@@ -191,6 +191,9 @@ class Repository {
 
   Future<HttpResult> fetchVehiclesList() => apiProvider.fetchVehiclesList();
 
+  Future<HttpResult> fetchDriverTripsList(String action) =>
+      apiProvider.fetchDriverTripsList(action);
+
   Future<void> cacheLoginUser(UserModel user) => appCache.saveLoginUser(user);
 
   Future<void> cacheSetMe(User user) => appCache.saveUser(user);

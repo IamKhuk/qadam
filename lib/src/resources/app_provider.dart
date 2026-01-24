@@ -692,4 +692,27 @@ class ApiProvider {
     String url = '$baseUrl/vehicles';
     return await getRequest(url);
   }
+
+  /// Get All Driver Trips
+  Future<HttpResult> fetchDriverTripsList(String action) async {
+    String getDriverTripsUrl(String action) {
+      const basePath = '/driver/trips';
+
+      switch (action.toLowerCase()) {
+        case 'completed':
+          return '$basePath/get-completed-trips/driver';
+        case 'canceled':
+          return '$basePath/get-canceled-trips/driver';
+        case 'active':
+          return '$basePath/get-active-trips/driver';
+        case 'all':
+        default:
+          return basePath;
+      }
+    }
+
+    final String url = '$baseUrl${getDriverTripsUrl(action)}';
+
+    return await getRequest(url);
+  }
 }

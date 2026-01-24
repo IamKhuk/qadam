@@ -193,7 +193,10 @@
     "replace": "Replace",
     "trip_created": "Trip is created successfully",
     "trip_creation_failed": "Trip Creation Failed",
-    "trip_creation_failed_msg": "Trip creation failed, please try again later"
+    "trip_creation_failed_msg": "Trip creation failed, please try again later",
+    "edit_trip": "Edit Trip",
+    "trip_edited": "Trip is edited successfully",
+    "trip_editing_failed": "Trip Editing Failed"
   },
   "search": {
     "all": "All",

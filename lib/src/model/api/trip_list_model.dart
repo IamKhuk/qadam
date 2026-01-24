@@ -26,7 +26,7 @@ class TripListModel {
   String status;
   DateTime createdAt;
   DateTime updatedAt;
-  Driver driver;
+  TripDriver driver;
   TripVehicle vehicle;
 
   TripListModel({
@@ -77,7 +77,7 @@ class TripListModel {
     status: json["status"]??"",
     createdAt: DateTime.parse(json["created_at"]),
     updatedAt: DateTime.parse(json["updated_at"]),
-    driver: Driver.fromJson(json["driver"]),
+    driver: TripDriver.fromJson(json["driver"]),
     vehicle: TripVehicle.fromJson(json["vehicle"]),
   );
 
@@ -108,18 +108,18 @@ class TripListModel {
   };
 }
 
-class Driver {
+class TripDriver {
   int id;
   String name;
   String role;
 
-  Driver({
+  TripDriver({
     required this.id,
     required this.name,
     required this.role,
   });
 
-  factory Driver.fromJson(Map<String, dynamic> json) => Driver(
+  factory TripDriver.fromJson(Map<String, dynamic> json) => TripDriver(
     id: json["id"]??0,
     name: json["name"]??"",
     role: json["role"]??"",
