@@ -3,6 +3,7 @@ import 'package:flutter_translate/flutter_translate.dart';
 import 'package:qadam/src/ui/auth/login_screen.dart';
 import 'package:qadam/src/ui/menu/main_screen.dart';
 import 'package:qadam/src/ui/menu/profile/edit_profile_screen.dart';
+import 'package:qadam/src/ui/menu/profile/my_vehicles_screen.dart';
 import 'package:qadam/src/ui/menu/profile/top_up_screen.dart';
 import 'package:qadam/src/ui/widgets/texts/text_12h_400w.dart';
 import 'package:qadam/src/ui/widgets/texts/text_16h_500w.dart';
@@ -164,12 +165,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text16h500w(
-                          title: translate("profile.my_balance"),color: AppTheme.light,),
+                        title: translate("profile.my_balance"),
+                        color: AppTheme.light,
+                      ),
                       const SizedBox(height: 16),
                       Text18h500w(
-                          title:
-                          "${Utils.priceFormat(balance)} ${translate(
-                              "currency")}", color: Colors.white,)
+                        title:
+                            "${Utils.priceFormat(balance)} ${translate("currency")}",
+                        color: Colors.white,
+                      )
                     ],
                   ),
                 ),
@@ -220,6 +224,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Text16h500w(
             title: translate("profile.settings"),
           ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const MyVehiclesScreen(),
+                ),
+              );
+            },
+            child: SettingsContainer(
+                settingsModel: SettingsModel(
+              icon: Icons.directions_car_outlined,
+              title: translate("profile.my_vehicles"),
+            )),
+          ),
           SettingsContainer(
               settingsModel: SettingsModel(
             icon: Icons.lock_clock,
@@ -266,11 +285,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           GestureDetector(
             onTap: () async {
               await wipeSharedPreferences();
-              setState(() {
-                selectedIndex = 0;
-              });
+              if (!mounted) return;
               Navigator.of(context).popUntil(
-                    (route) => route.isFirst,
+                (route) => route.isFirst,
               );
               Navigator.pushReplacement(
                 context,
@@ -283,9 +300,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             },
             child: SettingsContainer(
                 settingsModel: SettingsModel(
-                  icon: Icons.logout_outlined,
-                  title: translate("profile.logout"),
-                )),
+              icon: Icons.logout_outlined,
+              title: translate("profile.logout"),
+            )),
           ),
         ],
       ),

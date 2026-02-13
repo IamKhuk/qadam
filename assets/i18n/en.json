@@ -40,7 +40,9 @@
     "connection_failed_msg": "Please check your internet connection and try again",
     "something_went_wrong": "Something went wrong",
     "resend_failed": "Resend Failed",
-    "enter_pin_text": "Enter the Verification Code Sent to Your Phone Number to complete the Registration process"
+    "enter_pin_text": "Enter the Verification Code Sent to Your Phone Number to complete the Registration process",
+    "error": "Error",
+    "fill_login_fields": "Please enter your phone number and password"
   },
   "home": {
     "home": "Home",
@@ -138,7 +140,11 @@
     "view_route_map": "View Route in Maps",
     "no_passenger": "No Passenger Yet",
     "cancel_trip": "Cancel Trip",
-    "location": "Location"
+    "location": "Location",
+    "good_morning": "Good Morning",
+    "good_afternoon": "Good Afternoon",
+    "good_evening": "Good Evening",
+    "where_going": "Where Are You Going Today?"
   },
   "qadam": {
     "add_docs_title": "Missing Driver License",
@@ -196,7 +202,13 @@
     "trip_creation_failed_msg": "Trip creation failed, please try again later",
     "edit_trip": "Edit Trip",
     "trip_edited": "Trip is edited successfully",
-    "trip_editing_failed": "Trip Editing Failed"
+    "trip_editing_failed": "Trip Editing Failed",
+    "license_expired": "License expiry date must be in the future",
+    "select_color": "Please select a car color",
+    "end_date_after_departure": "End date must be after departure date",
+    "price_must_be_positive": "Price must be greater than 0",
+    "select_location_first": "Please select a location first",
+    "select_location_on_map": "Please select locations on the map"
   },
   "search": {
     "all": "All",
@@ -252,7 +264,13 @@
     "top_up_failed": "Top Up Failed",
     "logout": "Log Out",
     "car_tech_passport": "Car Tech Passport",
-    "seats": "Number of Seats"
+    "seats": "Number of Seats",
+    "my_vehicles": "My Vehicles",
+    "add_vehicle": "Add Vehicle",
+    "no_vehicles_found": "No Vehicles Found",
+    "no_vehicles_found_msg": "Please add a vehicle",
+    "docs_not_verified": "Your documents are not verified",
+    "docs_verified": "Your documents are verified"
   },
   "history": {
     "history": "History",

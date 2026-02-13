@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../model/api/login_model.dart';
 import '../../model/api/register_model.dart';
 import '../../resources/repository.dart';
+import '../../utils/secure_storage.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/validators.dart';
 import '../dialogs/center_dialog.dart';
@@ -428,6 +429,15 @@ class _LoginScreenState extends State<LoginScreen> {
                         : translate("auth.register"),
                     onTap: () async {
                       if (isLogin == true) {
+                        if (phoneController.text.trim().isEmpty ||
+                            passController.text.isEmpty) {
+                          CenterDialog.showActionFailed(
+                            context,
+                            translate("auth.error"),
+                            translate("auth.fill_login_fields"),
+                          );
+                          return;
+                        }
                         setState(() {
                           isLoading = true;
                         });
@@ -442,10 +452,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             isLoading = false;
                           });
                           if (result.status == "success") {
+                            await SecureStorage.setToken(
+                                result.authorisation.token);
                             SharedPreferences prefs =
                                 await SharedPreferences.getInstance();
-                            prefs.setString(
-                                "token", result.authorisation.token);
                             prefs.setBool("isFirst", false);
                             prefs.setString(
                               "token_date",
@@ -596,6 +606,13 @@ class _LoginScreenState extends State<LoginScreen> {
                             context,
                             'Error',
                             'Please enter valid phone number',
+                          );
+                        } else if (!Validators.emailValidator(
+                                emailController.text)) {
+                          CenterDialog.showActionFailed(
+                            context,
+                            'Error',
+                            'Please enter a valid email address',
                           );
                         } else if (Validators.passwordValidator(
                                 passRegController.text) ==

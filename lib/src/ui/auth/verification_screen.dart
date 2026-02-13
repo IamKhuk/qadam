@@ -55,7 +55,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
   @override
   void dispose() {
-    _timer!.cancel();
+    _timer?.cancel();
+    _pinPutFocusNode.dispose();
+    _pinPutController.dispose();
     super.dispose();
   }
 
@@ -168,54 +170,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                                 color: AppTheme.black,
                               ),
                               GestureDetector(
-                                onTap: () async {
-                                  var response = await _repository
-                                      .fetchVerificationResend(widget.phone);
-
-                                  if (response.isSuccess) {
-                                    var result = VerificationResendModel.fromJson(
-                                        response.result);
-                                    setState(() {
-                                      _pinPutController.text =
-                                          result.code.toString();
-                                      _isLoading = false;
-                                    });
-                                    showResponsePopup(
-                                      context,
-                                      status: result.status,
-                                      message: result.message,
-                                    );
-                                    if (result.status == "success") {
-                                      setState(() {
-                                        timer = 120;
-                                      });
-                                      _startTimer();
-                                    } else {
-                                      CenterDialog.showActionFailed(
-                                        context,
-                                        translate("auth.resend_failed"),
-                                        result.message,
-                                      );
-                                    }
-                                  } else {
-                                    setState(() {
-                                      _isLoading = false;
-                                    });
-                                    if (response.status == -1) {
-                                      CenterDialog.showActionFailed(
-                                        context,
-                                        translate("auth.connection_failed"),
-                                        translate("auth.connection_failed_msg"),
-                                      );
-                                    } else {
-                                      CenterDialog.showActionFailed(
-                                        context,
-                                        translate("auth.something_went_wrong"),
-                                        translate("auth.failed_msg"),
-                                      );
-                                    }
-                                  }
-                                },
+                                onTap: _resendCode,
                                 child: Text16h500w(
                                   title: translate("auth.send_again"),
                                   color: AppTheme.purple,
@@ -238,65 +193,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                   Expanded(
                     child: SecondaryButton(
                       title: translate("auth.send_code"),
-                      onTap: () async {
-                        setState(() {
-                          _isLoading = true;
-                        });
-
-                        var response = await _repository.fetchVerifyCode(
-                          widget.phone,
-                          _pinPutController.text,
-                        );
-
-                        if (response.isSuccess) {
-                          var result = VerifyCodeModel.fromJson(response.result);
-                          setState(() {
-                            _isLoading = false;
-                          });
-                          showResponsePopup(
-                            context,
-                            status: result.status,
-                            message: result.message,
-                          );
-                          if (result.status == "success") {
-                            _timer!.cancel();
-                            Navigator.of(context).popUntil(
-                              (route) => route.isFirst,
-                            );
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) {
-                                  return const LoginScreen();
-                                },
-                              ),
-                            );
-                          } else {
-                            CenterDialog.showActionFailed(
-                              context,
-                              translate("auth.resend_failed"),
-                              result.message,
-                            );
-                          }
-                        } else {
-                          setState(() {
-                            _isLoading = false;
-                          });
-                          if (response.status == -1) {
-                            CenterDialog.showActionFailed(
-                              context,
-                              translate("auth.connection_failed"),
-                              translate("auth.connection_failed_msg"),
-                            );
-                          } else {
-                            CenterDialog.showActionFailed(
-                              context,
-                              translate("auth.something_went_wrong"),
-                              translate("auth.failed_msg"),
-                            );
-                          }
-                        }
-                      },
+                      onTap: () => _initPinPut(_pinPutController.text),
                     ),
                   ),
                   const SizedBox(width: 24),
@@ -339,15 +236,74 @@ class _VerificationScreenState extends State<VerificationScreen> {
     );
   }
 
+  void _showApiError(int status) {
+    if (status == -1) {
+      CenterDialog.showActionFailed(
+        context,
+        translate("auth.connection_failed"),
+        translate("auth.connection_failed_msg"),
+      );
+    } else {
+      CenterDialog.showActionFailed(
+        context,
+        translate("auth.something_went_wrong"),
+        translate("auth.failed_msg"),
+      );
+    }
+  }
+
+  Future<void> _resendCode() async {
+    var response = await _repository.fetchVerificationResend(widget.phone);
+
+    if (!mounted) return;
+
+    if (response.isSuccess) {
+      var result = VerificationResendModel.fromJson(response.result);
+      setState(() {
+        _pinPutController.text = result.code.toString();
+        _isLoading = false;
+      });
+      showResponsePopup(
+        context,
+        status: result.status,
+        message: result.message,
+      );
+      if (result.status == "success") {
+        setState(() {
+          timer = 120;
+        });
+        _startTimer();
+      } else {
+        CenterDialog.showActionFailed(
+          context,
+          translate("auth.resend_failed"),
+          result.message,
+        );
+      }
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
+      _showApiError(response.status);
+    }
+  }
+
   void _startTimer() {
+    _timer?.cancel();
     _timer = Timer.periodic(
       const Duration(seconds: 1),
       (t) {
-        timer--;
-        if (timer == 0) {
-          _timer!.cancel();
+        if (!mounted) {
+          t.cancel();
+          return;
         }
-        setState(() {});
+        setState(() {
+          timer--;
+          if (timer <= 0) {
+            timer = 0;
+            t.cancel();
+          }
+        });
       },
     );
   }
@@ -359,14 +315,15 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
     var response = await _repository.fetchVerifyCode(widget.phone, pin);
 
-    var result = VerifyCodeModel.fromJson(response.result);
+    if (!mounted) return;
 
     if (response.isSuccess) {
+      var result = VerifyCodeModel.fromJson(response.result);
       setState(() {
         _isLoading = false;
       });
       if (result.status == "success") {
-        _timer!.cancel();
+        _timer?.cancel();
         Navigator.of(context).popUntil(
           (route) => route.isFirst,
         );
@@ -389,19 +346,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
       setState(() {
         _isLoading = false;
       });
-      if (response.status == -1) {
-        CenterDialog.showActionFailed(
-          context,
-          translate("auth.connection_failed"),
-          translate("auth.connection_failed_msg"),
-        );
-      } else {
-        CenterDialog.showActionFailed(
-          context,
-          translate("auth.something_went_wrong"),
-          translate("auth.failed_msg"),
-        );
-      }
+      _showApiError(response.status);
     }
   }
 }

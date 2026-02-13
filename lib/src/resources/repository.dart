@@ -161,6 +161,9 @@ class Repository {
   Future<HttpResult> fetchOneDriverTrip(String tripId) =>
       apiProvider.fetchOneDriverTrip(tripId);
 
+  Future<HttpResult> fetchOneBookedTrip(String tripId) =>
+      apiProvider.fetchOneBookedTrip(tripId);
+
   Future<HttpResult> fetchCardList() => apiProvider.fetchCardList();
 
   Future<HttpResult> fetchAddCreditCard(

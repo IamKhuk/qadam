@@ -1,14 +1,13 @@
 import 'dart:async';
 
 import 'dart:io';
-import 'package:flutter/cupertino.dart';
-// import 'package:http/http.dart' as http; // Removed
+import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
 import 'package:path/path.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
 import '../model/event_bus/http_result.dart';
 import '../model/passenger_model.dart';
+import '../utils/secure_storage.dart';
 
 class ApiProvider {
   static Duration durationTimeout = const Duration(seconds: 30);
@@ -17,22 +16,23 @@ class ApiProvider {
   // --- Helpers ---
 
   static Future<Map<String, dynamic>> _getReqHeader() async {
-    final prefs = await SharedPreferences.getInstance();
-    // No Content-Type here by default, let Dio or specific request handle it
-    final headers = {
+    final headers = <String, dynamic>{
       "Accept": "application/json",
       "Content-Type": "application/json",
     };
 
-    if (prefs.getString('token') != null) {
-      headers["Authorization"] = "Bearer ${prefs.getString('token') ?? ""}";
+    final token = await SecureStorage.getToken();
+    if (token != null && token.isNotEmpty) {
+      headers["Authorization"] = "Bearer $token";
     }
     return headers;
   }
 
   static HttpResult _handleDioError(DioException e) {
-    debugPrint("DioError: ${e.message}");
-    debugPrint("DioError Response: ${e.response?.data}");
+    assert(() {
+      debugPrint("DioError: ${e.message}");
+      return true;
+    }());
     if (e.response != null) {
       // Check if response data is usable map
       final result = e.response?.data is Map
@@ -54,7 +54,10 @@ class ApiProvider {
   }
 
   static HttpResult _handleGenericError(Object e) {
-    debugPrint("Error: $e");
+    assert(() {
+      debugPrint("Error: $e");
+      return true;
+    }());
     return HttpResult(
       isSuccess: false,
       status: -1,
@@ -63,8 +66,6 @@ class ApiProvider {
   }
 
    static HttpResult _processResponse(Response response) {
-    debugPrint("Response Body: ${response.data}");
-    
     // Check for success range
     if (response.statusCode != null &&
         response.statusCode! >= 200 &&
@@ -90,10 +91,8 @@ class ApiProvider {
 
   /// GET Request using Dio
   static Future<HttpResult> getRequest(String url) async {
-    debugPrint("GET: $url");
     Dio dio = Dio();
     final headers = await _getReqHeader();
-    debugPrint("Headers: $headers");
 
     try {
       Response response = await dio.get(
@@ -116,12 +115,8 @@ class ApiProvider {
 
   /// POST Request (JSON)
   static Future<HttpResult> postRequest(String url, Map<String, dynamic> body) async {
-    debugPrint("POST: $url");
-    debugPrint("Body: $body");
-
     Dio dio = Dio();
     final headers = await _getReqHeader();
-    debugPrint("Headers: $headers");
 
     try {
       Response response = await dio.post(
@@ -227,16 +222,18 @@ class ApiProvider {
     bool? isRoundTrip,
   ) async {
     isRoundTrip ??= false;
-    String returnDateStr = "";
-    if (returnDate != null) {
-      returnDateStr = returnDate.toIso8601String();
-    } else {
-      returnDateStr = "";
-    }
 
-    String url =
-        '$baseUrl/public/trips/search/available-trips?start_quarter_id=$fromVillageId&end_quarter_id=$toVillageId&departure_date=${departureDate.toIso8601String()}&return_date=$returnDateStr&is_round_trip=$isRoundTrip';
-    return await getRequest(url);
+    final queryParams = {
+      'start_quarter_id': fromVillageId,
+      'end_quarter_id': toVillageId,
+      'departure_date': departureDate.toIso8601String(),
+      'return_date': returnDate?.toIso8601String() ?? '',
+      'is_round_trip': isRoundTrip.toString(),
+    };
+
+    final uri = Uri.parse('$baseUrl/public/trips/search/available-trips')
+        .replace(queryParameters: queryParams);
+    return await getRequest(uri.toString());
   }
 
 
@@ -264,15 +261,18 @@ class ApiProvider {
               })
           .toList(),
     };
-    debugPrint(url);
-    debugPrint("Post: ${data.toString()}");
-    
     return await postRequest(url, data);
   }
 
   /// Get Booked Trips List
   Future<HttpResult> fetchBookedTripsList() async {
     String url = '$baseUrl/client/booking';
+    return await getRequest(url);
+  }
+
+  /// Get One Booked Trip
+  Future<HttpResult> fetchOneBookedTrip(String tripId) async {
+    String url = '$baseUrl/client/trips/booking/$tripId';
     return await getRequest(url);
   }
 
@@ -300,163 +300,132 @@ class ApiProvider {
     return resizedFile;
   }
 
+  static void _deleteTempFile(File? file) {
+    if (file != null && file.existsSync()) {
+      try {
+        file.deleteSync();
+      } catch (_) {}
+    }
+  }
+
+  static void _deleteTempFiles(List<File> files) {
+    for (final file in files) {
+      _deleteTempFile(file);
+    }
+  }
+
   ///Driving Licence Front Upload
   Future<HttpResult> fetchDrivingFrontUpload(String path) async {
     String url = '$baseUrl/auth/upload-driver-passport-driving-licence';
 
-    final prefs = await SharedPreferences.getInstance();
+    final token = await SecureStorage.getToken();
     Dio dio = Dio();
-    final dynamic headers = {
+    final headers = {
       "Accept": "application/json",
-      "Authorization": "Bearer ${prefs.getString('token') ?? ""}",
+      if (token != null) "Authorization": "Bearer $token",
     };
 
-    File? fileToUpload;
+    final Map<String, dynamic> bodyMap = {};
+    File? tempFile;
     if (path.isNotEmpty) {
       final originalFile = File(path);
-      fileToUpload =
-          await _resizeImage(originalFile, maxWidth: 480, quality: 80);
-    }
-
-    FormData formData = FormData.fromMap({
-      "driving_licence_front": path.isEmpty
-          ? path
-          : await MultipartFile.fromFile(
-              fileToUpload!.path,
-              filename: basename(fileToUpload.path),
-            ),
-    });
-
-    Response response = await dio.post(
-      url,
-      data: formData,
-      options: Options(headers: headers),
-      onSendProgress: (int sent, int total) {
-        String percentage = (sent / total * 100).toStringAsFixed(2);
-        debugPrint("$sent Bytes of $total Bytes - $percentage % uploaded");
-      },
-    );
-
-    debugPrint("Response: ${response.data}");
-
-    if (response.statusCode == 200) {
-      return HttpResult(
-        isSuccess: true,
-        status: response.statusCode!,
-        result: response.data,
+      tempFile = await _resizeImage(originalFile, maxWidth: 480, quality: 80);
+      bodyMap["driving_licence_front"] = await MultipartFile.fromFile(
+        tempFile.path,
+        filename: basename(tempFile.path),
       );
     }
-    return HttpResult(
-      isSuccess: false,
-      status: -1,
-      result: {},
-    );
+
+    try {
+      Response response = await dio.post(
+        url,
+        data: FormData.fromMap(bodyMap),
+        options: Options(headers: headers, validateStatus: (s) => true),
+      );
+      return _processResponse(response);
+    } on DioException catch (e) {
+      return _handleDioError(e);
+    } catch (e) {
+      return _handleGenericError(e);
+    } finally {
+      _deleteTempFile(tempFile);
+    }
   }
 
   ///Driving Licence Back Upload
   Future<HttpResult> fetchDrivingBackUpload(String path) async {
     String url = '$baseUrl/auth/upload-driver-passport-driving-licence';
 
-    final prefs = await SharedPreferences.getInstance();
+    final token = await SecureStorage.getToken();
     Dio dio = Dio();
-    final dynamic headers = {
+    final headers = {
       "Accept": "application/json",
-      "Authorization": "Bearer ${prefs.getString('token') ?? ""}",
+      if (token != null) "Authorization": "Bearer $token",
     };
 
-    File? fileToUpload;
+    final Map<String, dynamic> bodyMap = {};
+    File? tempFile;
     if (path.isNotEmpty) {
       final originalFile = File(path);
-      fileToUpload =
-          await _resizeImage(originalFile, maxWidth: 480, quality: 80);
-    }
-
-    FormData formData = FormData.fromMap({
-      "driving_licence_back": path.isEmpty
-          ? path
-          : await MultipartFile.fromFile(
-              fileToUpload!.path,
-              filename: basename(fileToUpload.path),
-            ),
-    });
-
-    Response response = await dio.post(
-      url,
-      data: formData,
-      options: Options(headers: headers),
-      onSendProgress: (int sent, int total) {
-        String percentage = (sent / total * 100).toStringAsFixed(2);
-        debugPrint("$sent Bytes of $total Bytes - $percentage % uploaded");
-      },
-    );
-
-    debugPrint("Response: ${response.data}");
-
-    if (response.statusCode == 200) {
-      return HttpResult(
-        isSuccess: true,
-        status: response.statusCode!,
-        result: response.data,
+      tempFile = await _resizeImage(originalFile, maxWidth: 480, quality: 80);
+      bodyMap["driving_licence_back"] = await MultipartFile.fromFile(
+        tempFile.path,
+        filename: basename(tempFile.path),
       );
     }
-    return HttpResult(
-      isSuccess: false,
-      status: -1,
-      result: {},
-    );
+
+    try {
+      Response response = await dio.post(
+        url,
+        data: FormData.fromMap(bodyMap),
+        options: Options(headers: headers, validateStatus: (s) => true),
+      );
+      return _processResponse(response);
+    } on DioException catch (e) {
+      return _handleDioError(e);
+    } catch (e) {
+      return _handleGenericError(e);
+    } finally {
+      _deleteTempFile(tempFile);
+    }
   }
 
   ///Passport Upload
   Future<HttpResult> fetchPassportUpload(String path) async {
     String url = '$baseUrl/auth/upload-driver-passport-driving-licence';
 
-    final prefs = await SharedPreferences.getInstance();
+    final token = await SecureStorage.getToken();
     Dio dio = Dio();
-    final dynamic headers = {
+    final headers = {
       "Accept": "application/json",
-      "Authorization": "Bearer ${prefs.getString('token') ?? ""}",
+      if (token != null) "Authorization": "Bearer $token",
     };
 
-    File? fileToUpload;
+    final Map<String, dynamic> bodyMap = {};
+    File? tempFile;
     if (path.isNotEmpty) {
       final originalFile = File(path);
-      fileToUpload =
-          await _resizeImage(originalFile, maxWidth: 480, quality: 80);
-    }
-
-    FormData formData = FormData.fromMap({
-      "driver_passport_image": path.isEmpty
-          ? path
-          : await MultipartFile.fromFile(
-              fileToUpload!.path,
-              filename: basename(fileToUpload.path),
-            ),
-    });
-
-    Response response = await dio.post(
-      url,
-      data: formData,
-      options: Options(headers: headers),
-      onSendProgress: (int sent, int total) {
-        String percentage = (sent / total * 100).toStringAsFixed(2);
-        debugPrint("$sent Bytes of $total Bytes - $percentage % uploaded");
-      },
-    );
-
-    debugPrint("Response: ${response.data}");
-
-    if (response.statusCode == 200) {
-      return HttpResult(
-        isSuccess: true,
-        status: response.statusCode!,
-        result: response.data,
+      tempFile = await _resizeImage(originalFile, maxWidth: 480, quality: 80);
+      bodyMap["driver_passport_image"] = await MultipartFile.fromFile(
+        tempFile.path,
+        filename: basename(tempFile.path),
       );
     }
-    return HttpResult(
-      isSuccess: false,
-      status: -1,
-      result: {},
-    );
+
+    try {
+      Response response = await dio.post(
+        url,
+        data: FormData.fromMap(bodyMap),
+        options: Options(headers: headers, validateStatus: (s) => true),
+      );
+      return _processResponse(response);
+    } on DioException catch (e) {
+      return _handleDioError(e);
+    } catch (e) {
+      return _handleGenericError(e);
+    } finally {
+      _deleteTempFile(tempFile);
+    }
   }
 
   /// Apply for Driver Post
@@ -514,11 +483,11 @@ class ApiProvider {
       ) async {
     String url = '$baseUrl/auth/upload-car-images';
 
-    final prefs = await SharedPreferences.getInstance();
+    final token = await SecureStorage.getToken();
     Dio dio = Dio();
     final dynamic headers = {
       "Accept": "application/json",
-      "Authorization": "Bearer ${prefs.getString('token') ?? ""}",
+      if (token != null) "Authorization": "Bearer $token",
     };
 
     // Prepare files
@@ -526,10 +495,11 @@ class ApiProvider {
       'vehicle_id': vehicleId,
     };
 
+    final List<File> tempFiles = [];
     try {
-      // --- START: Image Compression Logic ---
       if (techPassportFront.isNotEmpty) {
         File resizedFront = await _resizeImage(File(techPassportFront));
+        tempFiles.add(resizedFront);
         bodyMap['tech_passport_front'] = await MultipartFile.fromFile(
           resizedFront.path,
           filename: basename(resizedFront.path),
@@ -537,6 +507,7 @@ class ApiProvider {
       }
       if (techPassportBack.isNotEmpty) {
         File resizedBack = await _resizeImage(File(techPassportBack));
+        tempFiles.add(resizedBack);
         bodyMap['tech_passport_back'] = await MultipartFile.fromFile(
           resizedBack.path,
           filename: basename(resizedBack.path),
@@ -547,6 +518,7 @@ class ApiProvider {
         List<MultipartFile> carFiles = [];
         for (var path in carImages) {
           File resizedCarImage = await _resizeImage(File(path));
+          tempFiles.add(resizedCarImage);
           carFiles.add(await MultipartFile.fromFile(
               resizedCarImage.path,
               filename: basename(resizedCarImage.path)
@@ -557,22 +529,17 @@ class ApiProvider {
 
       FormData formData = FormData.fromMap(bodyMap);
 
-      debugPrint("POST Multipart: $url");
-      debugPrint("Body Keys: ${bodyMap.keys}");
-
       Response response = await dio.post(
         url,
         data: formData,
         options: Options(
           headers: headers,
-          validateStatus: (status) => true, // Handle status manually
+          validateStatus: (status) => true,
         ),
       );
       return _processResponse(response);
     } on DioException catch (e) {
-      // Specific handling for the 413 error if it still occurs
       if (e.response?.statusCode == 413) {
-        debugPrint("DioError 413: Image(s) still too large after compression.");
         return HttpResult(
           isSuccess: false,
           status: 413,
@@ -582,6 +549,8 @@ class ApiProvider {
       return _handleDioError(e);
     } catch (e) {
       return _handleGenericError(e);
+    } finally {
+      _deleteTempFiles(tempFiles);
     }
   }
 

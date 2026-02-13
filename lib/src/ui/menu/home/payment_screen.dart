@@ -1,5 +1,6 @@
+import 'dart:async';
+
 import 'package:dotted_line/dotted_line.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_translate/flutter_translate.dart';
@@ -15,6 +16,7 @@ import 'package:qadam/src/ui/widgets/texts/text_18h_500w.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../lan_localization/load_places.dart';
 import '../../../model/api/trip_list_model.dart';
+import '../../../model/location_model.dart';
 import '../../../resources/repository.dart';
 import '../../../theme/app_theme.dart';
 import '../../../utils/utils.dart';
@@ -40,13 +42,16 @@ class PaymentScreen extends StatefulWidget {
 }
 
 class _PaymentScreenState extends State<PaymentScreen> {
+  static const int _paymentTimeoutSeconds = 720;
+
   String weekDay = '';
   String month = '';
   String t1 = '';
   String m1 = '';
   String h1 = '';
   String seconds = "00";
-  int _timer = 720;
+  int _remainingSeconds = _paymentTimeoutSeconds;
+  Timer? _countdownTimer;
   String pricePerSeat = "";
   String balance = "";
 
@@ -71,63 +76,63 @@ class _PaymentScreenState extends State<PaymentScreen> {
     } else {
       pricePerSeat = widget.trip.pricePerSeat;
     }
-    startTimer();
+    _startTimer();
     initTimeState(widget.trip.startTime);
     getBalance();
     setLocations();
   }
 
+  static final _unknownLocation = LocationModel(id: "0", text: "—", parentID: "0");
+
   void setLocations() {
     fromRegion = LocationData.regions
-        .firstWhere((r) => r.id == widget.trip.fromRegionId.toString())
+        .firstWhere((r) => r.id == widget.trip.fromRegionId.toString(),
+            orElse: () => _unknownLocation)
         .text;
     fromCity = LocationData.cities
-        .firstWhere((c) => c.id == widget.trip.fromCityId.toString())
+        .firstWhere((c) => c.id == widget.trip.fromCityId.toString(),
+            orElse: () => _unknownLocation)
         .text;
     fromNeighborhood = LocationData.villages
-        .firstWhere((n) => n.id == widget.trip.fromVillageId.toString())
+        .firstWhere((n) => n.id == widget.trip.fromVillageId.toString(),
+            orElse: () => _unknownLocation)
         .text;
 
     toRegion = LocationData.regions
-        .firstWhere((r) => r.id == widget.trip.toRegionId.toString())
+        .firstWhere((r) => r.id == widget.trip.toRegionId.toString(),
+            orElse: () => _unknownLocation)
         .text;
     toCity = LocationData.cities
-        .firstWhere((c) => c.id == widget.trip.toCityId.toString())
+        .firstWhere((c) => c.id == widget.trip.toCityId.toString(),
+            orElse: () => _unknownLocation)
         .text;
     toNeighborhood = LocationData.villages
-        .firstWhere((n) => n.id == widget.trip.toVillageId.toString())
+        .firstWhere((n) => n.id == widget.trip.toVillageId.toString(),
+            orElse: () => _unknownLocation)
         .text;
 
     from = "$fromNeighborhood, $fromCity, $fromRegion";
     to = "$toNeighborhood, $toCity, $toRegion";
   }
 
-  void startTimer() {
-    Future.delayed(const Duration(seconds: 1), () {
-      if (_timer > 0) {
-        setState(() {
-          _timer--;
-          updateTimerDisplay();
-        });
-        startTimer();
-      } else {
-        // Timer finished
-        if (kDebugMode) {
-          print("Timer finished!");
-          // Navigator.pop(context);
+  void _startTimer() {
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_remainingSeconds > 0) {
+        if (mounted) {
+          setState(() {
+            _remainingSeconds--;
+            seconds = (_remainingSeconds % 60).toString().padLeft(2, '0');
+          });
         }
+      } else {
+        timer.cancel();
       }
     });
   }
 
-  void updateTimerDisplay() {
-    int remainingSeconds = _timer % 60;
-    seconds = remainingSeconds.toString().padLeft(2, '0');
-  }
-
   @override
   void dispose() {
-    _timer = 0; // Stop the timer by setting _timer to 0 or less
+    _countdownTimer?.cancel();
     super.dispose();
   }
 
@@ -186,13 +191,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: _timer < 30
+                                      color: _remainingSeconds < 30
                                           ? AppTheme.red
                                           : AppTheme.purple,
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text14h400w(
-                                      title: (_timer ~/ 60)
+                                      title: (_remainingSeconds ~/ 60)
                                           .toString()
                                           .padLeft(2, '0'),
                                       color: Colors.white,
@@ -216,7 +221,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: _timer < 30
+                                      color: _remainingSeconds < 30
                                           ? AppTheme.red
                                           : AppTheme.purple,
                                       borderRadius: BorderRadius.circular(8),
@@ -620,20 +625,22 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 ),
                 child: GestureDetector(
                   onTap: () async {
-                    if (_timer > 0) {
+                    if (_remainingSeconds > 0) {
                       if (Utils().stringToInt(balance) >
                           Utils().stringToInt(Utils.priceFormat(
                               (int.parse(pricePerSeat) * widget.passengersNum)
                                   .toString()))) {
+                        if (!mounted) return;
                         setState(() {
                           isLoading = true;
                         });
                         var response = await _repository.fetchBookTrip(
                             widget.trip.id.toString(), widget.passengers);
 
-                        var result = BookModel.fromJson(response.result);
+                        if (!mounted) return;
 
                         if (response.isSuccess) {
+                          var result = BookModel.fromJson(response.result);
                           setState(() {
                             isLoading = false;
                           });
@@ -647,6 +654,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                 await SharedPreferences.getInstance();
                             prefs.setString("active_booked_id",
                                 result.bookingId.toString());
+                            if (!mounted) return;
                             Navigator.of(context).popUntil(
                               (route) => route.isFirst,
                             );
@@ -791,8 +799,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   Future<void> getBalance() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      balance = prefs.getString('balance') ?? "0";
-    });
+    if (mounted) {
+      setState(() {
+        balance = prefs.getString('balance') ?? "0";
+      });
+    }
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import '../../../lan_localization/load_places.dart';
 import '../../../model/api/trip_list_model.dart';
+import '../../../model/location_model.dart';
 import '../../../theme/app_theme.dart';
 import '../../../utils/utils.dart';
 
@@ -62,10 +63,24 @@ class DestinationsContainer extends StatelessWidget {
     time.hour < 13 ? t1 = 'AM' : t1 = 'PM';
     h1 = time.hour < 13 ? time.hour.toString() : (time.hour - 12).toString();
 
-    from =
-        "${LocationData.villages.firstWhere((n) => n.id == trip.fromVillageId.toString()).text}, ${LocationData.cities.firstWhere((c) => c.id == trip.fromCityId.toString()).text}, ${LocationData.regions.firstWhere((r) => r.id == trip.fromRegionId.toString()).text}";
-    to =
-        "${LocationData.villages.firstWhere((n) => n.id == trip.toVillageId.toString()).text}, ${LocationData.cities.firstWhere((c) => c.id == trip.toCityId.toString()).text}, ${LocationData.regions.firstWhere((r) => r.id == trip.toRegionId.toString()).text}";
+    final unknown = LocationModel(id: "0", text: "—", parentID: "0");
+
+    final fromVillage = LocationData.villages.firstWhere(
+        (n) => n.id == trip.fromVillageId.toString(), orElse: () => unknown);
+    final fromCityModel = LocationData.cities.firstWhere(
+        (c) => c.id == trip.fromCityId.toString(), orElse: () => unknown);
+    final fromRegion = LocationData.regions.firstWhere(
+        (r) => r.id == trip.fromRegionId.toString(), orElse: () => unknown);
+
+    final toVillage = LocationData.villages.firstWhere(
+        (n) => n.id == trip.toVillageId.toString(), orElse: () => unknown);
+    final toCityModel = LocationData.cities.firstWhere(
+        (c) => c.id == trip.toCityId.toString(), orElse: () => unknown);
+    final toRegion = LocationData.regions.firstWhere(
+        (r) => r.id == trip.toRegionId.toString(), orElse: () => unknown);
+
+    from = "${fromVillage.text}, ${fromCityModel.text}, ${fromRegion.text}";
+    to = "${toVillage.text}, ${toCityModel.text}, ${toRegion.text}";
   }
 
   @override

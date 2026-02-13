@@ -30,11 +30,26 @@ class AppCache {
     prefs.setString(
         "driving_verification_status", user.drivingVerificationStatus);
     prefs.setString("balance", user.balance.balance);
+    prefs.setString("balance_after_tax", user.balance.afterTax);
+    prefs.setString("balance_tax", user.balance.tax);
+    prefs.setString("balance_locked", user.balance.lockedBalance);
+    prefs.setString("balance_currency", user.balance.currency);
     prefs.setBool("isDocsAdded", user.role == "driver" ? true : false);
+    if (user.birthDate != null) {
+      prefs.setString("birth_date", user.birthDate!.toIso8601String());
+    }
+    if (user.createdAt != null) {
+      prefs.setString("created_at", user.createdAt!.toIso8601String());
+    }
+    prefs.setString("image", user.image);
   }
 
   Future<User> cacheGetMe() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    final birthDateStr = prefs.getString("birth_date");
+    final createdAtStr = prefs.getString("created_at");
+
     User info = User(
       id: prefs.getInt("id") ?? 0,
       firstName: prefs.getString("first_name") ?? "",
@@ -43,28 +58,22 @@ class AppCache {
       email: prefs.getString("email") ?? "",
       phone: prefs.getString("phone") ?? "",
       role: prefs.getString("role") ?? "",
-      birthDate: prefs.getString("birth_date") != null
-          ? DateTime.tryParse(prefs.getString("birth_date") ?? "")
-          : DateTime(2000, 1, 1, 1, 1),
+      birthDate: birthDateStr != null
+          ? (DateTime.tryParse(birthDateStr) ?? DateTime(2000, 1, 1))
+          : DateTime(2000, 1, 1),
       drivingVerificationStatus:
           prefs.getString("driving_verification_status") ?? "none",
-      createdAt: prefs.getString("created_at") != null
-          ? DateTime.tryParse(prefs.getString("created_at") ?? "")
-          : DateTime(2000, 1, 1, 1, 1),
+      createdAt: createdAtStr != null
+          ? (DateTime.tryParse(createdAtStr) ?? DateTime(2000, 1, 1))
+          : DateTime(2000, 1, 1),
       image: prefs.getString("image") ?? "",
-      balance: prefs.getString("balance") != null
-          ? Balance(
-              balance: "",
-              afterTax: "",
-              tax: "",
-              lockedBalance: "",
-              currency: "")
-          : Balance(
-              balance: "",
-              afterTax: "",
-              tax: "",
-              lockedBalance: "",
-              currency: ""),
+      balance: Balance(
+        balance: prefs.getString("balance") ?? "0",
+        afterTax: prefs.getString("balance_after_tax") ?? "0",
+        tax: prefs.getString("balance_tax") ?? "0",
+        lockedBalance: prefs.getString("balance_locked") ?? "0",
+        currency: prefs.getString("balance_currency") ?? "USD",
+      ),
     );
     return info;
   }

@@ -2,18 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Your app needs to save images to the photo library.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Your app needs photo library access to select car images for upload.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-    <string>App needs location to show map</string>
-    <key>io.flutter.embedded_views_preview</key>
-    <true/>
-    <key>GMSApiKey</key>
-    <string>AIzaSyAtf7hud1ntObeLKiYCNrM967iMDtWkMag</string>
-	<key>NSCameraUsageDescription</key>
-	<string>Your app needs camera access to take photos for uploading car images.</string>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -34,7 +24,19 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>GMSApiKey</key>
+	<string>$(MAPS_API_KEY)</string>
 	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Your app needs camera access to take photos for uploading car images.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>App needs location to show map</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Your app needs to save images to the photo library.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Your app needs photo library access to select car images for upload.</string>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
@@ -53,9 +55,7 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<key>io.flutter.embedded_views_preview</key>
 	<true/>
 </dict>
 </plist>

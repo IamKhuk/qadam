@@ -2,6 +2,7 @@ import 'package:qadam/src/model/api/get_user_model.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../resources/repository.dart';
+import 'bloc_errors.dart';
 
 class ProfileBloc {
   final Repository _repository = Repository();
@@ -18,20 +19,24 @@ class ProfileBloc {
     try {
       var response = await _repository.fetchMe();
       if (response.isSuccess) {
-        GetUserModel result = GetUserModel.fromJson(response.result);
-        if (result.status == "success") {
-          _repository.cacheSetMe(result.user);
-          _infoFetcher.sink.add(result.user);
+        if (response.result is Map<String, dynamic>) {
+          GetUserModel result = GetUserModel.fromJson(response.result);
+          if (result.status == "success") {
+            _repository.cacheSetMe(result.user);
+            _infoFetcher.sink.add(result.user);
+          } else {
+            _errorFetcher.sink.add(BlocErrors.serverError);
+          }
         } else {
-          _errorFetcher.sink.add("Failed to load user data: ${result.status}");
+          _errorFetcher.sink.add(BlocErrors.unexpectedFormat);
         }
       } else if (response.status == -1) {
-        _errorFetcher.sink.add("No internet connection. Please check your network.");
+        _errorFetcher.sink.add(BlocErrors.noInternet);
       } else {
-        _errorFetcher.sink.add("Server error: 'Unknown server error'");
+        _errorFetcher.sink.add(BlocErrors.serverError);
       }
     } catch (e) {
-      _errorFetcher.sink.add("Unexpected error: ${e.toString()}");
+      _errorFetcher.sink.add(BlocErrors.somethingWentWrong);
     }
   }
 
@@ -45,15 +50,21 @@ class ProfileBloc {
       User response = await _repository.cacheGetMe();
       _infoCacheFetcher.sink.add(response);
     } catch (e) {
-      _errorFetcher.sink.add("Failed to load cached user data.");
+      _errorFetcher.sink.add(BlocErrors.somethingWentWrong);
     }
   }
 
-  dispose() {
+  void dispose() {
     _infoFetcher.close();
     _infoCacheFetcher.close();
     _errorFetcher.close();
   }
 }
 
-final blocProfile = ProfileBloc();
+ProfileBloc _blocProfile = ProfileBloc();
+ProfileBloc get blocProfile => _blocProfile;
+
+void resetProfileBloc() {
+  _blocProfile.dispose();
+  _blocProfile = ProfileBloc();
+}

@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_translate/flutter_translate.dart';
-import 'package:qadam/src/resources/app_provider.dart';
 import 'package:qadam/src/ui/splash/splash_screen.dart';
 
 String language = 'en';
@@ -62,14 +61,9 @@ class MyApp extends StatelessWidget {
 class AppHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
-    final allowedHost = Uri.parse(ApiProvider.baseUrl).host;
-    return super.createHttpClient(context)
-      ..badCertificateCallback = (
-        X509Certificate cert,
-        String host,
-        int port,
-      ) {
-        return host == allowedHost;
-      };
+    // Use the default system certificate validation.
+    // Only override to reject certificates that the system already rejects.
+    // No blanket certificate bypassing — let the platform handle TLS properly.
+    return super.createHttpClient(context);
   }
 }

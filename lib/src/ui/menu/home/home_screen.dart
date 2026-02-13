@@ -39,6 +39,8 @@ class _HomeScreenState extends State<HomeScreen> {
   String activeTripId = "0";
   String activeBookedId = "0";
 
+  int userId = 0;
+
   String from = "";
   String to = "";
   String departure = "";
@@ -51,7 +53,10 @@ class _HomeScreenState extends State<HomeScreen> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       isDocsAdded = prefs.getBool('isDocsAdded') ?? false;
-      isDocsVerified = prefs.getString('driving_verification_status') == "approved" ? true: false;
+      isDocsVerified =
+          prefs.getString('driving_verification_status') == "approved"
+              ? true
+              : false;
     });
   }
 
@@ -73,20 +78,36 @@ class _HomeScreenState extends State<HomeScreen> {
 
   bool _isReturnToggled = true;
 
+  String _userName = '';
+
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return translate("home.good_morning");
+    if (hour < 17) return translate("home.good_afternoon");
+    return translate("home.good_evening");
+  }
+
+  Future<void> _loadUserName() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() {
+      _userName = prefs.getString('first_name') ?? '';
+    });
+  }
+
   @override
   void initState() {
-    // departureController.text = Utils.tripDateFormat(departureDate);
+    _loadUserName();
     getActiveTripsId();
-    if(activeTripId!="0"){
+    if (activeTripId != "0") {
       blocHome.fetchOneDriverTrip(activeTripId);
     }
-    if(activeBookedId!="0"){
-
+    if (activeBookedId != "0") {
+      blocHome.fetchOneBookedTrip(activeBookedId);
     }
     getDriverStatus();
     blocHome.fetchTripList();
     blocProfile.fetchMe();
-    // LocationData.loadPlaces(context);
     super.initState();
   }
 
@@ -138,15 +159,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           bottomRight: Radius.circular(24),
                         ),
                       ),
-                      child: const SafeArea(
+                      child: SafeArea(
                         child: Padding(
-                          padding: EdgeInsets.all(24.0),
+                          padding: const EdgeInsets.all(24.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Morning Khusan,',
-                                style: TextStyle(
+                                _userName.isNotEmpty
+                                    ? '${_getGreeting()}, $_userName'
+                                    : _getGreeting(),
+                                style: const TextStyle(
                                   color: AppTheme.light,
                                   fontSize: 16,
                                   fontFamily: AppTheme.fontFamily,
@@ -154,13 +177,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                   height: 1.5,
                                 ),
                               ),
-                              SizedBox(height: 8),
+                              const SizedBox(height: 8),
                               Row(
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      'Where Are You Going Today?',
-                                      style: TextStyle(
+                                      translate("home.where_going"),
+                                      style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 24,
                                         fontWeight: FontWeight.bold,
@@ -662,12 +685,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                               id: 1,
                                               fromWhere: "Cho`ja Q.F.Y, , ",
                                               toWhere: "Bodomzor MFY, , ",
-                                              fromRegionId: int.parse(fromRegion.id),
-                                              toRegionId: int.parse(toRegion.id),
-                                              fromCityId: int.parse(fromCity.id),
+                                              fromRegionId:
+                                                  int.parse(fromRegion.id),
+                                              toRegionId:
+                                                  int.parse(toRegion.id),
+                                              fromCityId:
+                                                  int.parse(fromCity.id),
                                               toCityId: int.parse(toCity.id),
-                                              fromVillageId: int.parse(fromNeighborhood.id),
-                                              toVillageId: int.parse(toNeighborhood.id),
+                                              fromVillageId: int.parse(
+                                                  fromNeighborhood.id),
+                                              toVillageId:
+                                                  int.parse(toNeighborhood.id),
                                               startTime: departureDate,
                                               endTime: returnDateTime,
                                               pricePerSeat: "",
@@ -699,7 +727,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 ),
                                               ),
                                             ),
-                                                isRoundTrip: _isReturnToggled,
+                                            isRoundTrip: _isReturnToggled,
                                           ),
                                         ),
                                       );
@@ -739,7 +767,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
                 const SizedBox(height: 24),
-                activeBookedId!="0"
+                activeBookedId != "0"
                     ? Column(
                         children: [
                           Row(
@@ -765,17 +793,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 24),
                             child: GestureDetector(
-                              onTap: () {
-                                // Navigator.push(
-                                //   context,
-                                //   MaterialPageRoute(
-                                //     builder: (context) => TripDetailsScreen(
-                                //       trip: Defaults().trips[0],
-                                //       isDriver: true,
-                                //     ),
-                                //   ),
-                                // );
-                              },
+                              onTap: () {},
                               child: ActiveTripsContainer(
                                   trip: Defaults().trips[0]),
                             ),
@@ -822,7 +840,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              translate("explore.nothing_found"), 
+                              translate("explore.nothing_found"),
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontFamily: AppTheme.fontFamily,
@@ -879,7 +897,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               return Column(
                                 children: [
                                   SizedBox(
-                                    width: MediaQuery.of(context).size.width - 48,
+                                    width:
+                                        MediaQuery.of(context).size.width - 48,
                                     child: GestureDetector(
                                       onTap: () {
                                         Navigator.push(
@@ -887,7 +906,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                           MaterialPageRoute(
                                             builder: (context) {
                                               return TripDetailsScreen(
-                                                  trip: snapshot.data![index]);
+                                                  trip:
+                                                      snapshot.data![index]);
                                             },
                                           ),
                                         );
@@ -963,28 +983,29 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ),
                                       ),
                                       child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
                                         children: [
                                           Container(
                                             height: 60,
                                             width: 60,
                                             decoration: BoxDecoration(
                                               borderRadius:
-                                              BorderRadius.circular(16),
+                                                  BorderRadius.circular(16),
                                               color: AppTheme.baseColor,
                                             ),
                                           ),
                                           const SizedBox(width: 14),
                                           Column(
                                             crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Container(
                                                 height: 14,
                                                 width: 120,
                                                 decoration: BoxDecoration(
                                                   borderRadius:
-                                                  BorderRadius.circular(4),
+                                                      BorderRadius.circular(4),
                                                   color: AppTheme.baseColor,
                                                 ),
                                               ),
@@ -994,21 +1015,22 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 width: 88,
                                                 decoration: BoxDecoration(
                                                   borderRadius:
-                                                  BorderRadius.circular(4),
+                                                      BorderRadius.circular(4),
                                                   color: AppTheme.baseColor,
                                                 ),
                                               ),
                                               const SizedBox(height: 10),
                                               Row(
                                                 mainAxisAlignment:
-                                                MainAxisAlignment.start,
+                                                    MainAxisAlignment.start,
                                                 children: [
                                                   Container(
                                                     height: 8,
                                                     width: 56,
                                                     decoration: BoxDecoration(
                                                       borderRadius:
-                                                      BorderRadius.circular(4),
+                                                          BorderRadius.circular(
+                                                              4),
                                                       color: AppTheme.baseColor,
                                                     ),
                                                   ),
@@ -1018,7 +1040,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     width: 60,
                                                     decoration: BoxDecoration(
                                                       borderRadius:
-                                                      BorderRadius.circular(4),
+                                                          BorderRadius.circular(
+                                                              4),
                                                       color: AppTheme.baseColor,
                                                     ),
                                                   )
@@ -1035,7 +1058,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ],
                                       ),
                                     ),
-                                    index == 9 ? Container() : const SizedBox(height: 12),
+                                    index == 9
+                                        ? Container()
+                                        : const SizedBox(height: 12),
                                   ],
                                 );
                               },
@@ -1175,6 +1200,13 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       activeTripId = prefs.getString('active_trip_id') ?? "0";
       activeBookedId = prefs.getString('active_booked_id') ?? "0";
+    });
+  }
+
+  Future<void> getUserId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userId = prefs.getInt('id') ?? 0;
     });
   }
 }

@@ -51,7 +51,7 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
 
   final Repository _repository = Repository();
 
-  String vehicleId = "2";
+  String vehicleId = "0";
   bool isLoading = false;
 
   LocationModel fromRegion = LocationModel(id: "0", text: "", parentID: '0');
@@ -85,23 +85,33 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
     super.dispose();
   }
 
+  static final _unknownLocation = LocationModel(id: "0", text: "—", parentID: "0");
+
   void setLocations() {
-    fromRegion = LocationData.regions
-        .firstWhere((r) => r.id == widget.driverTrip.fromRegionId.toString());
-    fromCity = LocationData.cities
-        .firstWhere((c) => c.id == widget.driverTrip.fromCityId.toString());
-    fromNeighborhood = LocationData.villages
-        .firstWhere((n) => n.id == widget.driverTrip.fromVillageId.toString());
+    fromRegion = LocationData.regions.firstWhere(
+        (r) => r.id == widget.driverTrip.fromRegionId.toString(),
+        orElse: () => _unknownLocation);
+    fromCity = LocationData.cities.firstWhere(
+        (c) => c.id == widget.driverTrip.fromCityId.toString(),
+        orElse: () => _unknownLocation);
+    fromNeighborhood = LocationData.villages.firstWhere(
+        (n) => n.id == widget.driverTrip.fromVillageId.toString(),
+        orElse: () => _unknownLocation);
 
-    toRegion = LocationData.regions
-        .firstWhere((r) => r.id == widget.driverTrip.toRegionId.toString());
-    toCity = LocationData.cities
-        .firstWhere((c) => c.id == widget.driverTrip.toCityId.toString());
-    toNeighborhood = LocationData.villages
-        .firstWhere((n) => n.id == widget.driverTrip.toVillageId.toString());
+    toRegion = LocationData.regions.firstWhere(
+        (r) => r.id == widget.driverTrip.toRegionId.toString(),
+        orElse: () => _unknownLocation);
+    toCity = LocationData.cities.firstWhere(
+        (c) => c.id == widget.driverTrip.toCityId.toString(),
+        orElse: () => _unknownLocation);
+    toNeighborhood = LocationData.villages.firstWhere(
+        (n) => n.id == widget.driverTrip.toVillageId.toString(),
+        orElse: () => _unknownLocation);
 
-    fromController.text = "$fromNeighborhood, $fromCity, $fromRegion";
-    toController.text = "$toNeighborhood, $toCity, $toRegion";
+    fromController.text =
+        "${fromNeighborhood.text}, ${fromCity.text}, ${fromRegion.text}";
+    toController.text =
+        "${toNeighborhood.text}, ${toCity.text}, ${toRegion.text}";
   }
 
   @override
@@ -201,6 +211,25 @@ class _CreateNewQadamScreenState extends State<CreateNewQadamScreen> {
       CustomSnackBar().showSnackBar(
         context,
         translate("qadam.select_location_on_map"),
+        2,
+      );
+      return;
+    }
+
+    if (endDate.isBefore(departureDate) || endDate.isAtSameMomentAs(departureDate)) {
+      CustomSnackBar().showSnackBar(
+        context,
+        translate("qadam.end_date_after_departure"),
+        2,
+      );
+      return;
+    }
+
+    final price = Utils().stringToInt(priceController.text);
+    if (price <= 0) {
+      CustomSnackBar().showSnackBar(
+        context,
+        translate("qadam.price_must_be_positive"),
         2,
       );
       return;

@@ -1,10 +1,8 @@
-import 'package:qadam/src/model/api/created_trip_model.dart';
 import 'package:qadam/src/model/api/driver_trips_list_model.dart';
-import 'package:qadam/src/model/api/trip_search_model.dart';
 import 'package:rxdart/rxdart.dart';
 
-import '../model/api/trip_list_model.dart';
 import '../resources/repository.dart';
+import 'bloc_errors.dart';
 
 class QadamBloc {
   final Repository _repository = Repository();
@@ -17,25 +15,35 @@ class QadamBloc {
 
   fetchDriverTripList(String status) async {
     _infoTripsFetcher.sink.add([]);
-    try{
+    try {
       var response = await _repository.fetchDriverTripsList(status);
       if (response.isSuccess) {
-        var dataList = DriverTripsListModel.fromJson(response.result);
-        _infoTripsFetcher.sink.add(dataList.data);
+        if (response.result is Map<String, dynamic>) {
+          var dataList = DriverTripsListModel.fromJson(response.result);
+          _infoTripsFetcher.sink.add(dataList.data);
+        } else {
+          _errorFetcher.sink.add(BlocErrors.unexpectedFormat);
+        }
       } else if (response.status == -1) {
-        _errorFetcher.sink.add("No internet connection. Please check your network.");
+        _errorFetcher.sink.add(BlocErrors.noInternet);
       } else {
-        _errorFetcher.sink.add("Server error: 'Unknown server error'");
+        _errorFetcher.sink.add(BlocErrors.serverError);
       }
-    }catch(e){
-      _errorFetcher.sink.add("Unexpected error: ${e.toString()}");
+    } catch (e) {
+      _errorFetcher.sink.add(BlocErrors.somethingWentWrong);
     }
   }
 
-  dispose() {
+  void dispose() {
     _infoTripsFetcher.close();
     _errorFetcher.close();
   }
 }
 
-final blocQadam = QadamBloc();
+QadamBloc _blocQadam = QadamBloc();
+QadamBloc get blocQadam => _blocQadam;
+
+void resetQadamBloc() {
+  _blocQadam.dispose();
+  _blocQadam = QadamBloc();
+}

@@ -4,10 +4,11 @@ import 'package:qadam/src/ui/menu/history/history.dart';
 import 'package:qadam/src/ui/menu/new_qadam/new_qadam.dart';
 import 'package:qadam/src/ui/menu/profile/profile_screen.dart';
 import 'package:flutter/cupertino.dart';
+import '../../bloc/home_bloc.dart';
+import '../../bloc/profile_bloc.dart';
+import '../../bloc/qadam_bloc.dart';
 import '../../theme/app_theme.dart';
 import 'home/home_screen.dart';
-
-int selectedIndex = 0;
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -17,12 +18,23 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  List<Widget> menus = [
-    const HomeScreen(),
-    const NewQadam(),
-    const History(),
-    const ProfileScreen()
+  int _selectedIndex = 0;
+
+  final List<Widget> _menus = const [
+    HomeScreen(),
+    NewQadam(),
+    History(),
+    ProfileScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Reset BLoCs so streams are fresh (prevents stale data from previous session)
+    resetHomeBloc();
+    resetProfileBloc();
+    resetQadamBloc();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +43,7 @@ class _MainScreenState extends State<MainScreen> {
       backgroundColor: AppTheme.bg,
       body: Stack(
         children: [
-          menus[selectedIndex],
+          IndexedStack(index: _selectedIndex, children: _menus),
           Positioned(
             bottom: 0,
             left: 0,
@@ -61,7 +73,7 @@ class _MainScreenState extends State<MainScreen> {
                   GestureDetector(
                     onTap: () {
                       setState(() {
-                        selectedIndex = 0;
+                        _selectedIndex = 0;
                       });
                     },
                     child: Container(
@@ -69,7 +81,7 @@ class _MainScreenState extends State<MainScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          selectedIndex == 0
+                          _selectedIndex == 0
                               ? SvgPicture.asset(
                                   'assets/icons/home_full.svg',
                                   colorFilter: const ColorFilter.mode(
@@ -88,7 +100,7 @@ class _MainScreenState extends State<MainScreen> {
                             "Home",
                             style: TextStyle(
                               fontSize: 12,
-                              color: selectedIndex == 0
+                              color: _selectedIndex == 0
                                   ? AppTheme.bg
                                   : AppTheme.gray,
                               fontFamily: AppTheme.fontFamily,
@@ -103,7 +115,7 @@ class _MainScreenState extends State<MainScreen> {
                   GestureDetector(
                     onTap: () {
                       setState(() {
-                        selectedIndex = 1;
+                        _selectedIndex = 1;
                       });
                     },
                     child: Container(
@@ -111,7 +123,7 @@ class _MainScreenState extends State<MainScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          selectedIndex == 1
+                          _selectedIndex == 1
                               ? const Icon(
                                   CupertinoIcons
                                       .arrow_right_arrow_left_circle_fill,
@@ -128,7 +140,7 @@ class _MainScreenState extends State<MainScreen> {
                             "New Qadam",
                             style: TextStyle(
                               fontSize: 12,
-                              color: selectedIndex == 1
+                              color: _selectedIndex == 1
                                   ? AppTheme.bg
                                   : AppTheme.gray,
                               fontFamily: AppTheme.fontFamily,
@@ -143,7 +155,7 @@ class _MainScreenState extends State<MainScreen> {
                   GestureDetector(
                     onTap: () {
                       setState(() {
-                        selectedIndex = 2;
+                        _selectedIndex = 2;
                       });
                     },
                     child: Container(
@@ -151,7 +163,7 @@ class _MainScreenState extends State<MainScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          selectedIndex == 2
+                          _selectedIndex == 2
                               ? const Icon(
                                   Icons.library_books_rounded,
                                   color: AppTheme.purple,
@@ -167,7 +179,7 @@ class _MainScreenState extends State<MainScreen> {
                             "History",
                             style: TextStyle(
                               fontSize: 12,
-                              color: selectedIndex == 2
+                              color: _selectedIndex == 2
                                   ? AppTheme.bg
                                   : AppTheme.gray,
                               fontFamily: AppTheme.fontFamily,
@@ -182,7 +194,7 @@ class _MainScreenState extends State<MainScreen> {
                   GestureDetector(
                     onTap: () {
                       setState(() {
-                        selectedIndex = 3;
+                        _selectedIndex = 3;
                       });
                     },
                     child: Container(
@@ -190,7 +202,7 @@ class _MainScreenState extends State<MainScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          selectedIndex == 3
+                          _selectedIndex == 3
                               ? SvgPicture.asset(
                                   'assets/icons/profile_full.svg',
                                   colorFilter: const ColorFilter.mode(
@@ -209,7 +221,7 @@ class _MainScreenState extends State<MainScreen> {
                             "Profile",
                             style: TextStyle(
                               fontSize: 12,
-                              color: selectedIndex == 3
+                              color: _selectedIndex == 3
                                   ? AppTheme.bg
                                   : AppTheme.gray,
                               fontFamily: AppTheme.fontFamily,
