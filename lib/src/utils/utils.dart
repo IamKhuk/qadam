@@ -25,13 +25,16 @@ class Utils {
                                                 ? month = 'November'
                                                 : month = 'December';
 
-    String hourFormat = '';
-    time.hour > 12 || time.hour == 0 ? hourFormat = 'pm' : 'am';
+    String hourFormat = time.hour >= 12 ? 'pm' : 'am';
 
     String hour = '';
-    time.hour > 12
-        ? hour = (time.hour - 12).toString()
-        : hour = time.hour.toString();
+    if (time.hour == 0) {
+      hour = '12';
+    } else if (time.hour > 12) {
+      hour = (time.hour - 12).toString();
+    } else {
+      hour = time.hour.toString();
+    }
 
     return "$month ${time.day.toString()} at $hour:${time.minute} $hourFormat";
   }

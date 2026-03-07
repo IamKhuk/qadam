@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
   DateTime departureDate = DateTime.now();
   DateTime returnDateTime = DateTime.now();
 
-  int notificationNumber = 3;
+  int notificationNumber = 0;
 
   bool _isReturnToggled = true;
 
@@ -111,6 +111,13 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
   }
 
+  Future<void> _onRefresh() async {
+    blocHome.fetchTripList();
+    blocProfile.fetchMe();
+    _loadUserName();
+    await Future.delayed(const Duration(milliseconds: 500));
+  }
+
   @override
   void dispose() {
     scrollController.dispose();
@@ -133,10 +140,13 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         child: Stack(
           children: [
-            ListView(
-              controller: scrollController,
-              padding: EdgeInsets.zero,
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            RefreshIndicator(
+              color: AppTheme.purple,
+              onRefresh: _onRefresh,
+              child: ListView(
+                controller: scrollController,
+                padding: EdgeInsets.zero,
+                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               children: [
                 Stack(
                   children: [
@@ -1072,6 +1082,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 ),
               ],
+            ),
             ),
             Column(
               mainAxisAlignment: MainAxisAlignment.start,

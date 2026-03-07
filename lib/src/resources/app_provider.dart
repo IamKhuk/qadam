@@ -12,6 +12,10 @@ import '../utils/secure_storage.dart';
 class ApiProvider {
   static Duration durationTimeout = const Duration(seconds: 30);
   static String baseUrl = "https://qadam.services/api/v1";
+  static const String mapsApiKey = String.fromEnvironment(
+    'MAPS_API_KEY',
+    defaultValue: 'AIzaSyAtf7hud1ntObeLKiYCNrM967iMDtWkMag',
+  );
 
   // --- Helpers ---
 
@@ -273,6 +277,24 @@ class ApiProvider {
   /// Get One Booked Trip
   Future<HttpResult> fetchOneBookedTrip(String tripId) async {
     String url = '$baseUrl/client/trips/booking/$tripId';
+    return await getRequest(url);
+  }
+
+  /// Get In-Progress Trips
+  Future<HttpResult> fetchInProgressTrips() async {
+    String url = '$baseUrl/client/trips/get-inprogress-trips';
+    return await getRequest(url);
+  }
+
+  /// Get Completed Trips
+  Future<HttpResult> fetchCompletedTrips() async {
+    String url = '$baseUrl/client/trips/get-completed-trips';
+    return await getRequest(url);
+  }
+
+  /// Get Canceled Trips
+  Future<HttpResult> fetchCanceledTrips() async {
+    String url = '$baseUrl/client/trips/get-canceled-trips';
     return await getRequest(url);
   }
 
@@ -597,6 +619,12 @@ class ApiProvider {
   Future<HttpResult> fetchOneDriverTrip(String tripId) async {
     String url = '$baseUrl/driver/trips/$tripId';
     return await getRequest(url);
+  }
+
+  /// Cancel Driver Trip
+  Future<HttpResult> fetchCancelDriverTrip(String tripId) async {
+    String url = '$baseUrl/driver/trips/$tripId/cancel';
+    return await postRequest(url, {});
   }
 
   /// Get Card List

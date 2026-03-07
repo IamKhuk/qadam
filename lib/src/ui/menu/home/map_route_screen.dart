@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import '../../../resources/app_provider.dart';
 import '../../../theme/app_theme.dart';
 import '../../widgets/buttons/primary_button.dart';
 
@@ -69,7 +70,7 @@ class _MapRouteScreenState extends State<MapRouteScreen> {
   }
 
   Future<void> _fetchRoute() async {
-    const apiKey = 'AIzaSyAtf7hud1ntObeLKiYCNrM967iMDtWkMag';
+    final apiKey = ApiProvider.mapsApiKey;
     final url = 'https://maps.googleapis.com/maps/api/directions/json?'
         'origin=${widget.start.latitude},${widget.start.longitude}'
         '&destination=${widget.end.latitude},${widget.end.longitude}'

@@ -5,6 +5,7 @@ import 'package:lottie/lottie.dart';
 import 'package:qadam/src/bloc/qadam_bloc.dart';
 import 'package:qadam/src/model/api/trip_list_model.dart';
 import 'package:qadam/src/theme/app_theme.dart';
+import 'package:qadam/src/ui/menu/home/trip_details_screen.dart';
 import 'package:qadam/src/ui/menu/new_qadam/create_new_qadam_screen.dart';
 import 'package:qadam/src/ui/widgets/buttons/secondary_button.dart';
 import 'package:qadam/src/ui/widgets/texts/text_16h_500w.dart';
@@ -49,6 +50,12 @@ class _NewQadamState extends State<NewQadam> {
     if (isDocsVerified) {
       blocQadam.fetchDriverTripList("active");
     }
+  }
+
+  Future<void> _onRefresh() async {
+    final statuses = ["active", "completed", "canceled"];
+    blocQadam.fetchDriverTripList(statuses[selectedTabIndex]);
+    await Future.delayed(const Duration(milliseconds: 500));
   }
 
   @override
@@ -154,65 +161,57 @@ class _NewQadamState extends State<NewQadam> {
                 )
               : Stack(
                       children: [
-                        StreamBuilder<List<DriverTripModel>>(
-                          stream: blocQadam.getTrips,
-                          builder: (context, snapshot) {
-                            if(snapshot.hasData){
-                              final trips = snapshot.data ?? [];
+                        RefreshIndicator(
+                          color: AppTheme.purple,
+                          onRefresh: _onRefresh,
+                          child: StreamBuilder<List<DriverTripModel>>(
+                            stream: blocQadam.getTrips,
+                            builder: (context, snapshot) {
+                              if(snapshot.hasData){
+                                final trips = snapshot.data ?? [];
 
-                              if (trips.isEmpty) {
-                                return Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Lottie.asset(
-                                      "assets/lottie/empty.json",
-                                      width: 200,
-                                      height: 200,
-                                      fit: BoxFit.cover,
-                                    ),
-                                    const SizedBox(height: 24),
-                                    Text16h500w(title: translate("qadam.No_trip_found")),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        const SizedBox(width: 32),
-                                        Expanded(
-                                          child: Text(
-                                            translate("qadam.No_trip_found_msg"),
-                                            style: const TextStyle(
-                                              fontSize: 14,
-                                              color: AppTheme.gray,
-                                              fontWeight: FontWeight.w500,
-                                              fontFamily: AppTheme.fontFamily,
-                                            ),
-                                            textAlign: TextAlign.center,
+                                if (trips.isEmpty) {
+                                  return ListView(
+                                    padding: const EdgeInsets.only(top: 88),
+                                    children: [
+                                      Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
+                                          Lottie.asset(
+                                            "assets/lottie/empty.json",
+                                            width: 200,
+                                            height: 200,
+                                            fit: BoxFit.cover,
                                           ),
-                                        ),
-                                        const SizedBox(width: 32),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 24),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 32),
-                                      child: SecondaryButton(
-                                        title: translate("qadam.create_new_trip"),
-                                        onTap: () async {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => CreateNewQadamScreen(
-                                                  driverTrip: myDefaultTrip),
-                                            ),
-                                          );
-                                        },
+                                          const SizedBox(height: 24),
+                                          Text16h500w(title: translate("qadam.No_trip_found")),
+                                          const SizedBox(height: 8),
+                                          Row(
+                                            children: [
+                                              const SizedBox(width: 32),
+                                              Expanded(
+                                                child: Text(
+                                                  translate("qadam.No_trip_found_msg"),
+                                                  style: const TextStyle(
+                                                    fontSize: 14,
+                                                    color: AppTheme.gray,
+                                                    fontWeight: FontWeight.w500,
+                                                    fontFamily: AppTheme.fontFamily,
+                                                  ),
+                                                  textAlign: TextAlign.center,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 32),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 92),
+                                        ],
                                       ),
-                                    ),
-                                    const SizedBox(height: 92),
-                                  ],
-                                );
-                              }else{
-                                return ListView.builder(
+                                    ],
+                                  );
+                                }else{
+                                  return ListView.builder(
                                   shrinkWrap: true,
                                   itemCount: trips.length,
                                   padding: const EdgeInsets.only(
@@ -222,6 +221,48 @@ class _NewQadamState extends State<NewQadam> {
                                     top: 88,
                                   ),
                                   itemBuilder: (context, index) {
+                                    final tripListModel = TripListModel(
+                                      id: trips[index].id,
+                                      fromWhere: "",
+                                      toWhere: "",
+                                      fromRegionId: trips[index].fromRegionId,
+                                      toRegionId: trips[index].toRegionId,
+                                      fromCityId: trips[index].fromCityId,
+                                      toCityId: trips[index].toCityId,
+                                      fromVillageId: trips[index].fromVillageId,
+                                      toVillageId: trips[index].toVillageId,
+                                      startTime: trips[index].startTime,
+                                      endTime: trips[index].endTime,
+                                      pricePerSeat: trips[index].pricePerSeat,
+                                      totalSeats: trips[index].totalSeats,
+                                      availableSeats: trips[index].availableSeats,
+                                      startLat: trips[index].startLat,
+                                      startLong: trips[index].startLong,
+                                      endLat: trips[index].endLat,
+                                      endLong: trips[index].endLong,
+                                      status: trips[index].status,
+                                      createdAt: trips[index].createdAt,
+                                      updatedAt: trips[index].updatedAt,
+                                      driver: TripDriver(
+                                        id: trips[index].driver.id,
+                                        name:
+                                        "${trips[index].driver.firstName} ${trips[index].driver.lastName}",
+                                        role: trips[index].driver.role,
+                                      ),
+                                      vehicle: TripVehicle(
+                                        id: trips[index].vehicle.id,
+                                        model: trips[index].vehicle.model,
+                                        seats: trips[index].vehicle.seats,
+                                        carNumber: trips[index].vehicle.carNumber,
+                                        color: CarColor(
+                                          id: trips[index].vehicle.color.id,
+                                          titleUz: "",
+                                          titleRu: "",
+                                          titleEn: "",
+                                          code: "",
+                                        ),
+                                      ),
+                                    );
                                     return Column(
                                       children: [
                                         SizedBox(
@@ -233,70 +274,15 @@ class _NewQadamState extends State<NewQadam> {
                                                 context,
                                                 MaterialPageRoute(
                                                   builder: (context) =>
-                                                      CreateNewQadamScreen(
-                                                        driverTrip: myDefaultTrip,
+                                                      TripDetailsScreen(
+                                                        trip: tripListModel,
+                                                        isDriver: true,
                                                       ),
                                                 ),
                                               );
                                             },
                                             child: DestinationsContainer(
-                                              trip: TripListModel(
-                                                id: trips[index].id,
-                                                fromWhere: "",
-                                                toWhere: "",
-                                                fromRegionId:
-                                                trips[index].fromRegionId,
-                                                toRegionId:
-                                                trips[index].toRegionId,
-                                                fromCityId:
-                                                trips[index].fromCityId,
-                                                toCityId: trips[index].toCityId,
-                                                fromVillageId:
-                                                trips[index].fromVillageId,
-                                                toVillageId:
-                                                trips[index].toVillageId,
-                                                startTime: trips[index].startTime,
-                                                endTime: trips[index].endTime,
-                                                pricePerSeat:
-                                                trips[index].pricePerSeat,
-                                                totalSeats:
-                                                trips[index].totalSeats,
-                                                availableSeats:
-                                                trips[index].availableSeats,
-                                                startLat: trips[index].startLat,
-                                                startLong: trips[index].startLong,
-                                                endLat: trips[index].endLat,
-                                                endLong: trips[index].endLong,
-                                                status: trips[index].status,
-                                                createdAt: trips[index].createdAt,
-                                                updatedAt: trips[index].updatedAt,
-                                                driver: TripDriver(
-                                                  id: trips[index].driver.id,
-                                                  name:
-                                                  "${trips[index].driver.firstName} ${trips[index].driver.lastName}",
-                                                  role: trips[index].driver.role,
-                                                ),
-                                                vehicle: TripVehicle(
-                                                  id: trips[index].vehicle.id,
-                                                  model:
-                                                  trips[index].vehicle.model,
-                                                  seats:
-                                                  trips[index].vehicle.seats,
-                                                  carNumber: trips[index]
-                                                      .vehicle
-                                                      .carNumber,
-                                                  color: CarColor(
-                                                    id: trips[index]
-                                                        .vehicle
-                                                        .color
-                                                        .id,
-                                                    titleUz: "",
-                                                    titleRu: "",
-                                                    titleEn: "",
-                                                    code: "",
-                                                  ),
-                                                ),
-                                              ),
+                                              trip: tripListModel,
                                             ),
                                           ),
                                         ),
@@ -419,7 +405,8 @@ class _NewQadamState extends State<NewQadam> {
                                 ),
                               );
                             }
-                          },
+                            },
+                          ),
                         ),
                         Column(
                           children: [

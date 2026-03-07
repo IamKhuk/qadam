@@ -68,5 +68,13 @@
   },
   "like": {
     "top_destinations": "Eng Yaxshi Manzillar"
+  },
+  "history": {
+    "history": "Tarix",
+    "in_progress": "Jarayonda",
+    "completed": "Yakunlangan",
+    "canceled": "Bekor qilingan",
+    "price": "Narx",
+    "no_trips": "Sayohatlar topilmadi"
   }
 }

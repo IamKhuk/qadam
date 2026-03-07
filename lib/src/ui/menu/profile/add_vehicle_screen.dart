@@ -410,7 +410,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
     return Column(
       children: [
         _buildImageUpload(
-          title: "Tech Passport Front",
+          title: translate("qadam.tech_passport_front"),
           imagePath: techPassportFront,
           onUpload: (path) {
             setState(() {
@@ -422,7 +422,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
         ),
         const SizedBox(height: 16),
         _buildImageUpload(
-          title: "Tech Passport Back",
+          title: translate("qadam.tech_passport_back"),
           imagePath: techPassportBack,
           onUpload: (path) {
             setState(() {
@@ -703,7 +703,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
         }
       },
       child: PrimaryButton(
-        title: currentStep == 4
+        title: currentStep == totalSteps
             ? translate("qadam.submit")
             : translate("next"),
       ),
@@ -750,7 +750,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
     setState(() => isLoading = false);
 
     if (response.isSuccess) {
-      if (response.result['status'] == 'success' && response.result['data'] != null) {
+      if (response.result is Map && response.result['status'] == 'success' && response.result['data'] != null) {
         final newVehicleId = response.result['data']['id']?.toString();
 
         if (newVehicleId != null && newVehicleId.isNotEmpty) {
@@ -762,7 +762,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
           _showError(translate("qadam.vehicle_id_missing"));
         }
       } else {
-        final errorMessage = response.result['message']?.toString() ?? translate("qadam.error");
+        final errorMessage = (response.result is Map ? response.result['message']?.toString() : null) ?? translate("qadam.error");
         _showError(errorMessage);
       }
     } else {
@@ -773,7 +773,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
   // Step 2 Submit: Vehicle Images (Final)
   Future<void> _submitStep2() async {
     if (vehicleId.isEmpty) {
-      _showError("Vehicle ID missing");
+      _showError(translate("qadam.vehicle_id_missing"));
       return;
     }
 

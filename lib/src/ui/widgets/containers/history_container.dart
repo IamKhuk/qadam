@@ -2,8 +2,7 @@ import 'package:dotted_line/dotted_line.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_translate/flutter_translate.dart';
-import 'package:qadam/src/defaults/defaults.dart';
-import 'package:qadam/src/model/trip_model.dart';
+import 'package:qadam/src/model/api/book_model.dart';
 import 'package:qadam/src/theme/app_theme.dart';
 import 'package:qadam/src/ui/widgets/texts/text_12h_400w.dart';
 import 'package:qadam/src/ui/widgets/texts/text_14h_500w.dart';
@@ -13,9 +12,9 @@ import 'package:qadam/src/utils/utils.dart';
 import '../../../lan_localization/load_places.dart';
 
 class HistoryContainer extends StatelessWidget {
-  const HistoryContainer({super.key, required this.trip});
+  const HistoryContainer({super.key, required this.booking});
 
-  final TripModel trip;
+  final BookModel booking;
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +44,7 @@ class HistoryContainer extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text12h400w(
-                  title: Utils.historyDateFormat(trip.startTime),
+                  title: Utils.historyDateFormat(booking.trip.startTime),
                   color: Colors.white,
                 ),
               ),
@@ -53,15 +52,11 @@ class HistoryContainer extends StatelessWidget {
                 padding: const EdgeInsets.all(8),
                 margin: const EdgeInsets.only(left: 8),
                 decoration: BoxDecoration(
-                  color: AppTheme.purple,
+                  color: _statusColor(booking.status),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text12h400w(
-                  title: trip.status == 1
-                      ? translate('history.in_progress')
-                      : trip.status == 2
-                          ? translate('history.completed')
-                          : translate('history.canceled'),
+                  title: _statusText(booking.status),
                   color: Colors.white,
                 ),
               ),
@@ -77,19 +72,19 @@ class HistoryContainer extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text12h400w(
-                      title: LocationData.regions
-                          .firstWhere(
-                              (r) => r.id == trip.startLocation[0].toString())
-                          .text,
+                      title: _findLocationText(
+                        LocationData.regions,
+                        booking.trip.startRegionId.toString(),
+                      ),
                       color: AppTheme.gray,
                     ),
                     const SizedBox(height: 2),
                     Text(
                       safeSubstring(
-                          LocationData.villages
-                              .firstWhere((n) =>
-                                  n.id == trip.startLocation[2].toString())
-                              .text,
+                          _findLocationText(
+                            LocationData.villages,
+                            booking.trip.startQuarterId.toString(),
+                          ),
                           3),
                       style: const TextStyle(
                         fontFamily: AppTheme.fontFamily,
@@ -101,10 +96,10 @@ class HistoryContainer extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text12h400w(
-                      title: LocationData.cities
-                          .firstWhere(
-                              (c) => c.id == trip.startLocation[1].toString())
-                          .text,
+                      title: _findLocationText(
+                        LocationData.cities,
+                        booking.trip.startDistrictId.toString(),
+                      ),
                       color: AppTheme.gray,
                     ),
                   ],
@@ -143,7 +138,7 @@ class HistoryContainer extends StatelessWidget {
                         ),
                         child: SvgPicture.asset(
                           "assets/icons/car.svg",
-                          height: 24, // Adjust size as needed
+                          height: 24,
                           width: 24,
                           colorFilter: const ColorFilter.mode(
                             Colors.white,
@@ -173,7 +168,7 @@ class HistoryContainer extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    Defaults().vehicles[trip.vehicleId].vehicleName,
+                    booking.vehicle.model,
                     style: const TextStyle(
                       color: AppTheme.gray,
                       fontSize: 12,
@@ -189,19 +184,19 @@ class HistoryContainer extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text12h400w(
-                      title: LocationData.regions
-                          .firstWhere(
-                              (r) => r.id == trip.endLocation[0].toString())
-                          .text,
+                      title: _findLocationText(
+                        LocationData.regions,
+                        booking.trip.endRegionId.toString(),
+                      ),
                       color: AppTheme.gray,
                     ),
                     const SizedBox(height: 2),
                     Text(
                       safeSubstring(
-                          LocationData.villages
-                              .firstWhere(
-                                  (n) => n.id == trip.endLocation[2].toString())
-                              .text,
+                          _findLocationText(
+                            LocationData.villages,
+                            booking.trip.endQuarterId.toString(),
+                          ),
                           3),
                       style: const TextStyle(
                         fontFamily: AppTheme.fontFamily,
@@ -213,10 +208,10 @@ class HistoryContainer extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text12h400w(
-                      title: LocationData.cities
-                          .firstWhere(
-                              (c) => c.id == trip.endLocation[1].toString())
-                          .text,
+                      title: _findLocationText(
+                        LocationData.cities,
+                        booking.trip.endDistrictId.toString(),
+                      ),
                       color: AppTheme.gray,
                     ),
                   ],
@@ -233,7 +228,7 @@ class HistoryContainer extends StatelessWidget {
                 color: AppTheme.gray,
               ),
               Text16h500w(
-                title: "\$${trip.pricePerSeat}",
+                title: "${Utils.priceFormat(booking.totalPrice)} UZS",
                 color: AppTheme.black,
               ),
             ],
@@ -241,6 +236,44 @@ class HistoryContainer extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _findLocationText(List locations, String id) {
+    try {
+      return locations.firstWhere((item) => item.id == id).text;
+    } catch (_) {
+      return '---';
+    }
+  }
+
+  String _statusText(String status) {
+    switch (status.toLowerCase()) {
+      case 'in_progress':
+      case 'confirmed':
+        return translate('history.in_progress');
+      case 'completed':
+        return translate('history.completed');
+      case 'canceled':
+      case 'cancelled':
+        return translate('history.canceled');
+      default:
+        return status;
+    }
+  }
+
+  Color _statusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'in_progress':
+      case 'confirmed':
+        return AppTheme.purple;
+      case 'completed':
+        return const Color(0xFF4CAF50);
+      case 'canceled':
+      case 'cancelled':
+        return const Color(0xFFE53935);
+      default:
+        return AppTheme.purple;
+    }
   }
 
   String safeSubstring(String text, int length) {

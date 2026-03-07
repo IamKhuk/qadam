@@ -63,6 +63,7 @@ class _DriverTripDetailsScreenState extends State<DriverTripDetailsScreen> {
     }
     initTimeState(widget.trip.startTime);
     setLocations();
+    _loadPassengers();
     super.initState();
   }
 
@@ -91,14 +92,21 @@ class _DriverTripDetailsScreenState extends State<DriverTripDetailsScreen> {
     to = "$toNeighborhood, $toCity, $toRegion";
   }
 
-  List<PassengerInfoModel> passengersList = [
-    PassengerInfoModel(fullName: "John Smith", phone: "998970010707"),
-    PassengerInfoModel(
-      fullName: "Bob Johnson",
-      phone: "998931234567",
-      numberOfSeats: 2,
-    ),
-  ];
+  List<PassengerInfoModel> passengersList = [];
+
+  void _loadPassengers() {
+    final bookings = widget.trip.bookings;
+    if (bookings.isNotEmpty) {
+      passengersList = bookings
+          .whereType<Map<String, dynamic>>()
+          .map((b) => PassengerInfoModel(
+                fullName: b['name']?.toString() ?? '',
+                phone: b['phone']?.toString() ?? '',
+                numberOfSeats: (b['seats'] as int?) ?? 1,
+              ))
+          .toList();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -44,6 +44,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
   void initState() {
     super.initState();
     getVehicles();
+    getDriverStatus();
   }
 
   Future<void> getVehicles() async {
@@ -71,9 +72,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
               titleEn: m.color.titleEn,
               titleRu: m.color.titleRu,
               titleUz: m.color.titleUz,
-              colorCode: Color(
-                int.parse(m.color.code.replaceFirst('#', '0xff')),
-              ),
+              colorCode: _parseColorCode(m.color.code),
             ),
             capacity: m.seats,
           );
@@ -83,6 +82,14 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
     setState(() {
       isLoading = false;
     });
+  }
+
+  Color _parseColorCode(String code) {
+    try {
+      return Color(int.parse(code.replaceFirst('#', '0xff')));
+    } catch (_) {
+      return Colors.grey;
+    }
   }
 
   @override
@@ -97,92 +104,105 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
       ),
       body: Stack(
         children: [
-          isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(
-                    color: AppTheme.purple,
-                  ),
-                )
-              : myVehicles.isEmpty
-                  ? Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Lottie.asset(
-                "assets/lottie/empty.json",
-                width: 200,
-                height: 200,
-                fit: BoxFit.cover,
-              ),
-              const SizedBox(height: 24),
-              Text16h500w(title: translate("profile.no_vehicles_found")),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  const SizedBox(width: 32),
-                  Expanded(
-                    child: Text(
-                      translate("profile.no_vehicles_found_msg"),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: AppTheme.gray,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: AppTheme.fontFamily,
-                      ),
-                      textAlign: TextAlign.center,
+          RefreshIndicator(
+            color: AppTheme.purple,
+            onRefresh: () async {
+              await getVehicles();
+            },
+            child: isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      color: AppTheme.purple,
                     ),
-                  ),
-                  const SizedBox(width: 32),
-                ],
-              ),
-              const SizedBox(height: 24),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: SecondaryButton(
-                  title: translate("profile.add_vehicle"),
-                  onTap: () async {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AddVehicleScreen(),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 92),
-            ],
-          )
-                  : ListView.separated(
-                      padding: const EdgeInsets.only(
-                        top: 16,
-                        left: 16,
-                        right: 16,
-                        bottom: 100,
-                      ),
-                      itemCount: myVehicles.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        return Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppTheme.dark.withOpacity(0.05),
-                                spreadRadius: 0,
-                                blurRadius: 20,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
+                  )
+                : myVehicles.isEmpty
+                    ? ListView(
+                        children: [
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height - 200,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Lottie.asset(
+                                  "assets/lottie/empty.json",
+                                  width: 200,
+                                  height: 200,
+                                  fit: BoxFit.cover,
+                                ),
+                                const SizedBox(height: 24),
+                                Text16h500w(title: translate("profile.no_vehicles_found")),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    const SizedBox(width: 32),
+                                    Expanded(
+                                      child: Text(
+                                        translate("profile.no_vehicles_found_msg"),
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: AppTheme.gray,
+                                          fontWeight: FontWeight.w500,
+                                          fontFamily: AppTheme.fontFamily,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 32),
+                                  ],
+                                ),
+                                const SizedBox(height: 24),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                                  child: SecondaryButton(
+                                    title: translate("profile.add_vehicle"),
+                                    onTap: () async {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => AddVehicleScreen(),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(height: 92),
+                              ],
+                            ),
                           ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: CarContainer(car: myVehicles[index]),
-                          ),
-                        );
-                      },
-                    ),
+                        ],
+                      )
+                    : ListView.separated(
+                        padding: const EdgeInsets.only(
+                          top: 16,
+                          left: 16,
+                          right: 16,
+                          bottom: 100,
+                        ),
+                        itemCount: myVehicles.length,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppTheme.dark.withOpacity(0.05),
+                                  spreadRadius: 0,
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: CarContainer(car: myVehicles[index]),
+                            ),
+                          );
+                        },
+                      ),
+          ),
           Align(
             alignment: Alignment.bottomCenter,
             child: Padding(

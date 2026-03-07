@@ -787,8 +787,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                                 ? month = 'November'
                                                 : month = 'December';
 
-    time.hour < 13 ? t1 = 'AM' : t1 = 'PM';
-    h1 = time.hour < 13 ? time.hour.toString() : (time.hour - 12).toString();
+    time.hour < 12 ? t1 = 'AM' : t1 = 'PM';
+    h1 = time.hour == 0 ? '12' : (time.hour > 12 ? (time.hour - 12).toString() : time.hour.toString());
   }
 
   String safeSubstring(String text, int length) {

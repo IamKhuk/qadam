@@ -323,7 +323,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() {
       _myImage = prefs.getString('avatar') ?? '';
       _myName = '$firstName $lastName';
-      _myPhone = prefs.getString('phone') ?? '+48123456789';
+      _myPhone = prefs.getString('phone') ?? '';
     });
   }
 

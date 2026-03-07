@@ -8,7 +8,9 @@ import 'package:qadam/src/ui/dialogs/bottom_dialog.dart';
 import 'package:qadam/src/ui/dialogs/center_dialog.dart';
 import 'package:qadam/src/ui/menu/home/map_single_screen.dart';
 import 'package:qadam/src/ui/menu/home/payment_screen.dart';
+import 'package:qadam/src/ui/menu/main_screen.dart';
 import 'package:qadam/src/ui/widgets/buttons/secondary_button.dart';
+import '../../dialogs/snack_bar.dart';
 import 'package:qadam/src/ui/widgets/containers/leading_back.dart';
 import 'package:qadam/src/ui/widgets/containers/passengers_container.dart';
 import 'package:qadam/src/ui/widgets/texts/text_14h_400w.dart';
@@ -16,7 +18,9 @@ import 'package:qadam/src/ui/widgets/texts/text_16h_500w.dart';
 import 'package:qadam/src/utils/utils.dart';
 import '../../../lan_localization/load_places.dart';
 import '../../../model/api/trip_list_model.dart';
+import '../../../model/location_model.dart';
 import '../../../model/passenger_model.dart';
+import '../../../resources/repository.dart';
 import '../../../theme/app_theme.dart';
 import '../../widgets/texts/text_12h_400w.dart';
 import 'map_route_screen.dart';
@@ -25,15 +29,19 @@ class TripDetailsScreen extends StatefulWidget {
   const TripDetailsScreen({
     super.key,
     required this.trip,
+    this.isDriver = false,
   });
 
   final TripListModel trip;
+  final bool isDriver;
 
   @override
   State<TripDetailsScreen> createState() => _TripDetailsScreenState();
 }
 
 class _TripDetailsScreenState extends State<TripDetailsScreen> {
+  static final _unknownLocation = LocationModel(id: "0", text: "—", parentID: "0");
+
   String pricePerSeat = "";
   int passengersNum = 1;
 
@@ -53,16 +61,12 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
   String toCity = "";
   String toNeighborhood = "";
 
-  List<PassengerModel> passengers = [
-    PassengerModel(
-      fullName: "Khusan Khukumov",
-      email: "khukumovkhusan@gmail.com",
-      phoneNumber: "+48579334461",
-    ),
-  ];
+  List<PassengerModel> passengers = [];
+  bool _isCancelling = false;
 
   @override
   void initState() {
+    super.initState();
     if (widget.trip.pricePerSeat.contains(".")) {
       pricePerSeat = widget.trip.pricePerSeat.split(".")[0];
     } else {
@@ -70,28 +74,48 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     }
     initTimeState(widget.trip.startTime);
     setLocations();
-    super.initState();
+    _initFirstPassenger();
+  }
+
+  Future<void> _initFirstPassenger() async {
+    final user = await Repository().appCache.cacheGetMe();
+    if (!mounted) return;
+    setState(() {
+      passengers = [
+        PassengerModel(
+          fullName: "${user.firstName} ${user.lastName}".trim(),
+          email: user.email,
+          phoneNumber: user.phone,
+        ),
+      ];
+    });
   }
 
   void setLocations() {
     fromRegion = LocationData.regions
-        .firstWhere((r) => r.id == widget.trip.fromRegionId.toString())
+        .firstWhere((r) => r.id == widget.trip.fromRegionId.toString(),
+            orElse: () => _unknownLocation)
         .text;
     fromCity = LocationData.cities
-        .firstWhere((c) => c.id == widget.trip.fromCityId.toString())
+        .firstWhere((c) => c.id == widget.trip.fromCityId.toString(),
+            orElse: () => _unknownLocation)
         .text;
     fromNeighborhood = LocationData.villages
-        .firstWhere((n) => n.id == widget.trip.fromVillageId.toString())
+        .firstWhere((n) => n.id == widget.trip.fromVillageId.toString(),
+            orElse: () => _unknownLocation)
         .text;
 
     toRegion = LocationData.regions
-        .firstWhere((r) => r.id == widget.trip.toRegionId.toString())
+        .firstWhere((r) => r.id == widget.trip.toRegionId.toString(),
+            orElse: () => _unknownLocation)
         .text;
     toCity = LocationData.cities
-        .firstWhere((c) => c.id == widget.trip.toCityId.toString())
+        .firstWhere((c) => c.id == widget.trip.toCityId.toString(),
+            orElse: () => _unknownLocation)
         .text;
     toNeighborhood = LocationData.villages
-        .firstWhere((n) => n.id == widget.trip.toVillageId.toString())
+        .firstWhere((n) => n.id == widget.trip.toVillageId.toString(),
+            orElse: () => _unknownLocation)
         .text;
 
     from = "$fromNeighborhood, $fromCity, $fromRegion";
@@ -475,7 +499,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                               const SizedBox(height: 4),
                               Text16h500w(
                                 title:
-                                    "${widget.trip.startTime.hour}:${widget.trip.startTime.minute} ${widget.trip.startTime.hour < 13 ? 'AM' : 'PM'}",
+                                    "${widget.trip.startTime.hour == 0 ? 12 : (widget.trip.startTime.hour > 12 ? widget.trip.startTime.hour - 12 : widget.trip.startTime.hour)}:${widget.trip.startTime.minute.toString().padLeft(2, '0')} ${widget.trip.startTime.hour < 12 ? 'AM' : 'PM'}",
                               ),
                             ],
                           ),
@@ -501,7 +525,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                               const SizedBox(height: 4),
                               Text16h500w(
                                 title:
-                                    "${widget.trip.endTime.hour}:${widget.trip.endTime.minute} ${widget.trip.endTime.hour < 13 ? 'AM' : 'PM'}",
+                                    "${widget.trip.endTime.hour == 0 ? 12 : (widget.trip.endTime.hour > 12 ? widget.trip.endTime.hour - 12 : widget.trip.endTime.hour)}:${widget.trip.endTime.minute.toString().padLeft(2, '0')} ${widget.trip.endTime.hour < 12 ? 'AM' : 'PM'}",
                               ),
                             ],
                           ),
@@ -563,188 +587,285 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
-                Text16h500w(title: translate("home.passenger_info")),
-                const SizedBox(height: 16),
-                Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppTheme.dark.withOpacity(0.1),
-                              spreadRadius: 15,
-                              blurRadius: 25,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text14h400w(
-                                    title: translate("home.number_passenger"),
-                                    color: AppTheme.gray,
+                if (!widget.isDriver) ...[
+                  const SizedBox(height: 24),
+                  Text16h500w(title: translate("home.passenger_info")),
+                  const SizedBox(height: 16),
+                  Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.dark.withOpacity(0.1),
+                                spreadRadius: 15,
+                                blurRadius: 25,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text14h400w(
+                                      title: translate("home.number_passenger"),
+                                      color: AppTheme.gray,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 12),
-                                Text16h500w(title: passengersNum.toString()),
-                                const SizedBox(width: 12),
-                                GestureDetector(
-                                  onTap: () {
-                                    if (passengersNum <
-                                        widget.trip.availableSeats) {
-                                      BottomDialog.showAddPassenger(
-                                        context,
-                                        PassengerModel(fullName: ""),
-                                        (data) {
-                                          bool isExist = false;
-                                          for (int i = 0;
-                                              i < passengers.length;
-                                              i++) {
-                                            if (passengers[i].fullName ==
-                                                data.fullName) {
-                                              isExist = true;
-                                              break;
+                                  const SizedBox(width: 12),
+                                  Text16h500w(title: passengersNum.toString()),
+                                  const SizedBox(width: 12),
+                                  GestureDetector(
+                                    onTap: () {
+                                      if (passengersNum <
+                                          widget.trip.availableSeats) {
+                                        BottomDialog.showAddPassenger(
+                                          context,
+                                          PassengerModel(fullName: ""),
+                                          (data) {
+                                            bool isExist = false;
+                                            for (int i = 0;
+                                                i < passengers.length;
+                                                i++) {
+                                              if (passengers[i].fullName ==
+                                                  data.fullName) {
+                                                isExist = true;
+                                                break;
+                                              }
                                             }
-                                          }
-                                          if (isExist == false &&
-                                              data.fullName != "") {
-                                            setState(() {
-                                              passengers.add(data);
-                                              passengersNum++;
-                                            });
-                                          } else {
-                                            CenterDialog.showActionFailed(
-                                              context,
-                                              translate("home.passenger_exist"),
-                                              translate(
-                                                  "home.passenger_exist_error"),
-                                            );
-                                          }
-                                        },
-                                      );
-                                    }
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.light,
-                                      borderRadius: BorderRadius.circular(24),
-                                    ),
-                                    child: const Icon(
-                                      Icons.add,
-                                      color: AppTheme.black,
-                                      size: 24,
+                                            if (isExist == false &&
+                                                data.fullName != "") {
+                                              setState(() {
+                                                passengers.add(data);
+                                                passengersNum++;
+                                              });
+                                            } else {
+                                              CenterDialog.showActionFailed(
+                                                context,
+                                                translate("home.passenger_exist"),
+                                                translate(
+                                                    "home.passenger_exist_error"),
+                                              );
+                                            }
+                                          },
+                                        );
+                                      }
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.light,
+                                        borderRadius: BorderRadius.circular(24),
+                                      ),
+                                      child: const Icon(
+                                        Icons.add,
+                                        color: AppTheme.black,
+                                        size: 24,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            ListView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: passengers.length,
-                                padding: EdgeInsets.zero,
-                                itemBuilder: (context, index) {
-                                  return Column(
-                                    children: [
-                                      PassengersContainer(
-                                        passenger: passengers[index],
-                                        onEdit: (data) {
-                                          if (data.fullName != "" &&
-                                              data != passengers[index]) {
-                                            setState(() {
-                                              passengers[index] = data;
-                                            });
-                                          }
-                                        },
-                                        onDelete: () {
-                                          if (passengers.length > 1) {
-                                            setState(() {
-                                              passengers
-                                                  .remove(passengers[index]);
-                                              passengersNum--;
-                                            });
-                                          }
-                                        },
-                                      ),
-                                      index == passengers.length - 1
-                                          ? const SizedBox()
-                                          : const Divider(),
-                                    ],
-                                  );
-                                })
-                          ],
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: passengers.length,
+                                  padding: EdgeInsets.zero,
+                                  itemBuilder: (context, index) {
+                                    return Column(
+                                      children: [
+                                        PassengersContainer(
+                                          passenger: passengers[index],
+                                          onEdit: (data) {
+                                            if (data.fullName != "" &&
+                                                data != passengers[index]) {
+                                              setState(() {
+                                                passengers[index] = data;
+                                              });
+                                            }
+                                          },
+                                          onDelete: () {
+                                            if (passengers.length > 1) {
+                                              setState(() {
+                                                passengers
+                                                    .remove(passengers[index]);
+                                                passengersNum--;
+                                              });
+                                            }
+                                          },
+                                        ),
+                                        index == passengers.length - 1
+                                            ? const SizedBox()
+                                            : const Divider(),
+                                      ],
+                                    );
+                                  })
+                            ],
+                          ),
                         ),
-                      ),
+                ],
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.only(
-              bottom: 32,
-              top: 24,
-              left: 16,
-              right: 16,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: AppTheme.dark.withOpacity(0.1),
-                  spreadRadius: 15,
-                  blurRadius: 25,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text16h500w(
-                      title: "${translate("home.total_price")}:",
-                      color: AppTheme.gray,
-                    ),
-                    Text(
-                      "${Utils.priceFormat((int.parse(pricePerSeat) * passengersNum).toString())} ${translate("currency")}",
-                      style: const TextStyle(
-                        color: AppTheme.black,
-                        fontSize: 20,
-                        fontFamily: AppTheme.fontFamily,
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                SecondaryButton(
-                  title: translate("home.book_now"),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PaymentScreen(
-                          trip: widget.trip,
-                          passengersNum: passengersNum,
-                          passengers: passengers,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
+          widget.isDriver ? _buildDriverBottomBar() : _buildPassengerBottomBar(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPassengerBottomBar() {
+    return Container(
+      padding: const EdgeInsets.only(
+        bottom: 32,
+        top: 24,
+        left: 16,
+        right: 16,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.dark.withOpacity(0.1),
+            spreadRadius: 15,
+            blurRadius: 25,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text16h500w(
+                title: "${translate("home.total_price")}:",
+                color: AppTheme.gray,
+              ),
+              Text(
+                "${Utils.priceFormat((int.parse(pricePerSeat) * passengersNum).toString())} ${translate("currency")}",
+                style: const TextStyle(
+                  color: AppTheme.black,
+                  fontSize: 20,
+                  fontFamily: AppTheme.fontFamily,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SecondaryButton(
+            title: translate("home.book_now"),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PaymentScreen(
+                    trip: widget.trip,
+                    passengersNum: passengersNum,
+                    passengers: passengers,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDriverBottomBar() {
+    return Container(
+      padding: const EdgeInsets.only(
+        bottom: 32,
+        top: 24,
+        left: 16,
+        right: 16,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.dark.withOpacity(0.1),
+            spreadRadius: 15,
+            blurRadius: 25,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: GestureDetector(
+        onTap: _isCancelling ? null : _cancelTrip,
+        child: Container(
+          height: 56,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.red, width: 2),
+          ),
+          child: Center(
+            child: _isCancelling
+                ? const SizedBox(
+                    height: 24,
+                    width: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppTheme.red,
+                    ),
+                  )
+                : Text(
+                    translate("qadam.cancel_trip"),
+                    style: const TextStyle(
+                      color: AppTheme.red,
+                      fontSize: 16,
+                      fontFamily: AppTheme.fontFamily,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _cancelTrip() async {
+    CenterDialog.showConfirmation(
+      context,
+      translate("qadam.cancel_trip"),
+      translate("qadam.cancel_trip_confirm"),
+      onConfirm: () async {
+        Navigator.pop(context); // close dialog
+        setState(() => _isCancelling = true);
+
+        final response = await Repository().fetchCancelDriverTrip(
+          widget.trip.id.toString(),
+        );
+
+        if (!mounted) return;
+        setState(() => _isCancelling = false);
+
+        if (response.isSuccess) {
+          CustomSnackBar().showSnackBar(
+            context,
+            translate("qadam.trip_cancelled"),
+            1,
+          );
+          Navigator.of(context).popUntil((route) => route.isFirst);
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const MainScreen()),
+          );
+        } else {
+          CenterDialog.showActionFailed(
+            context,
+            translate("qadam.error"),
+            translate("auth.something_went_wrong"),
+          );
+        }
+      },
     );
   }
 
@@ -788,8 +909,8 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                                 ? month = 'November'
                                                 : month = 'December';
 
-    time.hour < 13 ? t1 = 'AM' : t1 = 'PM';
-    h1 = time.hour < 13 ? time.hour.toString() : (time.hour - 12).toString();
+    time.hour < 12 ? t1 = 'AM' : t1 = 'PM';
+    h1 = time.hour == 0 ? '12' : (time.hour > 12 ? (time.hour - 12).toString() : time.hour.toString());
   }
 
   String safeSubstring(String text, int length) {

@@ -458,23 +458,27 @@ class BottomDialog {
               }
             }
 
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Container(
-                  height: 256,
-                  decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.only(
-                      topRight: Radius.circular(24),
-                      topLeft: Radius.circular(24),
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.only(
+                        topRight: Radius.circular(24),
+                        topLeft: Radius.circular(24),
+                      ),
+                      color: Colors.white,
                     ),
-                    color: Colors.white,
-                  ),
-                  padding: const EdgeInsets.only(top: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -616,6 +620,7 @@ class BottomDialog {
                   ),
                 ),
               ],
+            ),
             );
           },
         );

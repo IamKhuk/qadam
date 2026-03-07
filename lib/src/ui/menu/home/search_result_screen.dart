@@ -13,6 +13,7 @@ import 'package:shimmer/shimmer.dart';
 import '../../../defaults/defaults.dart';
 import '../../../lan_localization/load_places.dart';
 import '../../../model/api/trip_search_model.dart';
+import '../../../model/location_model.dart';
 import '../../../theme/app_theme.dart';
 import '../../widgets/texts/text_16h_500w.dart';
 
@@ -31,6 +32,8 @@ class SearchResultScreen extends StatefulWidget {
 }
 
 class _SearchResultScreenState extends State<SearchResultScreen> {
+  static final _unknownLocation = LocationModel(id: "0", text: "—", parentID: "0");
+
   @override
   void initState() {
     blocHome.fetchTripSearch(
@@ -43,100 +46,120 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
     super.initState();
   }
 
+  Future<void> _onRefresh() async {
+    blocHome.fetchTripSearch(
+      widget.trip.fromVillageId.toString(),
+      widget.trip.toVillageId.toString(),
+      widget.trip.startTime,
+      widget.trip.endTime,
+      widget.isRoundTrip,
+    );
+    await Future.delayed(const Duration(milliseconds: 500));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          StreamBuilder(
-            stream: blocHome.getTripSearch,
-            builder: (context, AsyncSnapshot<TripSearchModel> snapshot) {
-              if (snapshot.hasData) {
-                if (snapshot.data!.departureTrips.isNotEmpty) {
-                  return ListView.builder(
-                    itemCount: snapshot.data!.departureTrips.length,
-                    padding: const EdgeInsets.only(
-                      top: 282,
-                      left: 16,
-                      right: 16,
-                      bottom: 32,
-                    ),
-                    itemBuilder: (context, index) {
-                      return Column(
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) {
-                                    return TripDetailsScreen(
-                                        trip: snapshot.data!.departureTrips[index]);
-                                  },
-                                ),
-                              );
-                            },
-                            child: DestinationsContainer(
-                                trip: snapshot.data!.departureTrips[index]),
-                          ),
-                          index != Defaults().trips.length - 1
-                              ? const SizedBox(height: 16)
-                              : const SizedBox(),
-                        ],
-                      );
-                    },
-                  );
-                }else{
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Lottie.asset(
-                            "assets/lottie/empty.json",
-                            width: 200,
-                            height: 200,
-                            fit: BoxFit.cover,
-                          ),
-                        ],
+          RefreshIndicator(
+            color: AppTheme.purple,
+            onRefresh: _onRefresh,
+            child: StreamBuilder(
+              stream: blocHome.getTripSearch,
+              builder: (context, AsyncSnapshot<TripSearchModel> snapshot) {
+                if (snapshot.hasData) {
+                  if (snapshot.data!.departureTrips.isNotEmpty) {
+                    return ListView.builder(
+                      itemCount: snapshot.data!.departureTrips.length,
+                      padding: const EdgeInsets.only(
+                        top: 282,
+                        left: 16,
+                        right: 16,
+                        bottom: 32,
                       ),
-                      const SizedBox(height: 24),
-                      Text16h500w(title: translate("qadam.No_trip_found")),
-                    ]
+                      itemBuilder: (context, index) {
+                        return Column(
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) {
+                                      return TripDetailsScreen(
+                                          trip: snapshot.data!.departureTrips[index]);
+                                    },
+                                  ),
+                                );
+                              },
+                              child: DestinationsContainer(
+                                  trip: snapshot.data!.departureTrips[index]),
+                            ),
+                            index != snapshot.data!.departureTrips.length - 1
+                                ? const SizedBox(height: 16)
+                                : const SizedBox(),
+                          ],
+                        );
+                      },
+                    );
+                  }else{
+                    return ListView(
+                      padding: const EdgeInsets.only(top: 282),
+                      children: [
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Lottie.asset(
+                                  "assets/lottie/empty.json",
+                                  width: 200,
+                                  height: 200,
+                                  fit: BoxFit.cover,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+                            Text16h500w(title: translate("qadam.No_trip_found")),
+                          ],
+                        ),
+                      ],
+                    );
+                  }
+                } else {
+                  return Shimmer.fromColors(
+                    baseColor: AppTheme.baseColor,
+                    highlightColor: AppTheme.highlightColor,
+                    child: ListView.builder(
+                      itemCount: 10,
+                      padding: const EdgeInsets.only(
+                        top: 282,
+                        left: 16,
+                        right: 16,
+                        bottom: 32,
+                      ),
+                      itemBuilder: (context, index) {
+                        return Column(
+                          children: [
+                            Container(
+                              height: 250,
+                              width: MediaQuery.of(context).size.width - 32,
+                              color: AppTheme.baseColor,
+                            ),
+                            index != 10
+                                ? const SizedBox(height: 16)
+                                : const SizedBox(),
+                          ],
+                        );
+                      },
+                    ),
                   );
                 }
-              } else {
-                return Shimmer.fromColors(
-                  baseColor: AppTheme.baseColor,
-                  highlightColor: AppTheme.highlightColor,
-                  child: ListView.builder(
-                    itemCount: 10,
-                    padding: const EdgeInsets.only(
-                      top: 282,
-                      left: 16,
-                      right: 16,
-                      bottom: 32,
-                    ),
-                    itemBuilder: (context, index) {
-                      return Column(
-                        children: [
-                          Container(
-                            height: 250,
-                            width: MediaQuery.of(context).size.width - 32,
-                            color: AppTheme.baseColor,
-                          ),
-                          index != 10
-                              ? const SizedBox(height: 16)
-                              : const SizedBox(),
-                        ],
-                      );
-                    },
-                  ),
-                );
-              }
-            },
+              },
+            ),
           ),
           Column(
             children: [
@@ -198,7 +221,8 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                   title: LocationData.regions
                                       .firstWhere((r) =>
                                           r.id ==
-                                          widget.trip.fromRegionId.toString())
+                                          widget.trip.fromRegionId.toString(),
+                                          orElse: () => _unknownLocation)
                                       .text,
                                   color: AppTheme.light,
                                 ),
@@ -209,7 +233,8 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                           .firstWhere((n) =>
                                               n.id ==
                                               widget.trip.fromVillageId
-                                                  .toString())
+                                                  .toString(),
+                                              orElse: () => _unknownLocation)
                                           .text,
                                       3),
                                   style: const TextStyle(
@@ -225,7 +250,8 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                   title: LocationData.cities
                                       .firstWhere((c) =>
                                           c.id ==
-                                          widget.trip.fromCityId.toString())
+                                          widget.trip.fromCityId.toString(),
+                                          orElse: () => _unknownLocation)
                                       .text,
                                   color: AppTheme.light,
                                 ),
@@ -314,7 +340,8 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                   title: LocationData.regions
                                       .firstWhere((r) =>
                                           r.id ==
-                                          widget.trip.toRegionId.toString())
+                                          widget.trip.toRegionId.toString(),
+                                          orElse: () => _unknownLocation)
                                       .text,
                                   color: AppTheme.light,
                                 ),
@@ -325,7 +352,8 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                           .firstWhere((n) =>
                                               n.id ==
                                               widget.trip.toVillageId
-                                                  .toString())
+                                                  .toString(),
+                                              orElse: () => _unknownLocation)
                                           .text,
                                       3),
                                   style: const TextStyle(
@@ -341,7 +369,8 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                   title: LocationData.cities
                                       .firstWhere((c) =>
                                           c.id ==
-                                          widget.trip.toCityId.toString())
+                                          widget.trip.toCityId.toString(),
+                                          orElse: () => _unknownLocation)
                                       .text,
                                   color: AppTheme.light,
                                 ),

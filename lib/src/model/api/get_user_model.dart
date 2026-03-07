@@ -105,7 +105,7 @@ class Balance {
     afterTax: json["after_tax"]??"0",
     tax: json["tax"] ?? "0",
     lockedBalance: json["locked_balance"] ?? "0",
-    currency: json["currency"] ?? "USD",
+    currency: json["currency"] ?? "UZS",
   );
 
   Map<String, dynamic> toJson() => {

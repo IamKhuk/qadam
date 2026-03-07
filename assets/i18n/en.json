@@ -162,6 +162,8 @@
     "upload_failed": "Upload Failed",
     "error": "Error",
     "vehicle_id_missing": "Vehicle ID was not returned. Please try again.",
+    "tech_passport_front": "Tech Passport Front",
+    "tech_passport_back": "Tech Passport Back",
     "submit": "Submit",
     "upload_driving_licence": "Upload Driving Licence",
     "tap_to_upload": "Tap to Upload Photo",
@@ -182,7 +184,7 @@
     "max_passengers_reached_msg": "Number of passengers cannot exceed the vehicle capacity",
     "min_passengers_reached": "Passenger Error",
     "min_passengers_reached_msg": "Number of passengers cannot be less than 1",
-    "price_per_seat": "Price Per Seat (USD)",
+    "price_per_seat": "Price Per Seat (UZS)",
     "No_trip_found": "No Trip Found",
     "No_trip_found_msg": "Please add a trip to continue",
     "create_new_trip": "Create A New Trip",
@@ -208,7 +210,10 @@
     "end_date_after_departure": "End date must be after departure date",
     "price_must_be_positive": "Price must be greater than 0",
     "select_location_first": "Please select a location first",
-    "select_location_on_map": "Please select locations on the map"
+    "select_location_on_map": "Please select locations on the map",
+    "cancel_trip": "Cancel Trip",
+    "cancel_trip_confirm": "Are you sure you want to cancel this trip?",
+    "trip_cancelled": "Trip has been cancelled successfully"
   },
   "search": {
     "all": "All",
@@ -277,6 +282,7 @@
     "in_progress": "In Progress",
     "completed": "Completed",
     "canceled": "Canceled",
-    "price": "Price"
+    "price": "Price",
+    "no_trips": "No trips found"
   }
 }

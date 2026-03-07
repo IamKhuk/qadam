@@ -67,5 +67,13 @@
   },
   "like": {
     "top_destinations": "Популярные Направления"
+  },
+  "history": {
+    "history": "История",
+    "in_progress": "В процессе",
+    "completed": "Завершено",
+    "canceled": "Отменено",
+    "price": "Цена",
+    "no_trips": "Поездки не найдены"
   }
 }

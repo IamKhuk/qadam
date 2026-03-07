@@ -986,7 +986,7 @@ class _AddDocsScreenState extends State<AddDocsScreen> {
     setState(() => isLoading = false);
 
     if (response.isSuccess) {
-      if (response.result['status'] == 'success' && response.result['data'] != null) {
+      if (response.result is Map && response.result['status'] == 'success' && response.result['data'] != null) {
         final newVehicleId = response.result['data']['id']?.toString();
 
         if (newVehicleId != null && newVehicleId.isNotEmpty) {
@@ -998,7 +998,7 @@ class _AddDocsScreenState extends State<AddDocsScreen> {
           _showError(translate("qadam.vehicle_id_missing"));
         }
       } else {
-        final errorMessage = response.result['message']?.toString() ?? translate("qadam.error");
+        final errorMessage = (response.result is Map ? response.result['message']?.toString() : null) ?? translate("qadam.error");
         _showError(errorMessage);
       }
     } else {
@@ -1009,7 +1009,7 @@ class _AddDocsScreenState extends State<AddDocsScreen> {
   // Step 4 Submit: Vehicle Images (Final)
   Future<void> _submitStep4() async {
     if (vehicleId.isEmpty) {
-       _showError("Vehicle ID missing");
+       _showError(translate("qadam.vehicle_id_missing"));
        return;
     }
 

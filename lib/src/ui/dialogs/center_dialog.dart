@@ -1,11 +1,72 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_translate/flutter_translate.dart';
 import 'package:qadam/src/ui/widgets/texts/text_14h_400w.dart';
 import 'package:qadam/src/ui/widgets/texts/text_16h_500w.dart';
 
 import '../../theme/app_theme.dart';
 
 class CenterDialog {
+  static void showConfirmation(
+    BuildContext context,
+    String title,
+    String message, {
+    required VoidCallback onConfirm,
+  }) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return CupertinoTheme(
+          data: const CupertinoThemeData(brightness: Brightness.dark),
+          child: CupertinoAlertDialog(
+            title: Text16h500w(title: title),
+            content: Text14h400w(title: message, color: AppTheme.light),
+            actions: [
+              GestureDetector(
+                onTap: () {
+                  Navigator.pop(context);
+                },
+                child: Container(
+                  color: Colors.transparent,
+                  padding: const EdgeInsets.only(top: 12, bottom: 16),
+                  child: Center(
+                    child: Text(
+                      translate("cancel"),
+                      style: const TextStyle(
+                        fontFamily: AppTheme.fontFamily,
+                        fontSize: 16,
+                        fontWeight: FontWeight.normal,
+                        color: AppTheme.gray,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: onConfirm,
+                child: Container(
+                  color: Colors.transparent,
+                  padding: const EdgeInsets.only(top: 12, bottom: 16),
+                  child: Center(
+                    child: Text(
+                      translate("ok"),
+                      style: const TextStyle(
+                        fontFamily: AppTheme.fontFamily,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: AppTheme.red,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   static void showActionFailed(
     BuildContext context,
     String title,

@@ -72,7 +72,7 @@ class AppCache {
         afterTax: prefs.getString("balance_after_tax") ?? "0",
         tax: prefs.getString("balance_tax") ?? "0",
         lockedBalance: prefs.getString("balance_locked") ?? "0",
-        currency: prefs.getString("balance_currency") ?? "USD",
+        currency: prefs.getString("balance_currency") ?? "UZS",
       ),
     );
     return info;

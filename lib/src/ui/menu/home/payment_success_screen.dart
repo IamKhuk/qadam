@@ -116,7 +116,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          "\$${widget.trip.pricePerSeat}.00",
+                          "${widget.trip.pricePerSeat} UZS",
                           style: const TextStyle(
                             fontSize: 30,
                             fontWeight: FontWeight.w600,
@@ -250,7 +250,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                               ),
                               Text14h500w(
                                   title:
-                                      "${widget.trip.startTime.hour}:${widget.trip.startTime.minute} ${widget.trip.startTime.hour > 12 ? "PM" : "AM"}"),
+                                      "${widget.trip.startTime.hour == 0 ? 12 : (widget.trip.startTime.hour > 12 ? widget.trip.startTime.hour - 12 : widget.trip.startTime.hour)}:${widget.trip.startTime.minute.toString().padLeft(2, '0')} ${widget.trip.startTime.hour >= 12 ? "PM" : "AM"}"),
                             ],
                           ),
                         ],
